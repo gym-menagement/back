@@ -26,9 +26,9 @@ func (c *AuthController) Index(page int, pagesize int) {
         args = append(args, models.Where{Column:"token", Value:passwd, Compare:"like"})
     }
 
-    // email := c.Query("email")
-    // if email != "" {
-    //     args = append(args, models.Where{Column:"email", Value:email, Compare:"like"})
+    // loginid := c.Query("loginid")
+    // if loginid != "" {
+    //     args = append(args, models.Where{Column:"loginid", Value:loginid, Compare:"like"})
     // }
     startdate := c.Query("startdate")
     enddate := c.Query("enddate")

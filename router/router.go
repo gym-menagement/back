@@ -10,17 +10,22 @@ import (
 
 func SetRouter(app *fiber.App) {
 	app.Get("/api/jwt", func(ctx *fiber.Ctx) error {
-		email := ctx.Query("email")
+		loginid := ctx.Query("loginid")
 		passwd := ctx.Query("passwd")
-		return ctx.JSON(JwtAuth(email, passwd))
+		return ctx.JSON(JwtAuth(loginid, passwd))
 	})
-	app.Get("/api/jwt/token", func(ctx *fiber.Ctx) error {
-		token := ctx.Get("Authorization")
-		return ctx.JSON(JwtToken(token))
-	})
+	// app.Get("/api/jwt/token", func(ctx *fiber.Ctx) error {
+	// 	token := ctx.Get("Authorization")
+	// 	return ctx.JSON(JwtToken(token))
+	// })
 	apiGroup := app.Group("/api")
 	apiGroup.Use(JwtAuthRequired())
 	{
+		// apiGroup.Get("/me", func(ctx *fiber.Ctx) error {
+		// 	token := ctx.Get("Authorization")
+		// 	return ctx.JSON(JwtMe(token))
+		// })
+
 		apiGroup.Get("/user/:id", func(ctx *fiber.Ctx) error {
 			id_, _ := strconv.ParseInt(ctx.Params("id"), 10, 64)
 			var controller rest.UserController
@@ -28,11 +33,6 @@ func SetRouter(app *fiber.App) {
 			controller.Read(id_)
 			controller.Close()
 			return ctx.JSON(controller.Result)
-		})
-
-		apiGroup.Get("/me", func(ctx *fiber.Ctx) error {
-			token := ctx.Get("Authorization")
-			return ctx.JSON(JwtMe(token))
 		})
 
 		apiGroup.Get("/user", func(ctx *fiber.Ctx) error {

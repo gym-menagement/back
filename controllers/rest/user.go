@@ -16,9 +16,14 @@ func (c *UserController) Index(page int, pagesize int) {
 
     var args []interface{}
 
-    name := c.Query("name")
-    if name != "" {
-        args = append(args, models.Where{Column:"name", Value:name, Compare:"="})
+    gym := c.Query("gym")
+    if gym != "" {
+        args = append(args, models.Where{Column:"gym", Value:gym, Compare:"="})
+    }    
+
+    loginid := c.Query("loginid")
+    if loginid != "" {
+        args = append(args, models.Where{Column:"loginid", Value:loginid, Compare:"like"})
     }
 
     passwd := c.Query("passwd")
@@ -26,9 +31,49 @@ func (c *UserController) Index(page int, pagesize int) {
         args = append(args, models.Where{Column:"passwd", Value:passwd, Compare:"like"})
     }
 
-    email := c.Query("email")
-    if email != "" {
-        args = append(args, models.Where{Column:"email", Value:email, Compare:"like"})
+    name := c.Query("name")
+    if name != "" {
+        args = append(args, models.Where{Column:"name", Value:name, Compare:"="})
+    }
+
+    role := c.Query("role")
+    if role != "" {
+        args = append(args, models.Where{Column:"role", Value:role, Compare:"="})
+    }
+
+    image := c.Query("image")
+    if image != "" {
+        args = append(args, models.Where{Column:"image", Value:image, Compare:"="})
+    }
+
+    sex := c.Query("sex")
+    if sex != "" {
+        args = append(args, models.Where{Column:"sex", Value:sex, Compare:"="})
+    }
+
+    birth := c.Query("birth")
+    if birth != "" {
+        args = append(args, models.Where{Column:"birth", Value:birth, Compare:"="})
+    }
+
+    phonenum := c.Query("phonenum")
+    if phonenum != "" {
+        args = append(args, models.Where{Column:"phonenum", Value:phonenum, Compare:"="})
+    }
+
+    address := c.Query("address")
+    if address != "" {
+        args = append(args, models.Where{Column:"address", Value:address, Compare:"="})
+    }
+
+    startday := c.Query("startday")
+    if startday != "" {
+        args = append(args, models.Where{Column:"startday", Value:startday, Compare:"="})
+    }
+
+    endday := c.Query("endday")
+    if endday != "" {
+        args = append(args, models.Where{Column:"endday", Value:endday, Compare:"="})
     }
     startdate := c.Query("startdate")
     enddate := c.Query("enddate")

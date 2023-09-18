@@ -16,9 +16,18 @@ import (
 
 type User struct {
 	Id					int64 `json:"id"`
+	Gym					int64 `json:"gym"`
+	Loginid				string `json:"loginid"`
 	Passwd				string `json:"passwd"`
 	Name				string `json:"name"`
-	Email				string `json:"email"`
+	Role				int64 `json:"role"`
+	Image				string `json:"image"`
+	Sex					int `json:"sex"`
+	Birth				string `json:"birth"`
+	Phonenum			string `json:"phonenum"`
+	Address				string `json:"address"`
+	Startday			string `json:"startday"`
+	Endday				string `json:"endday"`
 	Date				string `json:"date"`
 
 	Extra				map[string]interface{} `json:"extra"`
@@ -83,7 +92,7 @@ func (p *UserManager) Query(query string, params ...interface{}) (*sql.Rows, err
 func (p *UserManager) GetQeury() string {
 	ret := ""
 
-	str := "select u_id, u_passwd, u_name, u_email, u_date from user_tb "
+	str := "select u_id, u_gym, u_loginid, u_passwd, u_name, u_role, u_image, u_sex, u_birth, u_phonenum, m_address, u_startday, u_endday, u_date from user_tb "
 
 	if p.Index == "" {
 		ret = str
@@ -135,11 +144,11 @@ func (p *UserManager) Insert(item *User) error {
 	var res sql.Result
 	var err error
 	if item.Id > 0 {
-		query = "insert into user_tb (u_id, u_passwd, u_name, u_email, u_date) values (?, ?, ?, ?, ?)"
-		res, err = p.Exec(query , item.Id, item.Passwd, item.Name, item.Email, item.Date)
+		query = "insert into user_tb (u_id, u_gym, u_loginid, u_passwd, u_name, u_role, u_image, u_sex, u_birth, u_phonenum, m_address, u_startday, u_endday, u_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+		res, err = p.Exec(query , item.Id, item.Gym, item.Loginid, item.Passwd, item.Name, item.Role, item.Image, item.Sex, item.Birth, item.Phonenum, item.Address, item.Startday, item.Endday, item.Date)
 	} else {
-		query = "insert into user_tb (u_passwd, u_name, u_email, u_date) values (?, ?, ?, ?)"
-		res, err = p.Exec(query , item.Passwd, item.Name, item.Email, item.Date)
+		query = "insert into user_tb (u_gym, u_loginid, u_passwd, u_name, u_role, u_image, u_sex, u_birth, u_phonenum, m_address, u_startday, u_endday, u_date) values (?, ?, ?, ?,  ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+		res, err = p.Exec(query , item.Gym, item.Loginid, item.Passwd, item.Name, item.Role, item.Image, item.Sex, item.Birth, item.Phonenum, item.Address, item.Startday, item.Endday, item.Date)
 	}
 
 	if err == nil {
@@ -168,8 +177,8 @@ func (p *UserManager) Update(item *User) error {
 		return errors.New("Connection Error")
 	}
 
-	query := "update user_tb set u_passwd = ?, u_name = ?, u_email = ?, u_date = ? where u_id = ?"
-	_, err := p.Exec(query, item.Passwd, item.Name, item.Email, item.Date, item.Id)
+	query := "update user_tb set u_gym = ?, u_loginid = ?, u_passwd = ?, u_name = ?, u_role = ?, u_image = ?, u_sex = ?, u_birth = ?, u_phonenum = ?, m_address = ?, u_startday = ?, u_endday = ?, u_date = ? where u_id = ?"
+	_, err := p.Exec(query, item.Gym, item.Loginid, item.Passwd, item.Name, item.Role, item.Image, item.Sex, item.Birth, item.Phonenum, item.Address, item.Startday, item.Endday, item.Date, item.Id)
 
 	return err
 }
@@ -199,7 +208,7 @@ func (p *UserManager) ReadRow(rows *sql.Rows) *User {
 	var err error
 
 	if rows.Next() {
-		err = rows.Scan(&item.Id, &item.Passwd, &item.Name, &item.Email, &item.Date)
+		err = rows.Scan(&item.Id, &item.Gym, &item.Loginid, &item.Passwd, &item.Name, &item.Role, &item.Image, &item.Sex, &item.Birth, &item.Phonenum, &item.Address, &item.Startday, &item.Endday, &item.Date)
 	} else {
 		return nil
 	}
@@ -217,7 +226,7 @@ func (p *UserManager) ReadRows(rows *sql.Rows) *[]User {
 	for rows.Next() {
 		var item User
 
-		err := rows.Scan(&item.Id, &item.Passwd, &item.Name, &item.Email, &item.Date)
+		err := rows.Scan(&item.Id, &item.Gym, &item.Loginid, &item.Passwd, &item.Name, &item.Role, &item.Image, &item.Sex, &item.Birth, &item.Phonenum, &item.Address, &item.Startday, &item.Endday, &item.Date)
 
 		if err != nil {
 			log.Printf("ReadRows error : %v\n", err)
@@ -407,9 +416,9 @@ func (p *UserManager) Find(args []interface{}) *[]User {
 	return p.ReadRows(rows)
 }
 
-func (p *UserManager) GetByEmail(email string, args ...interface{}) *User {
-    if email != "" {
-        args = append(args, Where{Column:"email", Value:email, Compare:"="})        
+func (p *UserManager) GetByloginid(loginid string, args ...interface{}) *User {
+    if loginid != "" {
+        args = append(args, Where{Column:"loginid", Value:loginid, Compare:"="})        
     }
     
     items := p.Find(args)

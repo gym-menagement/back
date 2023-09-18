@@ -5,37 +5,37 @@ all: server
 server: dummy
 	buildtool-model ./ 
 	buildtool-router ./ > ./router/router.go
-	go build -o bin/gofiber main.go
+	go build -o bin/gym main.go
 
 fswatch:
 	fswatch -0 controllers | xargs -0 -n1 build/notify.sh
 
 run:
-	gin --port 9000 -a 9003 --bin bin/gofiber run main.go
+	gin --port 9000 -a 9003 --bin bin/gym run main.go
 
 allrun:
 	fswatch -0 controllers | xargs -0 -n1 build/notify.sh &
-	gin --port 9000 -a 9003 --bin bin/gofiber run main.go
+	gin --port 9000 -a 9003 --bin bin/gym run main.go
 
 test: dummy
 	go test -v ./...
 
 linux:
-	env GOOS=linux GOARCH=amd64 go build -o bin/gofiber.linux main.go
+	env GOOS=linux GOARCH=amd64 go build -o bin/gym.linux main.go
 
 dockerbuild:
-	env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -ldflags '-s' -o bin/gofiber.linux main.go
+	env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -ldflags '-s' -o bin/gym.linux main.go
 
 docker: dockerbuild
-	docker build -t kobums/gofiber:$(tag) .
+	docker build -t kobums/gym:$(tag) .
 
 dockerrun:
-	docker run -d --name="gofiber" -p 9003:9003 kobums/gofiber
+	docker run -d --name="gym" -p 9003:9003 kobums/gym
 
 push: docker
-	docker push kobums/gofiber:$(tag)
+	docker push kobums/gym:$(tag)
 
 clean:
-	rm -f bin/gofiber
+	rm -f bin/gym
 
 dummy:
