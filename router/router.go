@@ -1,8 +1,8 @@
 package router
 
 import (
-	"project/controllers/rest"
-	"project/models"
+	"gym/controllers/rest"
+	"gym/models"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"

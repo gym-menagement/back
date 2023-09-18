@@ -1,6 +1,6 @@
-module project
+module gym
 
-go 1.20
+go 1.21
 
 require (
 	github.com/CloudyKit/jet/v3 v3.0.1

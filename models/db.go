@@ -2,8 +2,8 @@ package models
 
 import (
 	"database/sql"
+	"gym/config"
 	"log"
-	"project/config"
 	"time"
 )
 

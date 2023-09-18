@@ -2,9 +2,9 @@ package controllers
 
 import (
 	"database/sql"
+	"gym/global"
+	"gym/models"
 	"net/http"
-	"project/global"
-	"project/models"
 	"time"
 
 	"github.com/CloudyKit/jet/v3"

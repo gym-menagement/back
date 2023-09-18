@@ -2,10 +2,10 @@ package router
 
 import (
 	"errors"
+	"gym/config"
+	"gym/models"
 	"log"
 	"net/http"
-	"project/config"
-	"project/models"
 	"time"
 
 	"github.com/gofiber/fiber/v2"

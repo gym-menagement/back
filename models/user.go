@@ -1,7 +1,7 @@
 package models
 
 import (
-	"project/config"
+	"gym/config"
 
 	"database/sql"
 	"errors"

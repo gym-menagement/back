@@ -1,8 +1,8 @@
 package rest
 
 import (
-	"project/controllers"
-	"project/models"
+	"gym/controllers"
+	"gym/models"
 )
 
 type AuthController struct {

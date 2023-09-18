@@ -1,7 +1,7 @@
 package main
 
 import (
-	"project/router"
+	"gym/router"
 	"strings"
 	"time"
 
