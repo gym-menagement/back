@@ -760,7 +760,7 @@ func SetRouter(app *fiber.App) {
 
 		apiGroup.Get("/rocker/:id", func(ctx *fiber.Ctx) error {
 			id_, _ := strconv.ParseInt(ctx.Params("id"), 10, 64)
-			var controller rest.RockerGroupController
+			var controller rest.RockerController
 			controller.Init(ctx)
 			controller.Read(id_)
 			controller.Close()
@@ -821,7 +821,7 @@ func SetRouter(app *fiber.App) {
 
 		apiGroup.Get("/role/:id", func(ctx *fiber.Ctx) error {
 			id_, _ := strconv.ParseInt(ctx.Params("id"), 10, 64)
-			var controller rest.RockerGroupController
+			var controller rest.RoleController
 			controller.Init(ctx)
 			controller.Read(id_)
 			controller.Close()
@@ -870,6 +870,67 @@ func SetRouter(app *fiber.App) {
 			item_ := &models.Role{}
 			ctx.BodyParser(item_)
 			var controller rest.RoleController
+			controller.Init(ctx)
+			if item_ != nil {
+				controller.Delete(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return ctx.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/stop/:id", func(ctx *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(ctx.Params("id"), 10, 64)
+			var controller rest.StopController
+			controller.Init(ctx)
+			controller.Read(id_)
+			controller.Close()
+			return ctx.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/stop", func(ctx *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(ctx.Query("page"))
+			pagesize_, _ := strconv.Atoi(ctx.Query("pagesize"))
+			var controller rest.StopController
+			controller.Init(ctx)
+			controller.Index(page_, pagesize_)
+			controller.Close()
+			return ctx.JSON(controller.Result)
+		})
+
+		apiGroup.Post("/stop", func(ctx *fiber.Ctx) error {
+			item_ := &models.Stop{}
+			ctx.BodyParser(item_)
+			var controller rest.StopController
+			controller.Init(ctx)
+			if item_ != nil {
+				controller.Insert(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return ctx.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/stop", func(ctx *fiber.Ctx) error {
+			item_ := &models.Stop{}
+			ctx.BodyParser(item_)
+			var controller rest.StopController
+			controller.Init(ctx)
+			if item_ != nil {
+				controller.Update(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return ctx.JSON(controller.Result)
+		})
+
+		apiGroup.Delete("/stop", func(ctx *fiber.Ctx) error {
+			item_ := &models.Stop{}
+			ctx.BodyParser(item_)
+			var controller rest.StopController
 			controller.Init(ctx)
 			if item_ != nil {
 				controller.Delete(item_)

@@ -14,38 +14,30 @@ import (
 )
 
 
-type User struct {
+type Stop struct {
 	Id					int64 `json:"id"`
-	Gym					int64 `json:"gym"`
-	Loginid				string `json:"loginid"`
-	Passwd				string `json:"passwd"`
-	Name				string `json:"name"`
-	Role				int64 `json:"role"`
-	Image				string `json:"image"`
-	Sex					int `json:"sex"`
-	Birth				string `json:"birth"`
-	Phonenum			string `json:"phonenum"`
-	Address				string `json:"address"`
+	UseHelth			int64 `json:"use_helth"`
 	Startday			string `json:"startday"`
 	Endday				string `json:"endday"`
+	Count				int `json:"count"`
 	Date				string `json:"date"`
 
 	Extra				map[string]interface{} `json:"extra"`
 }
 
-type UserManager struct {
+type StopManager struct {
 	Conn	*sql.DB
 	Tx		*sql.Tx
 	Result	*sql.Result
 	Index	string
 }
 
-func (c *User) AddExtra(key string, value interface{}) {
+func (c *Stop) AddExtra(key string, value interface{}) {
 	c.Extra[key] = value
 }
 
-func NewUserManager(conn interface{}) *UserManager {
-	var item UserManager
+func NewStopManager(conn interface{}) *StopManager {
+	var item StopManager
 
 	if conn == nil {
 		item.Conn = NewConnection()
@@ -63,17 +55,17 @@ func NewUserManager(conn interface{}) *UserManager {
 	return &item
 }
 
-func (p *UserManager) Close() {
+func (p *StopManager) Close() {
 	if p.Conn != nil {
 		p.Conn.Close()
 	}
 }
 
-func (p *UserManager) SetIndex(index string) {
+func (p *StopManager) SetIndex(index string) {
 	p.Index = index
 }
 
-func (p *UserManager) Exec(query string, params ...interface{}) (sql.Result, error) {
+func (p *StopManager) Exec(query string, params ...interface{}) (sql.Result, error) {
 	if p.Conn != nil {
 		return p.Conn.Exec(query, params...)
 	} else {
@@ -81,7 +73,7 @@ func (p *UserManager) Exec(query string, params ...interface{}) (sql.Result, err
 	}
 }
 
-func (p *UserManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
+func (p *StopManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
 	if p.Conn != nil {
 		return p.Conn.Query(query, params...)
 	} else {
@@ -89,10 +81,10 @@ func (p *UserManager) Query(query string, params ...interface{}) (*sql.Rows, err
 	}
 }
 
-func (p *UserManager) GetQeury() string {
+func (p *StopManager) GetQeury() string {
 	ret := ""
 
-	str := "select u_id, u_gym, u_loginid, u_passwd, u_name, u_role, u_image, u_sex, u_birth, u_phonenum, u_address, u_startday, u_endday, u_date from user_tb "
+	str := "select s_id, s_use_helth, s_startday, s_endday, s_count, s_date from stop_tb "
 
 	if p.Index == "" {
 		ret = str
@@ -105,10 +97,10 @@ func (p *UserManager) GetQeury() string {
 	return ret;
 }
 
-func (p *UserManager) GetQeurySelect() string {
+func (p *StopManager) GetQeurySelect() string {
 	ret := ""
 
-	str := "select count(*) from user_tb "
+	str := "select count(*) from stop_tb "
 
 	if p.Index == "" {
 		ret = str
@@ -119,18 +111,18 @@ func (p *UserManager) GetQeurySelect() string {
 	return ret;
 }
 
-func (p *UserManager) Truncate() error {
+func (p *StopManager) Truncate() error {
 	if p.Conn == nil && p.Tx == nil {
 		return errors.New("Connection Error")
 	}
 
-	query := "truncate user_tb "
+	query := "truncate stop_tb "
 	p.Exec(query)
 
 	return nil
 }
 
-func (p *UserManager) Insert(item *User) error {
+func (p *StopManager) Insert(item *Stop) error {
 	if p.Conn == nil && p.Tx == nil {
 		return errors.New("Connection Error")
 	}
@@ -144,11 +136,11 @@ func (p *UserManager) Insert(item *User) error {
 	var res sql.Result
 	var err error
 	if item.Id > 0 {
-		query = "insert into user_tb (u_id, u_gym, u_loginid, u_passwd, u_name, u_role, u_image, u_sex, u_birth, u_phonenum, u_address, u_startday, u_endday, u_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-		res, err = p.Exec(query , item.Id, item.Gym, item.Loginid, item.Passwd, item.Name, item.Role, item.Image, item.Sex, item.Birth, item.Phonenum, item.Address, item.Startday, item.Endday, item.Date)
+		query = "insert into stop_tb (s_id, s_use_helth, s_startday, s_endday, s_count, s_date) values (?, ?, ?, ?, ?, ?)"
+		res, err = p.Exec(query , item.Id, item.UseHelth, item.Startday, item.Endday, item.Count, item.Date)
 	} else {
-		query = "insert into user_tb (u_gym, u_loginid, u_passwd, u_name, u_role, u_image, u_sex, u_birth, u_phonenum, u_address, u_startday, u_endday, u_date) values (?, ?, ?, ?,  ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-		res, err = p.Exec(query , item.Gym, item.Loginid, item.Passwd, item.Name, item.Role, item.Image, item.Sex, item.Birth, item.Phonenum, item.Address, item.Startday, item.Endday, item.Date)
+		query = "insert into stop_tb (s_use_helth, s_startday, s_endday, s_count, s_date) values (?, ?, ?, ?, ?)"
+		res, err = p.Exec(query , item.UseHelth, item.Startday, item.Endday, item.Count, item.Date)
 	}
 
 	if err == nil {
@@ -161,29 +153,29 @@ func (p *UserManager) Insert(item *User) error {
 	return err
 }
 
-func (p *UserManager) Delete(id int64) error {
+func (p *StopManager) Delete(id int64) error {
 	if p.Conn == nil && p.Tx == nil {
 		return errors.New("Connection Error")
 	}
 
-	query := "delete from user_tb where u_id = ?"
+	query := "delete from stop_tb where s_id = ?"
 	_, err := p.Exec(query, id)
 
 	return err
 }
 
-func (p *UserManager) Update(item *User) error {
+func (p *StopManager) Update(item *Stop) error {
 	if p.Conn == nil && p.Tx == nil {
 		return errors.New("Connection Error")
 	}
 
-	query := "update user_tb set u_gym = ?, u_loginid = ?, u_passwd = ?, u_name = ?, u_role = ?, u_image = ?, u_sex = ?, u_birth = ?, u_phonenum = ?, u_address = ?, u_startday = ?, u_endday = ?, u_date = ? where u_id = ?"
-	_, err := p.Exec(query, item.Gym, item.Loginid, item.Passwd, item.Name, item.Role, item.Image, item.Sex, item.Birth, item.Phonenum, item.Address, item.Startday, item.Endday, item.Date, item.Id)
+	query := "update stop_tb set s_use_helth = ?, s_startday = ?, s_endday = ?, s_count = ?, s_date = ? where s_id = ?"
+	_, err := p.Exec(query, item.UseHelth, item.Startday, item.Endday, item.Count, item.Date, item.Id)
 
 	return err
 }
 
-func (p *UserManager) GetIdentity() int64 {
+func (p *StopManager) GetIdentity() int64 {
 	if p.Result == nil && p.Tx == nil {
 		return 0
 	}
@@ -197,18 +189,18 @@ func (p *UserManager) GetIdentity() int64 {
 	}
 }
 
-func (p *User) InitExtra() {
+func (p *Stop) InitExtra() {
 	p.Extra = map[string]interface{}{
 
 	}
 }
 
-func (p *UserManager) ReadRow(rows *sql.Rows) *User {
-	var item User
+func (p *StopManager) ReadRow(rows *sql.Rows) *Stop {
+	var item Stop
 	var err error
 
 	if rows.Next() {
-		err = rows.Scan(&item.Id, &item.Gym, &item.Loginid, &item.Passwd, &item.Name, &item.Role, &item.Image, &item.Sex, &item.Birth, &item.Phonenum, &item.Address, &item.Startday, &item.Endday, &item.Date)
+		err = rows.Scan(&item.Id, &item.UseHelth, &item.Startday, &item.Endday, &item.Count, &item.Date)
 	} else {
 		return nil
 	}
@@ -220,13 +212,13 @@ func (p *UserManager) ReadRow(rows *sql.Rows) *User {
 	}
 }
 
-func (p *UserManager) ReadRows(rows *sql.Rows) *[]User {
-	var items []User
+func (p *StopManager) ReadRows(rows *sql.Rows) *[]Stop {
+	var items []Stop
 
 	for rows.Next() {
-		var item User
+		var item Stop
 
-		err := rows.Scan(&item.Id, &item.Gym, &item.Loginid, &item.Passwd, &item.Name, &item.Role, &item.Image, &item.Sex, &item.Birth, &item.Phonenum, &item.Address, &item.Startday, &item.Endday, &item.Date)
+		err := rows.Scan(&item.Id, &item.UseHelth, &item.Startday, &item.Endday, &item.Count, &item.Date)
 
 		if err != nil {
 			log.Printf("ReadRows error : %v\n", err)
@@ -240,12 +232,12 @@ func (p *UserManager) ReadRows(rows *sql.Rows) *[]User {
 	return &items
 }
 
-func (p *UserManager) Get(id int64) *User {
+func (p *StopManager) Get(id int64) *Stop {
 	if p.Conn == nil && p.Tx == nil {
 		return nil
 	}
 
-	query := p.GetQeury() + " and u_id = ?"
+	query := p.GetQeury() + " and s_id = ?"
 
 	rows, err := p.Query(query, id)
 
@@ -259,7 +251,7 @@ func (p *UserManager) Get(id int64) *User {
 	return p.ReadRow(rows)
 }
 
-func (p *UserManager) Count(args []interface{}) int {
+func (p *StopManager) Count(args []interface{}) int {
 	if p.Conn == nil && p.Tx == nil {
 		return 0
 	}
@@ -273,15 +265,15 @@ func (p *UserManager) Count(args []interface{}) int {
 			item := v
 
 			if item.Compare == "in" {
-				query += " and u_id in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+				query += " and s_id in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
 			} else if item.Compare == "between" {
-				query += " and u_" + item.Column + " between ? and ?"
+				query += " and s_" + item.Column + " between ? and ?"
 
 				s := item.Value.([2]string)
 				params = append(params, s[0])
 				params = append(params, s[1])
 			} else {
-				query += " and u_" + item.Column + " " + item.Compare + " ?"
+				query += " and s_" + item.Column + " " + item.Compare + " ?"
 				if item.Compare == "like" {
 					params = append(params, "%" + item.Value.(string) + "%")
 				} else {
@@ -314,9 +306,9 @@ func (p *UserManager) Count(args []interface{}) int {
 	}
 }
 
-func (p *UserManager) Find(args []interface{}) *[]User {
+func (p *StopManager) Find(args []interface{}) *[]Stop {
 	if p.Conn == nil && p.Tx == nil {
-		var items []User
+		var items []Stop
 		return &items
 	}
 
@@ -358,15 +350,15 @@ func (p *UserManager) Find(args []interface{}) *[]User {
 			item := v
 
 			if item.Compare == "in" {
-				query += " and u_id in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+				query += " and s_id in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
 			} else if item.Compare == "between" {
-				query += " and u_" + item.Column + " between ? and ?"
+				query += " and s_" + item.Column + " between ? and ?"
 
 				s := item.Value.([2]string)
 				params = append(params, s[0])
 				params = append(params, s[1])
 			} else {
-				query += " and u_" + item.Column + " " + item.Compare + " ?"
+				query += " and s_" + item.Column + " " + item.Compare + " ?"
 				if item.Compare == "like" {
 					params = append(params, "%" + item.Value.(string) + "%")
 				} else {
@@ -380,9 +372,9 @@ func (p *UserManager) Find(args []interface{}) *[]User {
 
 	if page > 0 && pagesize > 0 {
 		if orderby == "" {
-			orderby = "u_id"
+			orderby = "s_id"
 		} else {
-			orderby = "u_" + orderby
+			orderby = "s_" + orderby
 		}
 		query += " order by " + orderby
 		if config.Database == "mysql" {
@@ -396,9 +388,9 @@ func (p *UserManager) Find(args []interface{}) *[]User {
 		}
 	} else {
 		if orderby == "" {
-			orderby = "u_id"
+			orderby = "s_id"
 		} else {
-			orderby = "u_" + orderby
+			orderby = "s_" + orderby
 		}
 		query += " order by " + orderby
 	}
@@ -407,25 +399,11 @@ func (p *UserManager) Find(args []interface{}) *[]User {
 
 	if err != nil {
 		log.Printf("query error : %v, %v\n", err, query)
-		var items []User
+		var items []Stop
 		return &items
 	}
 
 	defer rows.Close()
 
 	return p.ReadRows(rows)
-}
-
-func (p *UserManager) GetByloginid(loginid string, args ...interface{}) *User {
-    if loginid != "" {
-        args = append(args, Where{Column:"loginid", Value:loginid, Compare:"="})        
-    }
-    
-    items := p.Find(args)
-
-    if items != nil && len(*items) > 0 {
-        return &(*items)[0]
-    } else {
-        return nil
-    }
 }
