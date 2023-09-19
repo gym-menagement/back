@@ -14,30 +14,30 @@ import (
 )
 
 
-type PaymentForm struct {
+type Payment struct {
 	Id					int64 `json:"id"`
 	Gym					int64 `json:"gym"`
-	Payment				int64 `json:"payment"`
-	Type				int64 `json:"type"`
+	Order				int64 `json:"order"`
+	Membership			int64 `json:"membership"`
 	Cost				int `json:"cost"`
 	Date				string `json:"date"`
 
 	Extra				map[string]interface{} `json:"extra"`
 }
 
-type PaymentFormManager struct {
+type PaymentManager struct {
 	Conn	*sql.DB
 	Tx		*sql.Tx
 	Result	*sql.Result
 	Index	string
 }
 
-func (c *PaymentForm) AddExtra(key string, value interface{}) {
+func (c *Payment) AddExtra(key string, value interface{}) {
 	c.Extra[key] = value
 }
 
-func NewPaymentFormManager(conn interface{}) *PaymentFormManager {
-	var item PaymentFormManager
+func NewPaymentManager(conn interface{}) *PaymentManager {
+	var item PaymentManager
 
 	if conn == nil {
 		item.Conn = NewConnection()
@@ -55,17 +55,17 @@ func NewPaymentFormManager(conn interface{}) *PaymentFormManager {
 	return &item
 }
 
-func (p *PaymentFormManager) Close() {
+func (p *PaymentManager) Close() {
 	if p.Conn != nil {
 		p.Conn.Close()
 	}
 }
 
-func (p *PaymentFormManager) SetIndex(index string) {
+func (p *PaymentManager) SetIndex(index string) {
 	p.Index = index
 }
 
-func (p *PaymentFormManager) Exec(query string, params ...interface{}) (sql.Result, error) {
+func (p *PaymentManager) Exec(query string, params ...interface{}) (sql.Result, error) {
 	if p.Conn != nil {
 		return p.Conn.Exec(query, params...)
 	} else {
@@ -73,7 +73,7 @@ func (p *PaymentFormManager) Exec(query string, params ...interface{}) (sql.Resu
 	}
 }
 
-func (p *PaymentFormManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
+func (p *PaymentManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
 	if p.Conn != nil {
 		return p.Conn.Query(query, params...)
 	} else {
@@ -81,10 +81,10 @@ func (p *PaymentFormManager) Query(query string, params ...interface{}) (*sql.Ro
 	}
 }
 
-func (p *PaymentFormManager) GetQeury() string {
+func (p *PaymentManager) GetQeury() string {
 	ret := ""
 
-	str := "select pf_id, pf_gym, pf_payment, pf_type, pf_cost, pf_date from payment_form_tb "
+	str := "select p_id, p_gym, p_order, p_membership, p_cost, p_date from payment_tb "
 
 	if p.Index == "" {
 		ret = str
@@ -97,10 +97,10 @@ func (p *PaymentFormManager) GetQeury() string {
 	return ret;
 }
 
-func (p *PaymentFormManager) GetQeurySelect() string {
+func (p *PaymentManager) GetQeurySelect() string {
 	ret := ""
 
-	str := "select count(*) from payment_form_tb "
+	str := "select count(*) from payment_tb "
 
 	if p.Index == "" {
 		ret = str
@@ -111,18 +111,18 @@ func (p *PaymentFormManager) GetQeurySelect() string {
 	return ret;
 }
 
-func (p *PaymentFormManager) Truncate() error {
+func (p *PaymentManager) Truncate() error {
 	if p.Conn == nil && p.Tx == nil {
 		return errors.New("Connection Error")
 	}
 
-	query := "truncate payment_form_tb "
+	query := "truncate payment_tb "
 	p.Exec(query)
 
 	return nil
 }
 
-func (p *PaymentFormManager) Insert(item *PaymentForm) error {
+func (p *PaymentManager) Insert(item *Payment) error {
 	if p.Conn == nil && p.Tx == nil {
 		return errors.New("Connection Error")
 	}
@@ -136,11 +136,11 @@ func (p *PaymentFormManager) Insert(item *PaymentForm) error {
 	var res sql.Result
 	var err error
 	if item.Id > 0 {
-		query = "insert into payment_form_tb (pf_id, pf_gym, pf_payment, pf_type, pf_cost, pf_date) values (?, ?, ?, ?, ?, ?)"
-		res, err = p.Exec(query , item.Id, item.Gym, item.Payment, item.Type, item.Cost, item.Date)
+		query = "insert into payment_tb (p_id, p_gym, p_order, p_membership, p_cost, p_date) values (?, ?, ?, ?, ?, ?)"
+		res, err = p.Exec(query , item.Id, item.Gym, item.Order, item.Membership, item.Cost, item.Date)
 	} else {
-		query = "insert into payment_form_tb (pf_gym, pf_payment, pf_type, pf_cost, pf_date) values (?, ?, ?, ?, ?)"
-		res, err = p.Exec(query , item.Gym, item.Payment, item.Type, item.Cost, item.Date)
+		query = "insert into payment_tb (p_gym, p_order, p_membership, p_cost, p_date) values (?, ?, ?, ?, ?)"
+		res, err = p.Exec(query , item.Gym, item.Order, item.Membership, item.Cost, item.Date)
 	}
 
 	if err == nil {
@@ -153,29 +153,29 @@ func (p *PaymentFormManager) Insert(item *PaymentForm) error {
 	return err
 }
 
-func (p *PaymentFormManager) Delete(id int64) error {
+func (p *PaymentManager) Delete(id int64) error {
 	if p.Conn == nil && p.Tx == nil {
 		return errors.New("Connection Error")
 	}
 
-	query := "delete from payment_form_tb where pf_id = ?"
+	query := "delete from payment_tb where p_id = ?"
 	_, err := p.Exec(query, id)
 
 	return err
 }
 
-func (p *PaymentFormManager) Update(item *PaymentForm) error {
+func (p *PaymentManager) Update(item *Payment) error {
 	if p.Conn == nil && p.Tx == nil {
 		return errors.New("Connection Error")
 	}
 
-	query := "update payment_form_tb set pf_gym = ?, pf_payment = ?, pf_type = ?, pf_cost = ?, pf_date = ? where pf_id = ?"
-	_, err := p.Exec(query, item.Gym, item.Payment, item.Type, item.Cost, item.Date, item.Id)
+	query := "update payment_tb set p_gym = ?, p_order = ?, p_membership = ?, p_cost = ?, p_date = ? where p_id = ?"
+	_, err := p.Exec(query, item.Gym, item.Order, item.Membership, item.Cost, item.Date, item.Id)
 
 	return err
 }
 
-func (p *PaymentFormManager) GetIdentity() int64 {
+func (p *PaymentManager) GetIdentity() int64 {
 	if p.Result == nil && p.Tx == nil {
 		return 0
 	}
@@ -189,18 +189,18 @@ func (p *PaymentFormManager) GetIdentity() int64 {
 	}
 }
 
-func (p *PaymentForm) InitExtra() {
+func (p *Payment) InitExtra() {
 	p.Extra = map[string]interface{}{
 
 	}
 }
 
-func (p *PaymentFormManager) ReadRow(rows *sql.Rows) *PaymentForm {
-	var item PaymentForm
+func (p *PaymentManager) ReadRow(rows *sql.Rows) *Payment {
+	var item Payment
 	var err error
 
 	if rows.Next() {
-		err = rows.Scan(&item.Id, &item.Gym, &item.Payment, &item.Type, &item.Cost, &item.Date)
+		err = rows.Scan(&item.Id, &item.Gym, &item.Order, &item.Membership, &item.Cost, &item.Date)
 	} else {
 		return nil
 	}
@@ -212,13 +212,13 @@ func (p *PaymentFormManager) ReadRow(rows *sql.Rows) *PaymentForm {
 	}
 }
 
-func (p *PaymentFormManager) ReadRows(rows *sql.Rows) *[]PaymentForm {
-	var items []PaymentForm
+func (p *PaymentManager) ReadRows(rows *sql.Rows) *[]Payment {
+	var items []Payment
 
 	for rows.Next() {
-		var item PaymentForm
+		var item Payment
 
-		err := rows.Scan(&item.Id, &item.Gym, &item.Payment, &item.Type, &item.Cost, &item.Date)
+		err := rows.Scan(&item.Id, &item.Gym, &item.Order, &item.Membership, &item.Cost, &item.Date)
 
 		if err != nil {
 			log.Printf("ReadRows error : %v\n", err)
@@ -232,12 +232,12 @@ func (p *PaymentFormManager) ReadRows(rows *sql.Rows) *[]PaymentForm {
 	return &items
 }
 
-func (p *PaymentFormManager) Get(id int64) *PaymentForm {
+func (p *PaymentManager) Get(id int64) *Payment {
 	if p.Conn == nil && p.Tx == nil {
 		return nil
 	}
 
-	query := p.GetQeury() + " and pf_id = ?"
+	query := p.GetQeury() + " and p_id = ?"
 
 	rows, err := p.Query(query, id)
 
@@ -251,7 +251,7 @@ func (p *PaymentFormManager) Get(id int64) *PaymentForm {
 	return p.ReadRow(rows)
 }
 
-func (p *PaymentFormManager) Count(args []interface{}) int {
+func (p *PaymentManager) Count(args []interface{}) int {
 	if p.Conn == nil && p.Tx == nil {
 		return 0
 	}
@@ -265,15 +265,15 @@ func (p *PaymentFormManager) Count(args []interface{}) int {
 			item := v
 
 			if item.Compare == "in" {
-				query += " and pf_id in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+				query += " and p_id in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
 			} else if item.Compare == "between" {
-				query += " and pf_" + item.Column + " between ? and ?"
+				query += " and p_" + item.Column + " between ? and ?"
 
 				s := item.Value.([2]string)
 				params = append(params, s[0])
 				params = append(params, s[1])
 			} else {
-				query += " and pf_" + item.Column + " " + item.Compare + " ?"
+				query += " and p_" + item.Column + " " + item.Compare + " ?"
 				if item.Compare == "like" {
 					params = append(params, "%" + item.Value.(string) + "%")
 				} else {
@@ -306,9 +306,9 @@ func (p *PaymentFormManager) Count(args []interface{}) int {
 	}
 }
 
-func (p *PaymentFormManager) Find(args []interface{}) *[]PaymentForm {
+func (p *PaymentManager) Find(args []interface{}) *[]Payment {
 	if p.Conn == nil && p.Tx == nil {
-		var items []PaymentForm
+		var items []Payment
 		return &items
 	}
 
@@ -350,15 +350,15 @@ func (p *PaymentFormManager) Find(args []interface{}) *[]PaymentForm {
 			item := v
 
 			if item.Compare == "in" {
-				query += " and pf_id in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+				query += " and p_id in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
 			} else if item.Compare == "between" {
-				query += " and pf_" + item.Column + " between ? and ?"
+				query += " and p_" + item.Column + " between ? and ?"
 
 				s := item.Value.([2]string)
 				params = append(params, s[0])
 				params = append(params, s[1])
 			} else {
-				query += " and pf_" + item.Column + " " + item.Compare + " ?"
+				query += " and p_" + item.Column + " " + item.Compare + " ?"
 				if item.Compare == "like" {
 					params = append(params, "%" + item.Value.(string) + "%")
 				} else {
@@ -372,9 +372,9 @@ func (p *PaymentFormManager) Find(args []interface{}) *[]PaymentForm {
 
 	if page > 0 && pagesize > 0 {
 		if orderby == "" {
-			orderby = "pf_id"
+			orderby = "p_id"
 		} else {
-			orderby = "pf_" + orderby
+			orderby = "p_" + orderby
 		}
 		query += " order by " + orderby
 		if config.Database == "mysql" {
@@ -388,9 +388,9 @@ func (p *PaymentFormManager) Find(args []interface{}) *[]PaymentForm {
 		}
 	} else {
 		if orderby == "" {
-			orderby = "pf_id"
+			orderby = "p_id"
 		} else {
-			orderby = "pf_" + orderby
+			orderby = "p_" + orderby
 		}
 		query += " order by " + orderby
 	}
@@ -399,7 +399,7 @@ func (p *PaymentFormManager) Find(args []interface{}) *[]PaymentForm {
 
 	if err != nil {
 		log.Printf("query error : %v, %v\n", err, query)
-		var items []PaymentForm
+		var items []Payment
 		return &items
 	}
 
@@ -408,7 +408,7 @@ func (p *PaymentFormManager) Find(args []interface{}) *[]PaymentForm {
 	return p.ReadRows(rows)
 }
 
-func (p *PaymentFormManager) GetByCost(loginid string, args ...interface{}) *PaymentForm {
+func (p *PaymentManager) GetByCost(loginid string, args ...interface{}) *Payment {
     if loginid != "" {
         args = append(args, Where{Column:"cost", Value:loginid, Compare:"="})        
     }
