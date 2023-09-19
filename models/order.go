@@ -14,27 +14,27 @@ import (
 )
 
 
-type Gym struct {
+type Order struct {
 	Id					int64 `json:"id"`
-	Name				string `json:"name"`
+	Membership			int64 `json:"membership"`
 	Date				string `json:"date"`
 
 	Extra				map[string]interface{} `json:"extra"`
 }
 
-type GymManager struct {
+type OrderManager struct {
 	Conn	*sql.DB
 	Tx		*sql.Tx
 	Result	*sql.Result
 	Index	string
 }
 
-func (c *Gym) AddExtra(key string, value interface{}) {
+func (c *Order) AddExtra(key string, value interface{}) {
 	c.Extra[key] = value
 }
 
-func NewGymManager(conn interface{}) *GymManager {
-	var item GymManager
+func NewOrderManager(conn interface{}) *OrderManager {
+	var item OrderManager
 
 	if conn == nil {
 		item.Conn = NewConnection()
@@ -52,17 +52,17 @@ func NewGymManager(conn interface{}) *GymManager {
 	return &item
 }
 
-func (p *GymManager) Close() {
+func (p *OrderManager) Close() {
 	if p.Conn != nil {
 		p.Conn.Close()
 	}
 }
 
-func (p *GymManager) SetIndex(index string) {
+func (p *OrderManager) SetIndex(index string) {
 	p.Index = index
 }
 
-func (p *GymManager) Exec(query string, params ...interface{}) (sql.Result, error) {
+func (p *OrderManager) Exec(query string, params ...interface{}) (sql.Result, error) {
 	if p.Conn != nil {
 		return p.Conn.Exec(query, params...)
 	} else {
@@ -70,7 +70,7 @@ func (p *GymManager) Exec(query string, params ...interface{}) (sql.Result, erro
 	}
 }
 
-func (p *GymManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
+func (p *OrderManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
 	if p.Conn != nil {
 		return p.Conn.Query(query, params...)
 	} else {
@@ -78,10 +78,10 @@ func (p *GymManager) Query(query string, params ...interface{}) (*sql.Rows, erro
 	}
 }
 
-func (p *GymManager) GetQeury() string {
+func (p *OrderManager) GetQeury() string {
 	ret := ""
 
-	str := "select g_id, g_name, g_date from gym_tb "
+	str := "select o_id, o_membership, o_date from order_tb "
 
 	if p.Index == "" {
 		ret = str
@@ -94,10 +94,10 @@ func (p *GymManager) GetQeury() string {
 	return ret;
 }
 
-func (p *GymManager) GetQeurySelect() string {
+func (p *OrderManager) GetQeurySelect() string {
 	ret := ""
 
-	str := "select count(*) from gym_tb "
+	str := "select count(*) from order_tb "
 
 	if p.Index == "" {
 		ret = str
@@ -108,18 +108,18 @@ func (p *GymManager) GetQeurySelect() string {
 	return ret;
 }
 
-func (p *GymManager) Truncate() error {
+func (p *OrderManager) Truncate() error {
 	if p.Conn == nil && p.Tx == nil {
 		return errors.New("Connection Error")
 	}
 
-	query := "truncate gym_tb "
+	query := "truncate order_tb "
 	p.Exec(query)
 
 	return nil
 }
 
-func (p *GymManager) Insert(item *Gym) error {
+func (p *OrderManager) Insert(item *Order) error {
 	if p.Conn == nil && p.Tx == nil {
 		return errors.New("Connection Error")
 	}
@@ -133,11 +133,11 @@ func (p *GymManager) Insert(item *Gym) error {
 	var res sql.Result
 	var err error
 	if item.Id > 0 {
-		query = "insert into gym_tb (g_id, g_name, g_date) values (?, ?, ?)"
-		res, err = p.Exec(query , item.Id, item.Name, item.Date)
+		query = "insert into order_tb (o_id, o_membership, o_date) values (?, ?, ?)"
+		res, err = p.Exec(query , item.Id, item.Membership, item.Date)
 	} else {
-		query = "insert into gym_tb (g_name, g_date) values (?, ?)"
-		res, err = p.Exec(query , item.Name, item.Date)
+		query = "insert into order_tb (o_membership, o_date) values (?, ?)"
+		res, err = p.Exec(query , item.Membership, item.Date)
 	}
 
 	if err == nil {
@@ -150,29 +150,29 @@ func (p *GymManager) Insert(item *Gym) error {
 	return err
 }
 
-func (p *GymManager) Delete(id int64) error {
+func (p *OrderManager) Delete(id int64) error {
 	if p.Conn == nil && p.Tx == nil {
 		return errors.New("Connection Error")
 	}
 
-	query := "delete from gym_tb where g_id = ?"
+	query := "delete from order_tb where o_id = ?"
 	_, err := p.Exec(query, id)
 
 	return err
 }
 
-func (p *GymManager) Update(item *Gym) error {
+func (p *OrderManager) Update(item *Order) error {
 	if p.Conn == nil && p.Tx == nil {
 		return errors.New("Connection Error")
 	}
 
-	query := "update gym_tb set g_name = ?, g_date = ? where g_id = ?"
-	_, err := p.Exec(query, item.Name, item.Date, item.Id)
+	query := "update order_tb set o_membership = ?, o_date = ? where o_id = ?"
+	_, err := p.Exec(query, item.Membership, item.Date, item.Id)
 
 	return err
 }
 
-func (p *GymManager) GetIdentity() int64 {
+func (p *OrderManager) GetIdentity() int64 {
 	if p.Result == nil && p.Tx == nil {
 		return 0
 	}
@@ -186,18 +186,18 @@ func (p *GymManager) GetIdentity() int64 {
 	}
 }
 
-func (p *Gym) InitExtra() {
+func (p *Order) InitExtra() {
 	p.Extra = map[string]interface{}{
 
 	}
 }
 
-func (p *GymManager) ReadRow(rows *sql.Rows) *Gym {
-	var item Gym
+func (p *OrderManager) ReadRow(rows *sql.Rows) *Order {
+	var item Order
 	var err error
 
 	if rows.Next() {
-		err = rows.Scan(&item.Id, &item.Name, &item.Date)
+		err = rows.Scan(&item.Id, &item.Membership, &item.Date)
 	} else {
 		return nil
 	}
@@ -209,13 +209,13 @@ func (p *GymManager) ReadRow(rows *sql.Rows) *Gym {
 	}
 }
 
-func (p *GymManager) ReadRows(rows *sql.Rows) *[]Gym {
-	var items []Gym
+func (p *OrderManager) ReadRows(rows *sql.Rows) *[]Order {
+	var items []Order
 
 	for rows.Next() {
-		var item Gym
+		var item Order
 
-		err := rows.Scan(&item.Id, &item.Name, &item.Date)
+		err := rows.Scan(&item.Id, &item.Membership, &item.Date)
 
 		if err != nil {
 			log.Printf("ReadRows error : %v\n", err)
@@ -229,12 +229,12 @@ func (p *GymManager) ReadRows(rows *sql.Rows) *[]Gym {
 	return &items
 }
 
-func (p *GymManager) Get(id int64) *Gym {
+func (p *OrderManager) Get(id int64) *Order {
 	if p.Conn == nil && p.Tx == nil {
 		return nil
 	}
 
-	query := p.GetQeury() + " and g_id = ?"
+	query := p.GetQeury() + " and o_id = ?"
 
 	rows, err := p.Query(query, id)
 
@@ -248,7 +248,7 @@ func (p *GymManager) Get(id int64) *Gym {
 	return p.ReadRow(rows)
 }
 
-func (p *GymManager) Count(args []interface{}) int {
+func (p *OrderManager) Count(args []interface{}) int {
 	if p.Conn == nil && p.Tx == nil {
 		return 0
 	}
@@ -262,15 +262,15 @@ func (p *GymManager) Count(args []interface{}) int {
 			item := v
 
 			if item.Compare == "in" {
-				query += " and g_id in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+				query += " and o_id in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
 			} else if item.Compare == "between" {
-				query += " and g_" + item.Column + " between ? and ?"
+				query += " and o_" + item.Column + " between ? and ?"
 
 				s := item.Value.([2]string)
 				params = append(params, s[0])
 				params = append(params, s[1])
 			} else {
-				query += " and g_" + item.Column + " " + item.Compare + " ?"
+				query += " and o_" + item.Column + " " + item.Compare + " ?"
 				if item.Compare == "like" {
 					params = append(params, "%" + item.Value.(string) + "%")
 				} else {
@@ -303,9 +303,9 @@ func (p *GymManager) Count(args []interface{}) int {
 	}
 }
 
-func (p *GymManager) Find(args []interface{}) *[]Gym {
+func (p *OrderManager) Find(args []interface{}) *[]Order {
 	if p.Conn == nil && p.Tx == nil {
-		var items []Gym
+		var items []Order
 		return &items
 	}
 
@@ -347,15 +347,15 @@ func (p *GymManager) Find(args []interface{}) *[]Gym {
 			item := v
 
 			if item.Compare == "in" {
-				query += " and g_id in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+				query += " and o_id in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
 			} else if item.Compare == "between" {
-				query += " and g_" + item.Column + " between ? and ?"
+				query += " and o_" + item.Column + " between ? and ?"
 
 				s := item.Value.([2]string)
 				params = append(params, s[0])
 				params = append(params, s[1])
 			} else {
-				query += " and g_" + item.Column + " " + item.Compare + " ?"
+				query += " and o_" + item.Column + " " + item.Compare + " ?"
 				if item.Compare == "like" {
 					params = append(params, "%" + item.Value.(string) + "%")
 				} else {
@@ -369,9 +369,9 @@ func (p *GymManager) Find(args []interface{}) *[]Gym {
 
 	if page > 0 && pagesize > 0 {
 		if orderby == "" {
-			orderby = "g_id"
+			orderby = "o_id"
 		} else {
-			orderby = "g_" + orderby
+			orderby = "o_" + orderby
 		}
 		query += " order by " + orderby
 		if config.Database == "mysql" {
@@ -385,9 +385,9 @@ func (p *GymManager) Find(args []interface{}) *[]Gym {
 		}
 	} else {
 		if orderby == "" {
-			orderby = "g_id"
+			orderby = "o_id"
 		} else {
-			orderby = "g_" + orderby
+			orderby = "o_" + orderby
 		}
 		query += " order by " + orderby
 	}
@@ -396,7 +396,7 @@ func (p *GymManager) Find(args []interface{}) *[]Gym {
 
 	if err != nil {
 		log.Printf("query error : %v, %v\n", err, query)
-		var items []Gym
+		var items []Order
 		return &items
 	}
 
@@ -405,9 +405,9 @@ func (p *GymManager) Find(args []interface{}) *[]Gym {
 	return p.ReadRows(rows)
 }
 
-func (p *GymManager) GetByName(loginid string, args ...interface{}) *Gym {
+func (p *OrderManager) GetByMembership(loginid string, args ...interface{}) *Order {
     if loginid != "" {
-        args = append(args, Where{Column:"name", Value:loginid, Compare:"="})        
+        args = append(args, Where{Column:"membership", Value:loginid, Compare:"="})        
     }
     
     items := p.Find(args)

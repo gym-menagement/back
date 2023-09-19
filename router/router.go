@@ -392,7 +392,6 @@ func SetRouter(app *fiber.App) {
 			return ctx.JSON(controller.Result)
 		})
 
-
 		apiGroup.Get("/membership/:id", func(ctx *fiber.Ctx) error {
 			id_, _ := strconv.ParseInt(ctx.Params("id"), 10, 64)
 			var controller rest.MembershipController
@@ -444,6 +443,67 @@ func SetRouter(app *fiber.App) {
 			item_ := &models.Membership{}
 			ctx.BodyParser(item_)
 			var controller rest.MembershipController
+			controller.Init(ctx)
+			if item_ != nil {
+				controller.Delete(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return ctx.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/order/:id", func(ctx *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(ctx.Params("id"), 10, 64)
+			var controller rest.OrderController
+			controller.Init(ctx)
+			controller.Read(id_)
+			controller.Close()
+			return ctx.JSON(controller.Result)
+		})
+
+		apiGroup.Get("/order", func(ctx *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(ctx.Query("page"))
+			pagesize_, _ := strconv.Atoi(ctx.Query("pagesize"))
+			var controller rest.OrderController
+			controller.Init(ctx)
+			controller.Index(page_, pagesize_)
+			controller.Close()
+			return ctx.JSON(controller.Result)
+		})
+
+		apiGroup.Post("/order", func(ctx *fiber.Ctx) error {
+			item_ := &models.Order{}
+			ctx.BodyParser(item_)
+			var controller rest.OrderController
+			controller.Init(ctx)
+			if item_ != nil {
+				controller.Insert(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return ctx.JSON(controller.Result)
+		})
+
+		apiGroup.Put("/order", func(ctx *fiber.Ctx) error {
+			item_ := &models.Order{}
+			ctx.BodyParser(item_)
+			var controller rest.OrderController
+			controller.Init(ctx)
+			if item_ != nil {
+				controller.Update(item_)
+			} else {
+			    controller.Result["code"] = "error"
+			}
+			controller.Close()
+			return ctx.JSON(controller.Result)
+		})
+
+		apiGroup.Delete("/order", func(ctx *fiber.Ctx) error {
+			item_ := &models.Order{}
+			ctx.BodyParser(item_)
+			var controller rest.OrderController
 			controller.Init(ctx)
 			if item_ != nil {
 				controller.Delete(item_)
