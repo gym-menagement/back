@@ -201,50 +201,11 @@
 // 			log.Println("Jwt header not found")
 // 		}
 
-// 		return fiber.Map{
-// 			"code":"error",
-// 			"message":"not auth",
-// 		}
-// }
-
-// func JwtMe(token string) fiber.Map {
-// 		values := token
-// 		if values != "" {
-// 			str := values
-
-// 			if len(str) > 7 && str[:7] == "Bearer " {
-// 				token = str[7:]
-
-// 				claims := AuthTokenClaims{}
-// 				key := func(token *jwt.Token) (interface{}, error) {
-// 					if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-// 						return nil, errors.New("Unexpected Signing Method")
-// 					}
-// 					return []byte(config.SecretCode), nil
-// 				}
-
-// 				_, err := jwt.ParseWithClaims(token, &claims, key)
-// 				if err == nil {
-// 					return fiber.Map{
-// 						"code":    "ok",
-// 						"id": claims.User.Name,
-// 						"username": claims.User.Loginid,
-// 						"imageUrl": "/logo/codefactory_logo.png",
-// 					}
-// 				}
-// 			} else {
-// 				log.Println("Jwt header is broken")
-// 			}
-// 		} else {
-// 			log.Println("Jwt header not found")
-// 		}
-
-// 		return fiber.Map{
-// 			"code":"error",
-// 			"message":"not auth",
-// 		}
-// }
-
+//			return fiber.Map{
+//				"code":"error",
+//				"message":"not auth",
+//			}
+//	}
 package router
 
 import (
@@ -343,4 +304,34 @@ func JwtAuth(loginid string, passwd string) fiber.Map {
 		"accessToken": signedAuthToken,
 		"user": user,
 	}
+}
+
+func JwtMe(token string) int64 {
+		values := token
+		if values != "" {
+			str := values
+
+			if len(str) > 7 && str[:7] == "Bearer " {
+				token = str[7:]
+
+				claims := AuthTokenClaims{}
+				key := func(token *jwt.Token) (interface{}, error) {
+					if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+						return nil, errors.New("Unexpected Signing Method")
+					}
+					return []byte(config.SecretCode), nil
+				}
+
+				_, err := jwt.ParseWithClaims(token, &claims, key)
+				if err == nil {
+					return claims.User.Id;
+				}
+			} else {
+				log.Println("Jwt header is broken")
+			}
+		} else {
+			log.Println("Jwt header not found")
+		}
+
+		return 0;
 }

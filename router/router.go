@@ -21,10 +21,15 @@ func SetRouter(app *fiber.App) {
 	apiGroup := app.Group("/api")
 	apiGroup.Use(JwtAuthRequired())
 	{
-		// apiGroup.Get("/me", func(ctx *fiber.Ctx) error {
-		// 	token := ctx.Get("Authorization")
-		// 	return ctx.JSON(JwtMe(token))
-		// })
+		apiGroup.Get("/user/me", func(ctx *fiber.Ctx) error {
+			token := ctx.Get("Authorization")
+			id := JwtMe(token)
+			var controller rest.UserController
+			controller.Init(ctx)
+			controller.Read(id)
+			controller.Close()
+			return ctx.JSON(controller.Result)
+		})
 
 		apiGroup.Get("/user/:id", func(ctx *fiber.Ctx) error {
 			id_, _ := strconv.ParseInt(ctx.Params("id"), 10, 64)
