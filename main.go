@@ -27,7 +27,7 @@ func main() {
 	app.Use(cors.New(cors.Config{
 		AllowHeaders: "Origin, Content-Type, Authorization, Accept",
 		AllowCredentials: true,
-		AllowOrigins: "http://141.164.56.77:3000, http://localhost:3000",
+		AllowOrigins: "http://141.164.56.77:3001, http://localhost:3000",
 		AllowMethods: strings.Join([]string{
 			fiber.MethodGet,
 			fiber.MethodPost,
@@ -40,5 +40,5 @@ func main() {
 
 	router.SetRouter(app)
 
-	log.Fatal(app.Listen(":9003"))
+	log.Fatal(app.Listen(":9004"))
 }
