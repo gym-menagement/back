@@ -330,7 +330,7 @@ func JwtMe(token string) int64 {
 				log.Println("Jwt header is broken")
 			}
 		} else {
-			log.Println("Jwt header not found")
+			log.Println("Jwt header not found!!!!")
 		}
 
 		return 0;

@@ -84,7 +84,7 @@ func (p *PaymentFormManager) Query(query string, params ...interface{}) (*sql.Ro
 func (p *PaymentFormManager) GetQeury() string {
 	ret := ""
 
-	str := "select pf_id, pf_gym, pf_payment, pf_type, pf_cost, pf_date from payment_form_tb "
+	str := "select pf_id, pf_gym, pf_payment, pf_type, pf_cost, pf_date from paymentform_tb "
 
 	if p.Index == "" {
 		ret = str
@@ -100,7 +100,7 @@ func (p *PaymentFormManager) GetQeury() string {
 func (p *PaymentFormManager) GetQeurySelect() string {
 	ret := ""
 
-	str := "select count(*) from payment_form_tb "
+	str := "select count(*) from paymentform_tb "
 
 	if p.Index == "" {
 		ret = str
@@ -116,7 +116,7 @@ func (p *PaymentFormManager) Truncate() error {
 		return errors.New("Connection Error")
 	}
 
-	query := "truncate payment_form_tb "
+	query := "truncate paymentform_tb "
 	p.Exec(query)
 
 	return nil
@@ -136,10 +136,10 @@ func (p *PaymentFormManager) Insert(item *PaymentForm) error {
 	var res sql.Result
 	var err error
 	if item.Id > 0 {
-		query = "insert into payment_form_tb (pf_id, pf_gym, pf_payment, pf_type, pf_cost, pf_date) values (?, ?, ?, ?, ?, ?)"
+		query = "insert into paymentform_tb (pf_id, pf_gym, pf_payment, pf_type, pf_cost, pf_date) values (?, ?, ?, ?, ?, ?)"
 		res, err = p.Exec(query , item.Id, item.Gym, item.Payment, item.Type, item.Cost, item.Date)
 	} else {
-		query = "insert into payment_form_tb (pf_gym, pf_payment, pf_type, pf_cost, pf_date) values (?, ?, ?, ?, ?)"
+		query = "insert into paymentform_tb (pf_gym, pf_payment, pf_type, pf_cost, pf_date) values (?, ?, ?, ?, ?)"
 		res, err = p.Exec(query , item.Gym, item.Payment, item.Type, item.Cost, item.Date)
 	}
 
@@ -158,7 +158,7 @@ func (p *PaymentFormManager) Delete(id int64) error {
 		return errors.New("Connection Error")
 	}
 
-	query := "delete from payment_form_tb where pf_id = ?"
+	query := "delete from paymentform_tb where pf_id = ?"
 	_, err := p.Exec(query, id)
 
 	return err
@@ -169,7 +169,7 @@ func (p *PaymentFormManager) Update(item *PaymentForm) error {
 		return errors.New("Connection Error")
 	}
 
-	query := "update payment_form_tb set pf_gym = ?, pf_payment = ?, pf_type = ?, pf_cost = ?, pf_date = ? where pf_id = ?"
+	query := "update paymentform_tb set pf_gym = ?, pf_payment = ?, pf_type = ?, pf_cost = ?, pf_date = ? where pf_id = ?"
 	_, err := p.Exec(query, item.Gym, item.Payment, item.Type, item.Cost, item.Date, item.Id)
 
 	return err

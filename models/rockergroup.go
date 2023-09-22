@@ -14,34 +14,28 @@ import (
 )
 
 
-type UseHelth struct {
+type RockerGroup struct {
 	Id					int64 `json:"id"`
-	Order				int64 `json:"order"`
-	Helth				int64 `json:"helth"`
-	User				int64 `json:"user"`
-	Rocker				int64 `json:"rocker"`
-	Term				int64 `json:"term"`
-	Discount			int64 `json:"discount"`
-	Startday			string `json:"startday"`
-	Endday				string `'json:"endday"`
+	Gym					int64 `json:"gym"`
+	Name				string `json:"name"`
 	Date				string `json:"date"`
 
 	Extra				map[string]interface{} `json:"extra"`
 }
 
-type UseHelthManager struct {
+type RockerGroupManager struct {
 	Conn	*sql.DB
 	Tx		*sql.Tx
 	Result	*sql.Result
 	Index	string
 }
 
-func (c *UseHelth) AddExtra(key string, value interface{}) {
+func (c *RockerGroup) AddExtra(key string, value interface{}) {
 	c.Extra[key] = value
 }
 
-func NewUseHelthManager(conn interface{}) *UseHelthManager {
-	var item UseHelthManager
+func NewRockerGroupManager(conn interface{}) *RockerGroupManager {
+	var item RockerGroupManager
 
 	if conn == nil {
 		item.Conn = NewConnection()
@@ -59,17 +53,17 @@ func NewUseHelthManager(conn interface{}) *UseHelthManager {
 	return &item
 }
 
-func (p *UseHelthManager) Close() {
+func (p *RockerGroupManager) Close() {
 	if p.Conn != nil {
 		p.Conn.Close()
 	}
 }
 
-func (p *UseHelthManager) SetIndex(index string) {
+func (p *RockerGroupManager) SetIndex(index string) {
 	p.Index = index
 }
 
-func (p *UseHelthManager) Exec(query string, params ...interface{}) (sql.Result, error) {
+func (p *RockerGroupManager) Exec(query string, params ...interface{}) (sql.Result, error) {
 	if p.Conn != nil {
 		return p.Conn.Exec(query, params...)
 	} else {
@@ -77,7 +71,7 @@ func (p *UseHelthManager) Exec(query string, params ...interface{}) (sql.Result,
 	}
 }
 
-func (p *UseHelthManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
+func (p *RockerGroupManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
 	if p.Conn != nil {
 		return p.Conn.Query(query, params...)
 	} else {
@@ -85,10 +79,10 @@ func (p *UseHelthManager) Query(query string, params ...interface{}) (*sql.Rows,
 	}
 }
 
-func (p *UseHelthManager) GetQeury() string {
+func (p *RockerGroupManager) GetQeury() string {
 	ret := ""
 
-	str := "select uh_id, uh_order, uh_helth, uh_user, uh_rocker, uh_term, uh_discount, uh_startday, uh_endday, uh_date from use_helth_tb "
+	str := "select rg_id, rg_gym, rg_name, rg_date from rockergroup_tb "
 
 	if p.Index == "" {
 		ret = str
@@ -101,10 +95,10 @@ func (p *UseHelthManager) GetQeury() string {
 	return ret;
 }
 
-func (p *UseHelthManager) GetQeurySelect() string {
+func (p *RockerGroupManager) GetQeurySelect() string {
 	ret := ""
 
-	str := "select count(*) from use_helth_tb "
+	str := "select count(*) from rockergroup_tb "
 
 	if p.Index == "" {
 		ret = str
@@ -115,18 +109,18 @@ func (p *UseHelthManager) GetQeurySelect() string {
 	return ret;
 }
 
-func (p *UseHelthManager) Truncate() error {
+func (p *RockerGroupManager) Truncate() error {
 	if p.Conn == nil && p.Tx == nil {
 		return errors.New("Connection Error")
 	}
 
-	query := "truncate use_helth_tb "
+	query := "truncate rockergroup_tb "
 	p.Exec(query)
 
 	return nil
 }
 
-func (p *UseHelthManager) Insert(item *UseHelth) error {
+func (p *RockerGroupManager) Insert(item *RockerGroup) error {
 	if p.Conn == nil && p.Tx == nil {
 		return errors.New("Connection Error")
 	}
@@ -140,11 +134,11 @@ func (p *UseHelthManager) Insert(item *UseHelth) error {
 	var res sql.Result
 	var err error
 	if item.Id > 0 {
-		query = "insert into use_helth_tb (uh_id, uh_order, uh_helth, uh_user, uh_rocker, uh_term, uh_discount, uh_startday, uh_endday, uh_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-		res, err = p.Exec(query , item.Id, item.Order, item.Helth, item.User, item.Rocker, item.Term, item.Discount, item.Startday, item.Endday, item.Date)
+		query = "insert into rockergroup_tb (rg_id, rg_gym, rg_name, rg_date) values (?, ?, ?, ?)"
+		res, err = p.Exec(query , item.Id, item.Gym, item.Name, item.Date)
 	} else {
-		query = "insert into use_helth_tb (uh_order, uh_helth, uh_user, uh_rocker, uh_term, uh_discount, uh_startday, uh_endday, uh_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?)"
-		res, err = p.Exec(query , item.Order, item.Helth, item.User, item.Rocker, item.Term, item.Discount, item.Startday, item.Endday, item.Date)
+		query = "insert into rockergroup_tb (rg_gym, rg_name, rg_date) values (?, ?, ?)"
+		res, err = p.Exec(query , item.Gym, item.Name, item.Date)
 	}
 
 	if err == nil {
@@ -157,29 +151,29 @@ func (p *UseHelthManager) Insert(item *UseHelth) error {
 	return err
 }
 
-func (p *UseHelthManager) Delete(id int64) error {
+func (p *RockerGroupManager) Delete(id int64) error {
 	if p.Conn == nil && p.Tx == nil {
 		return errors.New("Connection Error")
 	}
 
-	query := "delete from use_helth_tb where uh_id = ?"
+	query := "delete from rockergroup_tb where rg_id = ?"
 	_, err := p.Exec(query, id)
 
 	return err
 }
 
-func (p *UseHelthManager) Update(item *UseHelth) error {
+func (p *RockerGroupManager) Update(item *RockerGroup) error {
 	if p.Conn == nil && p.Tx == nil {
 		return errors.New("Connection Error")
 	}
 
-	query := "update use_helth_tb set uh_order = ?, uh_helth = ?, uh_user = ?, uh_rocker = ?, uh_term = ?, uh_discount = ?, uh_startday = ?, uh_endday = ?, uh_date = ? where uh_id = ?"
-	_, err := p.Exec(query, item.Order, item.Helth, item.User, item.Rocker, item.Term, item.Discount, item.Startday, item.Endday, item.Date, item.Id)
+	query := "update rockergroup_tb set rg_gym = ?, rg_name = ?, rg_date = ? where rg_id = ?"
+	_, err := p.Exec(query, item.Gym, item.Name, item.Date, item.Id)
 
 	return err
 }
 
-func (p *UseHelthManager) GetIdentity() int64 {
+func (p *RockerGroupManager) GetIdentity() int64 {
 	if p.Result == nil && p.Tx == nil {
 		return 0
 	}
@@ -193,18 +187,18 @@ func (p *UseHelthManager) GetIdentity() int64 {
 	}
 }
 
-func (p *UseHelth) InitExtra() {
+func (p *RockerGroup) InitExtra() {
 	p.Extra = map[string]interface{}{
 
 	}
 }
 
-func (p *UseHelthManager) ReadRow(rows *sql.Rows) *UseHelth {
-	var item UseHelth
+func (p *RockerGroupManager) ReadRow(rows *sql.Rows) *RockerGroup {
+	var item RockerGroup
 	var err error
 
 	if rows.Next() {
-		err = rows.Scan(&item.Id, &item.Order, &item.Helth, &item.User, &item.Rocker, &item.Term, &item.Discount, &item.Startday, &item.Endday, &item.Date)
+		err = rows.Scan(&item.Id, &item.Gym, &item.Name, &item.Date)
 	} else {
 		return nil
 	}
@@ -216,13 +210,13 @@ func (p *UseHelthManager) ReadRow(rows *sql.Rows) *UseHelth {
 	}
 }
 
-func (p *UseHelthManager) ReadRows(rows *sql.Rows) *[]UseHelth {
-	var items []UseHelth
+func (p *RockerGroupManager) ReadRows(rows *sql.Rows) *[]RockerGroup {
+	var items []RockerGroup
 
 	for rows.Next() {
-		var item UseHelth
+		var item RockerGroup
 
-		err := rows.Scan(&item.Id, &item.Order, &item.Helth, &item.User, &item.Rocker, &item.Term, &item.Discount, &item.Startday, &item.Endday, &item.Date)
+		err := rows.Scan(&item.Id, &item.Gym, &item.Name, &item.Date)
 
 		if err != nil {
 			log.Printf("ReadRows error : %v\n", err)
@@ -236,12 +230,12 @@ func (p *UseHelthManager) ReadRows(rows *sql.Rows) *[]UseHelth {
 	return &items
 }
 
-func (p *UseHelthManager) Get(id int64) *UseHelth {
+func (p *RockerGroupManager) Get(id int64) *RockerGroup {
 	if p.Conn == nil && p.Tx == nil {
 		return nil
 	}
 
-	query := p.GetQeury() + " and uh_id = ?"
+	query := p.GetQeury() + " and rg_id = ?"
 
 	rows, err := p.Query(query, id)
 
@@ -255,7 +249,7 @@ func (p *UseHelthManager) Get(id int64) *UseHelth {
 	return p.ReadRow(rows)
 }
 
-func (p *UseHelthManager) Count(args []interface{}) int {
+func (p *RockerGroupManager) Count(args []interface{}) int {
 	if p.Conn == nil && p.Tx == nil {
 		return 0
 	}
@@ -269,15 +263,15 @@ func (p *UseHelthManager) Count(args []interface{}) int {
 			item := v
 
 			if item.Compare == "in" {
-				query += " and uh_id in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+				query += " and rg_id in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
 			} else if item.Compare == "between" {
-				query += " and uh_" + item.Column + " between ? and ?"
+				query += " and rg_" + item.Column + " between ? and ?"
 
 				s := item.Value.([2]string)
 				params = append(params, s[0])
 				params = append(params, s[1])
 			} else {
-				query += " and uh_" + item.Column + " " + item.Compare + " ?"
+				query += " and rg_" + item.Column + " " + item.Compare + " ?"
 				if item.Compare == "like" {
 					params = append(params, "%" + item.Value.(string) + "%")
 				} else {
@@ -310,9 +304,9 @@ func (p *UseHelthManager) Count(args []interface{}) int {
 	}
 }
 
-func (p *UseHelthManager) Find(args []interface{}) *[]UseHelth {
+func (p *RockerGroupManager) Find(args []interface{}) *[]RockerGroup {
 	if p.Conn == nil && p.Tx == nil {
-		var items []UseHelth
+		var items []RockerGroup
 		return &items
 	}
 
@@ -354,15 +348,15 @@ func (p *UseHelthManager) Find(args []interface{}) *[]UseHelth {
 			item := v
 
 			if item.Compare == "in" {
-				query += " and uh_id in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+				query += " and rg_id in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
 			} else if item.Compare == "between" {
-				query += " and uh_" + item.Column + " between ? and ?"
+				query += " and rg_" + item.Column + " between ? and ?"
 
 				s := item.Value.([2]string)
 				params = append(params, s[0])
 				params = append(params, s[1])
 			} else {
-				query += " and uh_" + item.Column + " " + item.Compare + " ?"
+				query += " and rg_" + item.Column + " " + item.Compare + " ?"
 				if item.Compare == "like" {
 					params = append(params, "%" + item.Value.(string) + "%")
 				} else {
@@ -376,9 +370,9 @@ func (p *UseHelthManager) Find(args []interface{}) *[]UseHelth {
 
 	if page > 0 && pagesize > 0 {
 		if orderby == "" {
-			orderby = "uh_id"
+			orderby = "rg_id"
 		} else {
-			orderby = "uh_" + orderby
+			orderby = "rg_" + orderby
 		}
 		query += " order by " + orderby
 		if config.Database == "mysql" {
@@ -392,9 +386,9 @@ func (p *UseHelthManager) Find(args []interface{}) *[]UseHelth {
 		}
 	} else {
 		if orderby == "" {
-			orderby = "uh_id"
+			orderby = "rg_id"
 		} else {
-			orderby = "uh_" + orderby
+			orderby = "rg_" + orderby
 		}
 		query += " order by " + orderby
 	}
@@ -403,7 +397,7 @@ func (p *UseHelthManager) Find(args []interface{}) *[]UseHelth {
 
 	if err != nil {
 		log.Printf("query error : %v, %v\n", err, query)
-		var items []UseHelth
+		var items []RockerGroup
 		return &items
 	}
 
@@ -412,7 +406,7 @@ func (p *UseHelthManager) Find(args []interface{}) *[]UseHelth {
 	return p.ReadRows(rows)
 }
 
-func (p *UseHelthManager) GetByName(loginid string, args ...interface{}) *UseHelth {
+func (p *RockerGroupManager) GetByName(loginid string, args ...interface{}) *RockerGroup {
     if loginid != "" {
         args = append(args, Where{Column:"name", Value:loginid, Compare:"="})        
     }

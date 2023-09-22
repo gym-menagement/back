@@ -14,7 +14,7 @@ import (
 )
 
 
-type RockerGroup struct {
+type PaymentType struct {
 	Id					int64 `json:"id"`
 	Gym					int64 `json:"gym"`
 	Name				string `json:"name"`
@@ -23,19 +23,19 @@ type RockerGroup struct {
 	Extra				map[string]interface{} `json:"extra"`
 }
 
-type RockerGroupManager struct {
+type PaymentTypeManager struct {
 	Conn	*sql.DB
 	Tx		*sql.Tx
 	Result	*sql.Result
 	Index	string
 }
 
-func (c *RockerGroup) AddExtra(key string, value interface{}) {
+func (c *PaymentType) AddExtra(key string, value interface{}) {
 	c.Extra[key] = value
 }
 
-func NewRockerGroupManager(conn interface{}) *RockerGroupManager {
-	var item RockerGroupManager
+func NewPaymentTypeManager(conn interface{}) *PaymentTypeManager {
+	var item PaymentTypeManager
 
 	if conn == nil {
 		item.Conn = NewConnection()
@@ -53,17 +53,17 @@ func NewRockerGroupManager(conn interface{}) *RockerGroupManager {
 	return &item
 }
 
-func (p *RockerGroupManager) Close() {
+func (p *PaymentTypeManager) Close() {
 	if p.Conn != nil {
 		p.Conn.Close()
 	}
 }
 
-func (p *RockerGroupManager) SetIndex(index string) {
+func (p *PaymentTypeManager) SetIndex(index string) {
 	p.Index = index
 }
 
-func (p *RockerGroupManager) Exec(query string, params ...interface{}) (sql.Result, error) {
+func (p *PaymentTypeManager) Exec(query string, params ...interface{}) (sql.Result, error) {
 	if p.Conn != nil {
 		return p.Conn.Exec(query, params...)
 	} else {
@@ -71,7 +71,7 @@ func (p *RockerGroupManager) Exec(query string, params ...interface{}) (sql.Resu
 	}
 }
 
-func (p *RockerGroupManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
+func (p *PaymentTypeManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
 	if p.Conn != nil {
 		return p.Conn.Query(query, params...)
 	} else {
@@ -79,10 +79,10 @@ func (p *RockerGroupManager) Query(query string, params ...interface{}) (*sql.Ro
 	}
 }
 
-func (p *RockerGroupManager) GetQeury() string {
+func (p *PaymentTypeManager) GetQeury() string {
 	ret := ""
 
-	str := "select rg_id, rg_gym, rg_name, rg_date from rocker_group_tb "
+	str := "select pt_id, pt_gym, pt_name, pt_date from paymenttype_tb "
 
 	if p.Index == "" {
 		ret = str
@@ -95,10 +95,10 @@ func (p *RockerGroupManager) GetQeury() string {
 	return ret;
 }
 
-func (p *RockerGroupManager) GetQeurySelect() string {
+func (p *PaymentTypeManager) GetQeurySelect() string {
 	ret := ""
 
-	str := "select count(*) from rocker_group_tb "
+	str := "select count(*) from payment_type_tb "
 
 	if p.Index == "" {
 		ret = str
@@ -109,18 +109,18 @@ func (p *RockerGroupManager) GetQeurySelect() string {
 	return ret;
 }
 
-func (p *RockerGroupManager) Truncate() error {
+func (p *PaymentTypeManager) Truncate() error {
 	if p.Conn == nil && p.Tx == nil {
 		return errors.New("Connection Error")
 	}
 
-	query := "truncate rocker_group_tb "
+	query := "truncate payment_type_tb "
 	p.Exec(query)
 
 	return nil
 }
 
-func (p *RockerGroupManager) Insert(item *RockerGroup) error {
+func (p *PaymentTypeManager) Insert(item *PaymentType) error {
 	if p.Conn == nil && p.Tx == nil {
 		return errors.New("Connection Error")
 	}
@@ -134,10 +134,10 @@ func (p *RockerGroupManager) Insert(item *RockerGroup) error {
 	var res sql.Result
 	var err error
 	if item.Id > 0 {
-		query = "insert into rocker_group_tb (rg_id, rg_gym, rg_name, rg_date) values (?, ?, ?, ?)"
+		query = "insert into payment_type_tb (pt_id, pt_gym, pt_name, pt_date) values (?, ?, ?, ?)"
 		res, err = p.Exec(query , item.Id, item.Gym, item.Name, item.Date)
 	} else {
-		query = "insert into rocker_group_tb (rg_gym, rg_name, rg_date) values (?, ?, ?)"
+		query = "insert into payment_type_tb (pt_gym, pt_name, pt_date) values (?, ?, ?)"
 		res, err = p.Exec(query , item.Gym, item.Name, item.Date)
 	}
 
@@ -151,29 +151,29 @@ func (p *RockerGroupManager) Insert(item *RockerGroup) error {
 	return err
 }
 
-func (p *RockerGroupManager) Delete(id int64) error {
+func (p *PaymentTypeManager) Delete(id int64) error {
 	if p.Conn == nil && p.Tx == nil {
 		return errors.New("Connection Error")
 	}
 
-	query := "delete from rocker_group_tb where rg_id = ?"
+	query := "delete from payment_type_tb where pt_id = ?"
 	_, err := p.Exec(query, id)
 
 	return err
 }
 
-func (p *RockerGroupManager) Update(item *RockerGroup) error {
+func (p *PaymentTypeManager) Update(item *PaymentType) error {
 	if p.Conn == nil && p.Tx == nil {
 		return errors.New("Connection Error")
 	}
 
-	query := "update rocker_group_tb set rg_gym = ?, rg_name = ?, rg_date = ? where rg_id = ?"
+	query := "update payment_type_tb set pt_gym = ?, pt_name = ?, pt_date = ? where pt_id = ?"
 	_, err := p.Exec(query, item.Gym, item.Name, item.Date, item.Id)
 
 	return err
 }
 
-func (p *RockerGroupManager) GetIdentity() int64 {
+func (p *PaymentTypeManager) GetIdentity() int64 {
 	if p.Result == nil && p.Tx == nil {
 		return 0
 	}
@@ -187,14 +187,14 @@ func (p *RockerGroupManager) GetIdentity() int64 {
 	}
 }
 
-func (p *RockerGroup) InitExtra() {
+func (p *PaymentType) InitExtra() {
 	p.Extra = map[string]interface{}{
 
 	}
 }
 
-func (p *RockerGroupManager) ReadRow(rows *sql.Rows) *RockerGroup {
-	var item RockerGroup
+func (p *PaymentTypeManager) ReadRow(rows *sql.Rows) *PaymentType {
+	var item PaymentType
 	var err error
 
 	if rows.Next() {
@@ -210,11 +210,11 @@ func (p *RockerGroupManager) ReadRow(rows *sql.Rows) *RockerGroup {
 	}
 }
 
-func (p *RockerGroupManager) ReadRows(rows *sql.Rows) *[]RockerGroup {
-	var items []RockerGroup
+func (p *PaymentTypeManager) ReadRows(rows *sql.Rows) *[]PaymentType {
+	var items []PaymentType
 
 	for rows.Next() {
-		var item RockerGroup
+		var item PaymentType
 
 		err := rows.Scan(&item.Id, &item.Gym, &item.Name, &item.Date)
 
@@ -230,12 +230,12 @@ func (p *RockerGroupManager) ReadRows(rows *sql.Rows) *[]RockerGroup {
 	return &items
 }
 
-func (p *RockerGroupManager) Get(id int64) *RockerGroup {
+func (p *PaymentTypeManager) Get(id int64) *PaymentType {
 	if p.Conn == nil && p.Tx == nil {
 		return nil
 	}
 
-	query := p.GetQeury() + " and rg_id = ?"
+	query := p.GetQeury() + " and pt_id = ?"
 
 	rows, err := p.Query(query, id)
 
@@ -249,7 +249,7 @@ func (p *RockerGroupManager) Get(id int64) *RockerGroup {
 	return p.ReadRow(rows)
 }
 
-func (p *RockerGroupManager) Count(args []interface{}) int {
+func (p *PaymentTypeManager) Count(args []interface{}) int {
 	if p.Conn == nil && p.Tx == nil {
 		return 0
 	}
@@ -263,15 +263,15 @@ func (p *RockerGroupManager) Count(args []interface{}) int {
 			item := v
 
 			if item.Compare == "in" {
-				query += " and rg_id in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+				query += " and pt_id in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
 			} else if item.Compare == "between" {
-				query += " and rg_" + item.Column + " between ? and ?"
+				query += " and pt_" + item.Column + " between ? and ?"
 
 				s := item.Value.([2]string)
 				params = append(params, s[0])
 				params = append(params, s[1])
 			} else {
-				query += " and rg_" + item.Column + " " + item.Compare + " ?"
+				query += " and pt_" + item.Column + " " + item.Compare + " ?"
 				if item.Compare == "like" {
 					params = append(params, "%" + item.Value.(string) + "%")
 				} else {
@@ -304,9 +304,9 @@ func (p *RockerGroupManager) Count(args []interface{}) int {
 	}
 }
 
-func (p *RockerGroupManager) Find(args []interface{}) *[]RockerGroup {
+func (p *PaymentTypeManager) Find(args []interface{}) *[]PaymentType {
 	if p.Conn == nil && p.Tx == nil {
-		var items []RockerGroup
+		var items []PaymentType
 		return &items
 	}
 
@@ -348,15 +348,15 @@ func (p *RockerGroupManager) Find(args []interface{}) *[]RockerGroup {
 			item := v
 
 			if item.Compare == "in" {
-				query += " and rg_id in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+				query += " and pt_id in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
 			} else if item.Compare == "between" {
-				query += " and rg_" + item.Column + " between ? and ?"
+				query += " and pt_" + item.Column + " between ? and ?"
 
 				s := item.Value.([2]string)
 				params = append(params, s[0])
 				params = append(params, s[1])
 			} else {
-				query += " and rg_" + item.Column + " " + item.Compare + " ?"
+				query += " and pt_" + item.Column + " " + item.Compare + " ?"
 				if item.Compare == "like" {
 					params = append(params, "%" + item.Value.(string) + "%")
 				} else {
@@ -370,9 +370,9 @@ func (p *RockerGroupManager) Find(args []interface{}) *[]RockerGroup {
 
 	if page > 0 && pagesize > 0 {
 		if orderby == "" {
-			orderby = "rg_id"
+			orderby = "pt_id"
 		} else {
-			orderby = "rg_" + orderby
+			orderby = "pt_" + orderby
 		}
 		query += " order by " + orderby
 		if config.Database == "mysql" {
@@ -386,9 +386,9 @@ func (p *RockerGroupManager) Find(args []interface{}) *[]RockerGroup {
 		}
 	} else {
 		if orderby == "" {
-			orderby = "rg_id"
+			orderby = "pt_id"
 		} else {
-			orderby = "rg_" + orderby
+			orderby = "pt_" + orderby
 		}
 		query += " order by " + orderby
 	}
@@ -397,7 +397,7 @@ func (p *RockerGroupManager) Find(args []interface{}) *[]RockerGroup {
 
 	if err != nil {
 		log.Printf("query error : %v, %v\n", err, query)
-		var items []RockerGroup
+		var items []PaymentType
 		return &items
 	}
 
@@ -406,7 +406,7 @@ func (p *RockerGroupManager) Find(args []interface{}) *[]RockerGroup {
 	return p.ReadRows(rows)
 }
 
-func (p *RockerGroupManager) GetByName(loginid string, args ...interface{}) *RockerGroup {
+func (p *PaymentTypeManager) GetByName(loginid string, args ...interface{}) *PaymentType {
     if loginid != "" {
         args = append(args, Where{Column:"name", Value:loginid, Compare:"="})        
     }

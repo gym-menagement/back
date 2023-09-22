@@ -14,28 +14,34 @@ import (
 )
 
 
-type PaymentType struct {
+type UseHelth struct {
 	Id					int64 `json:"id"`
-	Gym					int64 `json:"gym"`
-	Name				string `json:"name"`
+	Order				int64 `json:"order"`
+	Helth				int64 `json:"helth"`
+	User				int64 `json:"user"`
+	Rocker				int64 `json:"rocker"`
+	Term				int64 `json:"term"`
+	Discount			int64 `json:"discount"`
+	Startday			string `json:"startday"`
+	Endday				string `'json:"endday"`
 	Date				string `json:"date"`
 
 	Extra				map[string]interface{} `json:"extra"`
 }
 
-type PaymentTypeManager struct {
+type UseHelthManager struct {
 	Conn	*sql.DB
 	Tx		*sql.Tx
 	Result	*sql.Result
 	Index	string
 }
 
-func (c *PaymentType) AddExtra(key string, value interface{}) {
+func (c *UseHelth) AddExtra(key string, value interface{}) {
 	c.Extra[key] = value
 }
 
-func NewPaymentTypeManager(conn interface{}) *PaymentTypeManager {
-	var item PaymentTypeManager
+func NewUseHelthManager(conn interface{}) *UseHelthManager {
+	var item UseHelthManager
 
 	if conn == nil {
 		item.Conn = NewConnection()
@@ -53,17 +59,17 @@ func NewPaymentTypeManager(conn interface{}) *PaymentTypeManager {
 	return &item
 }
 
-func (p *PaymentTypeManager) Close() {
+func (p *UseHelthManager) Close() {
 	if p.Conn != nil {
 		p.Conn.Close()
 	}
 }
 
-func (p *PaymentTypeManager) SetIndex(index string) {
+func (p *UseHelthManager) SetIndex(index string) {
 	p.Index = index
 }
 
-func (p *PaymentTypeManager) Exec(query string, params ...interface{}) (sql.Result, error) {
+func (p *UseHelthManager) Exec(query string, params ...interface{}) (sql.Result, error) {
 	if p.Conn != nil {
 		return p.Conn.Exec(query, params...)
 	} else {
@@ -71,7 +77,7 @@ func (p *PaymentTypeManager) Exec(query string, params ...interface{}) (sql.Resu
 	}
 }
 
-func (p *PaymentTypeManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
+func (p *UseHelthManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
 	if p.Conn != nil {
 		return p.Conn.Query(query, params...)
 	} else {
@@ -79,10 +85,10 @@ func (p *PaymentTypeManager) Query(query string, params ...interface{}) (*sql.Ro
 	}
 }
 
-func (p *PaymentTypeManager) GetQeury() string {
+func (p *UseHelthManager) GetQeury() string {
 	ret := ""
 
-	str := "select pt_id, pt_gym, pt_name, pt_date from payment_type_tb "
+	str := "select uh_id, uh_order, uh_helth, uh_user, uh_rocker, uh_term, uh_discount, uh_startday, uh_endday, uh_date from usehelth_tb "
 
 	if p.Index == "" {
 		ret = str
@@ -95,10 +101,10 @@ func (p *PaymentTypeManager) GetQeury() string {
 	return ret;
 }
 
-func (p *PaymentTypeManager) GetQeurySelect() string {
+func (p *UseHelthManager) GetQeurySelect() string {
 	ret := ""
 
-	str := "select count(*) from payment_type_tb "
+	str := "select count(*) from usehelth_tb "
 
 	if p.Index == "" {
 		ret = str
@@ -109,18 +115,18 @@ func (p *PaymentTypeManager) GetQeurySelect() string {
 	return ret;
 }
 
-func (p *PaymentTypeManager) Truncate() error {
+func (p *UseHelthManager) Truncate() error {
 	if p.Conn == nil && p.Tx == nil {
 		return errors.New("Connection Error")
 	}
 
-	query := "truncate payment_type_tb "
+	query := "truncate usehelth_tb "
 	p.Exec(query)
 
 	return nil
 }
 
-func (p *PaymentTypeManager) Insert(item *PaymentType) error {
+func (p *UseHelthManager) Insert(item *UseHelth) error {
 	if p.Conn == nil && p.Tx == nil {
 		return errors.New("Connection Error")
 	}
@@ -134,11 +140,11 @@ func (p *PaymentTypeManager) Insert(item *PaymentType) error {
 	var res sql.Result
 	var err error
 	if item.Id > 0 {
-		query = "insert into payment_type_tb (pt_id, pt_gym, pt_name, pt_date) values (?, ?, ?, ?)"
-		res, err = p.Exec(query , item.Id, item.Gym, item.Name, item.Date)
+		query = "insert into usehelth_tb (uh_id, uh_order, uh_helth, uh_user, uh_rocker, uh_term, uh_discount, uh_startday, uh_endday, uh_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+		res, err = p.Exec(query , item.Id, item.Order, item.Helth, item.User, item.Rocker, item.Term, item.Discount, item.Startday, item.Endday, item.Date)
 	} else {
-		query = "insert into payment_type_tb (pt_gym, pt_name, pt_date) values (?, ?, ?)"
-		res, err = p.Exec(query , item.Gym, item.Name, item.Date)
+		query = "insert into usehelth_tb (uh_order, uh_helth, uh_user, uh_rocker, uh_term, uh_discount, uh_startday, uh_endday, uh_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+		res, err = p.Exec(query , item.Order, item.Helth, item.User, item.Rocker, item.Term, item.Discount, item.Startday, item.Endday, item.Date)
 	}
 
 	if err == nil {
@@ -151,29 +157,29 @@ func (p *PaymentTypeManager) Insert(item *PaymentType) error {
 	return err
 }
 
-func (p *PaymentTypeManager) Delete(id int64) error {
+func (p *UseHelthManager) Delete(id int64) error {
 	if p.Conn == nil && p.Tx == nil {
 		return errors.New("Connection Error")
 	}
 
-	query := "delete from payment_type_tb where pt_id = ?"
+	query := "delete from usehelth_tb where uh_id = ?"
 	_, err := p.Exec(query, id)
 
 	return err
 }
 
-func (p *PaymentTypeManager) Update(item *PaymentType) error {
+func (p *UseHelthManager) Update(item *UseHelth) error {
 	if p.Conn == nil && p.Tx == nil {
 		return errors.New("Connection Error")
 	}
 
-	query := "update payment_type_tb set pt_gym = ?, pt_name = ?, pt_date = ? where pt_id = ?"
-	_, err := p.Exec(query, item.Gym, item.Name, item.Date, item.Id)
+	query := "update usehelth_tb set uh_order = ?, uh_helth = ?, uh_user = ?, uh_rocker = ?, uh_term = ?, uh_discount = ?, uh_startday = ?, uh_endday = ?, uh_date = ? where uh_id = ?"
+	_, err := p.Exec(query, item.Order, item.Helth, item.User, item.Rocker, item.Term, item.Discount, item.Startday, item.Endday, item.Date, item.Id)
 
 	return err
 }
 
-func (p *PaymentTypeManager) GetIdentity() int64 {
+func (p *UseHelthManager) GetIdentity() int64 {
 	if p.Result == nil && p.Tx == nil {
 		return 0
 	}
@@ -187,18 +193,18 @@ func (p *PaymentTypeManager) GetIdentity() int64 {
 	}
 }
 
-func (p *PaymentType) InitExtra() {
+func (p *UseHelth) InitExtra() {
 	p.Extra = map[string]interface{}{
 
 	}
 }
 
-func (p *PaymentTypeManager) ReadRow(rows *sql.Rows) *PaymentType {
-	var item PaymentType
+func (p *UseHelthManager) ReadRow(rows *sql.Rows) *UseHelth {
+	var item UseHelth
 	var err error
 
 	if rows.Next() {
-		err = rows.Scan(&item.Id, &item.Gym, &item.Name, &item.Date)
+		err = rows.Scan(&item.Id, &item.Order, &item.Helth, &item.User, &item.Rocker, &item.Term, &item.Discount, &item.Startday, &item.Endday, &item.Date)
 	} else {
 		return nil
 	}
@@ -210,13 +216,13 @@ func (p *PaymentTypeManager) ReadRow(rows *sql.Rows) *PaymentType {
 	}
 }
 
-func (p *PaymentTypeManager) ReadRows(rows *sql.Rows) *[]PaymentType {
-	var items []PaymentType
+func (p *UseHelthManager) ReadRows(rows *sql.Rows) *[]UseHelth {
+	var items []UseHelth
 
 	for rows.Next() {
-		var item PaymentType
+		var item UseHelth
 
-		err := rows.Scan(&item.Id, &item.Gym, &item.Name, &item.Date)
+		err := rows.Scan(&item.Id, &item.Order, &item.Helth, &item.User, &item.Rocker, &item.Term, &item.Discount, &item.Startday, &item.Endday, &item.Date)
 
 		if err != nil {
 			log.Printf("ReadRows error : %v\n", err)
@@ -230,12 +236,12 @@ func (p *PaymentTypeManager) ReadRows(rows *sql.Rows) *[]PaymentType {
 	return &items
 }
 
-func (p *PaymentTypeManager) Get(id int64) *PaymentType {
+func (p *UseHelthManager) Get(id int64) *UseHelth {
 	if p.Conn == nil && p.Tx == nil {
 		return nil
 	}
 
-	query := p.GetQeury() + " and pt_id = ?"
+	query := p.GetQeury() + " and uh_id = ?"
 
 	rows, err := p.Query(query, id)
 
@@ -249,7 +255,7 @@ func (p *PaymentTypeManager) Get(id int64) *PaymentType {
 	return p.ReadRow(rows)
 }
 
-func (p *PaymentTypeManager) Count(args []interface{}) int {
+func (p *UseHelthManager) Count(args []interface{}) int {
 	if p.Conn == nil && p.Tx == nil {
 		return 0
 	}
@@ -263,15 +269,15 @@ func (p *PaymentTypeManager) Count(args []interface{}) int {
 			item := v
 
 			if item.Compare == "in" {
-				query += " and pt_id in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+				query += " and uh_id in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
 			} else if item.Compare == "between" {
-				query += " and pt_" + item.Column + " between ? and ?"
+				query += " and uh_" + item.Column + " between ? and ?"
 
 				s := item.Value.([2]string)
 				params = append(params, s[0])
 				params = append(params, s[1])
 			} else {
-				query += " and pt_" + item.Column + " " + item.Compare + " ?"
+				query += " and uh_" + item.Column + " " + item.Compare + " ?"
 				if item.Compare == "like" {
 					params = append(params, "%" + item.Value.(string) + "%")
 				} else {
@@ -304,9 +310,9 @@ func (p *PaymentTypeManager) Count(args []interface{}) int {
 	}
 }
 
-func (p *PaymentTypeManager) Find(args []interface{}) *[]PaymentType {
+func (p *UseHelthManager) Find(args []interface{}) *[]UseHelth {
 	if p.Conn == nil && p.Tx == nil {
-		var items []PaymentType
+		var items []UseHelth
 		return &items
 	}
 
@@ -348,15 +354,15 @@ func (p *PaymentTypeManager) Find(args []interface{}) *[]PaymentType {
 			item := v
 
 			if item.Compare == "in" {
-				query += " and pt_id in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+				query += " and uh_id in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
 			} else if item.Compare == "between" {
-				query += " and pt_" + item.Column + " between ? and ?"
+				query += " and uh_" + item.Column + " between ? and ?"
 
 				s := item.Value.([2]string)
 				params = append(params, s[0])
 				params = append(params, s[1])
 			} else {
-				query += " and pt_" + item.Column + " " + item.Compare + " ?"
+				query += " and uh_" + item.Column + " " + item.Compare + " ?"
 				if item.Compare == "like" {
 					params = append(params, "%" + item.Value.(string) + "%")
 				} else {
@@ -370,9 +376,9 @@ func (p *PaymentTypeManager) Find(args []interface{}) *[]PaymentType {
 
 	if page > 0 && pagesize > 0 {
 		if orderby == "" {
-			orderby = "pt_id"
+			orderby = "uh_id"
 		} else {
-			orderby = "pt_" + orderby
+			orderby = "uh_" + orderby
 		}
 		query += " order by " + orderby
 		if config.Database == "mysql" {
@@ -386,9 +392,9 @@ func (p *PaymentTypeManager) Find(args []interface{}) *[]PaymentType {
 		}
 	} else {
 		if orderby == "" {
-			orderby = "pt_id"
+			orderby = "uh_id"
 		} else {
-			orderby = "pt_" + orderby
+			orderby = "uh_" + orderby
 		}
 		query += " order by " + orderby
 	}
@@ -397,7 +403,7 @@ func (p *PaymentTypeManager) Find(args []interface{}) *[]PaymentType {
 
 	if err != nil {
 		log.Printf("query error : %v, %v\n", err, query)
-		var items []PaymentType
+		var items []UseHelth
 		return &items
 	}
 
@@ -406,7 +412,7 @@ func (p *PaymentTypeManager) Find(args []interface{}) *[]PaymentType {
 	return p.ReadRows(rows)
 }
 
-func (p *PaymentTypeManager) GetByName(loginid string, args ...interface{}) *PaymentType {
+func (p *UseHelthManager) GetByName(loginid string, args ...interface{}) *UseHelth {
     if loginid != "" {
         args = append(args, Where{Column:"name", Value:loginid, Compare:"="})        
     }

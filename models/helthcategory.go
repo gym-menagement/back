@@ -82,7 +82,7 @@ func (p *HelthCategoryManager) Query(query string, params ...interface{}) (*sql.
 func (p *HelthCategoryManager) GetQeury() string {
 	ret := ""
 
-	str := "select hc_id, hc_gym, hc_name, hc_date from helth_category_tb "
+	str := "select hc_id, hc_gym, hc_name, hc_date from helthcategory_tb "
 
 	if p.Index == "" {
 		ret = str
@@ -98,7 +98,7 @@ func (p *HelthCategoryManager) GetQeury() string {
 func (p *HelthCategoryManager) GetQeurySelect() string {
 	ret := ""
 
-	str := "select count(*) from helth_category_tb "
+	str := "select count(*) from helthcategory_tb "
 
 	if p.Index == "" {
 		ret = str
@@ -114,7 +114,7 @@ func (p *HelthCategoryManager) Truncate() error {
 		return errors.New("Connection Error")
 	}
 
-	query := "truncate helth_category_tb "
+	query := "truncate helthcategory_tb "
 	p.Exec(query)
 
 	return nil
@@ -134,10 +134,10 @@ func (p *HelthCategoryManager) Insert(item *HelthCategory) error {
 	var res sql.Result
 	var err error
 	if item.Id > 0 {
-		query = "insert into helth_category_tb (hc_id, hc_gym, hc_name, hc_date) values (?, ?, ?, ?)"
+		query = "insert into helthcategory_tb (hc_id, hc_gym, hc_name, hc_date) values (?, ?, ?, ?)"
 		res, err = p.Exec(query , item.Id, item.Gym, item.Name, item.Date)
 	} else {
-		query = "insert into helth_category_tb (hc_gym, hc_name, hc_date) values (?, ?, ?)"
+		query = "insert into helthcategory_tb (hc_gym, hc_name, hc_date) values (?, ?, ?)"
 		res, err = p.Exec(query , item.Gym, item.Name, item.Date)
 	}
 
@@ -156,7 +156,7 @@ func (p *HelthCategoryManager) Delete(id int64) error {
 		return errors.New("Connection Error")
 	}
 
-	query := "delete from helth_category_tb where hc_id = ?"
+	query := "delete from helthcategory_tb where hc_id = ?"
 	_, err := p.Exec(query, id)
 
 	return err
@@ -167,7 +167,7 @@ func (p *HelthCategoryManager) Update(item *HelthCategory) error {
 		return errors.New("Connection Error")
 	}
 
-	query := "update helth_category_tb set hc_gym = ?, hc_name = ?, hc_date = ? where hc_id = ?"
+	query := "update helthcategory_tb set hc_gym = ?, hc_name = ?, hc_date = ? where hc_id = ?"
 	_, err := p.Exec(query, item.Gym, item.Name, item.Date, item.Id)
 
 	return err

@@ -82,7 +82,7 @@ func (p *DayTypeManager) Query(query string, params ...interface{}) (*sql.Rows, 
 func (p *DayTypeManager) GetQeury() string {
 	ret := ""
 
-	str := "select dt_id, dt_gym, dt_name, dt_date from day_type_tb "
+	str := "select dt_id, dt_gym, dt_name, dt_date from daytype_tb "
 
 	if p.Index == "" {
 		ret = str
@@ -98,7 +98,7 @@ func (p *DayTypeManager) GetQeury() string {
 func (p *DayTypeManager) GetQeurySelect() string {
 	ret := ""
 
-	str := "select count(*) from day_type_tb "
+	str := "select count(*) from daytype_tb "
 
 	if p.Index == "" {
 		ret = str
@@ -114,7 +114,7 @@ func (p *DayTypeManager) Truncate() error {
 		return errors.New("Connection Error")
 	}
 
-	query := "truncate day_type_tb "
+	query := "truncate daytype_tb "
 	p.Exec(query)
 
 	return nil
@@ -134,10 +134,10 @@ func (p *DayTypeManager) Insert(item *DayType) error {
 	var res sql.Result
 	var err error
 	if item.Id > 0 {
-		query = "insert into day_type_tb (dt_id, dt_gym, dt_name, dt_date) values (?, ?, ?, ?)"
+		query = "insert into daytype_tb (dt_id, dt_gym, dt_name, dt_date) values (?, ?, ?, ?)"
 		res, err = p.Exec(query , item.Id, item.Gym, item.Name, item.Date)
 	} else {
-		query = "insert into day_type_tb (dt_gym, dt_name, dt_date) values (?, ?, ?)"
+		query = "insert into daytype_tb (dt_gym, dt_name, dt_date) values (?, ?, ?)"
 		res, err = p.Exec(query , item.Gym, item.Name, item.Date)
 	}
 
@@ -156,7 +156,7 @@ func (p *DayTypeManager) Delete(id int64) error {
 		return errors.New("Connection Error")
 	}
 
-	query := "delete from day_type_tb where dt_id = ?"
+	query := "delete from daytype_tb where dt_id = ?"
 	_, err := p.Exec(query, id)
 
 	return err
@@ -167,7 +167,7 @@ func (p *DayTypeManager) Update(item *DayType) error {
 		return errors.New("Connection Error")
 	}
 
-	query := "update day_type_tb set dt_gym = ?, dt_name = ?, dt_date = ? where dt_id = ?"
+	query := "update daytype_tb set dt_gym = ?, dt_name = ?, dt_date = ? where dt_id = ?"
 	_, err := p.Exec(query, item.Gym, item.Name, item.Date, item.Id)
 
 	return err
