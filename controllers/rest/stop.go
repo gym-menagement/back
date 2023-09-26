@@ -16,9 +16,9 @@ func (c *StopController) Index(page int, pagesize int) {
 
     var args []interface{}
 
-    use_helth := c.Query("use_helth")
-    if use_helth != "" {
-        args = append(args, models.Where{Column:"use_helth", Value:use_helth, Compare:"="})
+    usehelth := c.Query("usehelth")
+    if usehelth != "" {
+        args = append(args, models.Where{Column:"usehelth", Value:usehelth, Compare:"="})
     }    
 
     startday := c.Query("startday")

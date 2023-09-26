@@ -21,9 +21,9 @@ func (c *TermController) Index(page int, pagesize int) {
         args = append(args, models.Where{Column:"gym", Value:gym, Compare:"="})
     }
 
-	day_type := c.Query("day_type")
-    if day_type != "" {
-        args = append(args, models.Where{Column:"day_type", Value:day_type, Compare:"="})
+	daytype := c.Query("daytype")
+    if daytype != "" {
+        args = append(args, models.Where{Column:"daytype", Value:daytype, Compare:"="})
     }
 
     name := c.Query("name")

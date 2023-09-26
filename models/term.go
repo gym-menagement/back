@@ -17,7 +17,7 @@ import (
 type Term struct {
 	Id					int64 `json:"id"`
 	Gym					int64 `json:"gym"`
-	DayType				int64 `json:"day_type"`
+	DayType				int64 `json:"daytype"`
 	Name				string `json:"name"`
 	Term				int `'json:"term"`
 	Date				string `json:"date"`
@@ -84,7 +84,7 @@ func (p *TermManager) Query(query string, params ...interface{}) (*sql.Rows, err
 func (p *TermManager) GetQeury() string {
 	ret := ""
 
-	str := "select t_id, t_gym, t_day_type, t_name, t_term, t_date from term_tb "
+	str := "select t_id, t_gym, t_daytype, t_name, t_term, t_date from term_tb "
 
 	if p.Index == "" {
 		ret = str
@@ -136,10 +136,10 @@ func (p *TermManager) Insert(item *Term) error {
 	var res sql.Result
 	var err error
 	if item.Id > 0 {
-		query = "insert into term_tb (t_id, t_gym, t_day_type, t_name, t_term, t_date) values (?, ?, ?, ?, ?, ?)"
+		query = "insert into term_tb (t_id, t_gym, t_daytype, t_name, t_term, t_date) values (?, ?, ?, ?, ?, ?)"
 		res, err = p.Exec(query , item.Id, item.Gym, item.DayType, item.Name, item.Term, item.Date)
 	} else {
-		query = "insert into term_tb (t_gym, t_day_type, t_name, t_term, t_date) values (?, ?, ?, ?, ?)"
+		query = "insert into term_tb (t_gym, t_daytype, t_name, t_term, t_date) values (?, ?, ?, ?, ?)"
 		res, err = p.Exec(query , item.Gym, item.DayType, item.Name, item.Term, item.Date)
 	}
 
@@ -169,7 +169,7 @@ func (p *TermManager) Update(item *Term) error {
 		return errors.New("Connection Error")
 	}
 
-	query := "update term_tb set t_gym = ?, t_day_type = ? t_name = ?, t_term = ?, t_date = ? where t_id = ?"
+	query := "update term_tb set t_gym = ?, t_daytype = ? t_name = ?, t_term = ?, t_date = ? where t_id = ?"
 	_, err := p.Exec(query, item.Gym, item.DayType, item.Name, item.Term, item.Date, item.Id)
 
 	return err

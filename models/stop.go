@@ -16,7 +16,7 @@ import (
 
 type Stop struct {
 	Id					int64 `json:"id"`
-	UseHelth			int64 `json:"use_helth"`
+	UseHelth			int64 `json:"usehelth"`
 	Startday			string `json:"startday"`
 	Endday				string `json:"endday"`
 	Count				int `json:"count"`
@@ -84,7 +84,7 @@ func (p *StopManager) Query(query string, params ...interface{}) (*sql.Rows, err
 func (p *StopManager) GetQeury() string {
 	ret := ""
 
-	str := "select s_id, s_use_helth, s_startday, s_endday, s_count, s_date from stop_tb "
+	str := "select s_id, s_usehelth, s_startday, s_endday, s_count, s_date from stop_tb "
 
 	if p.Index == "" {
 		ret = str
@@ -136,10 +136,10 @@ func (p *StopManager) Insert(item *Stop) error {
 	var res sql.Result
 	var err error
 	if item.Id > 0 {
-		query = "insert into stop_tb (s_id, s_use_helth, s_startday, s_endday, s_count, s_date) values (?, ?, ?, ?, ?, ?)"
+		query = "insert into stop_tb (s_id, s_usehelth, s_startday, s_endday, s_count, s_date) values (?, ?, ?, ?, ?, ?)"
 		res, err = p.Exec(query , item.Id, item.UseHelth, item.Startday, item.Endday, item.Count, item.Date)
 	} else {
-		query = "insert into stop_tb (s_use_helth, s_startday, s_endday, s_count, s_date) values (?, ?, ?, ?, ?)"
+		query = "insert into stop_tb (s_usehelth, s_startday, s_endday, s_count, s_date) values (?, ?, ?, ?, ?)"
 		res, err = p.Exec(query , item.UseHelth, item.Startday, item.Endday, item.Count, item.Date)
 	}
 
@@ -169,7 +169,7 @@ func (p *StopManager) Update(item *Stop) error {
 		return errors.New("Connection Error")
 	}
 
-	query := "update stop_tb set s_use_helth = ?, s_startday = ?, s_endday = ?, s_count = ?, s_date = ? where s_id = ?"
+	query := "update stop_tb set s_usehelth = ?, s_startday = ?, s_endday = ?, s_count = ?, s_date = ? where s_id = ?"
 	_, err := p.Exec(query, item.UseHelth, item.Startday, item.Endday, item.Count, item.Date, item.Id)
 
 	return err
