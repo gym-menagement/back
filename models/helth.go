@@ -22,7 +22,7 @@ type Helth struct {
 	Count				int `json:"count"`
 	Cost				int `json:"cost"`
 	Discount			int64 `json:"discount"`
-	CostDiscount		int `json:"cost_discount"`
+	CostDiscount		int `json:"costdiscount"`
 	Content				string `json:"content"`
 	Date				string `json:"date"`
 
@@ -88,7 +88,7 @@ func (p *HelthManager) Query(query string, params ...interface{}) (*sql.Rows, er
 func (p *HelthManager) GetQeury() string {
 	ret := ""
 
-	str := "select h_id, h_category, h_term, h_name, h_count, h_cost, h_discount, h_cost_discount, h_content, h_date from helth_tb "
+	str := "select h_id, h_category, h_term, h_name, h_count, h_cost, h_discount, h_costdiscount, h_content, h_date from helth_tb "
 
 	if p.Index == "" {
 		ret = str
@@ -140,10 +140,10 @@ func (p *HelthManager) Insert(item *Helth) error {
 	var res sql.Result
 	var err error
 	if item.Id > 0 {
-		query = "insert into helth_tb (h_id, h_category, h_term, h_name, h_count, h_cost, h_discount, h_cost_discount, h_content, h_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+		query = "insert into helth_tb (h_id, h_category, h_term, h_name, h_count, h_cost, h_discount, h_costdiscount, h_content, h_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 		res, err = p.Exec(query , item.Id, item.Category, item.Term, item.Name, item.Count, item.Cost, item.Discount, item.CostDiscount, item.Content, item.Date)
 	} else {
-		query = "insert into helth_tb (h_category, h_term, h_name, h_count, h_cost, h_discount, h_cost_discount, h_content, h_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+		query = "insert into helth_tb (h_category, h_term, h_name, h_count, h_cost, h_discount, h_costdiscount, h_content, h_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?)"
 		res, err = p.Exec(query , item.Category, item.Term, item.Name, item.Count, item.Cost, item.Discount, item.CostDiscount, item.Content, item.Date)
 	}
 
@@ -173,7 +173,7 @@ func (p *HelthManager) Update(item *Helth) error {
 		return errors.New("Connection Error")
 	}
 
-	query := "update helth_tb set h_category = ?, h_term = ?, h_name = ?, h_count = ?, h_cost = ?, h_discount = ?, h_cost_discount = ?, h_content = ?, h_date = ? where h_id = ?"
+	query := "update helth_tb set h_category = ?, h_term = ?, h_name = ?, h_count = ?, h_cost = ?, h_discount = ?, h_costdiscount = ?, h_content = ?, h_date = ? where h_id = ?"
 	_, err := p.Exec(query, item.Category, item.Term, item.Name, item.Count, item.Cost, item.Discount, item.CostDiscount, item.Content, item.Date, item.Id)
 
 	return err

@@ -46,9 +46,9 @@ func (c *HelthController) Index(page int, pagesize int) {
         args = append(args, models.Where{Column:"discount", Value:discount, Compare:"="})
     }
 
-	cost_discount := c.Query("cost_discount")
-    if cost_discount != "" {
-        args = append(args, models.Where{Column:"cost_discount", Value:cost_discount, Compare:"="})
+	costdiscount := c.Query("costdiscount")
+    if costdiscount != "" {
+        args = append(args, models.Where{Column:"costdiscount", Value:costdiscount, Compare:"="})
     }
 
 	content := c.Query("content")
