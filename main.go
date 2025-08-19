@@ -1,44 +1,35 @@
 package main
 
 import (
-	"gym/router"
-	"strings"
+	"fmt"
+	"gym/global/config"
+	"gym/global/log"
+	"gym/global/setting"
+	"gym/models"
+	"gym/services"
+	"math/rand"
+	"os"
+	"runtime"
 	"time"
-
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/fiber/v2/middleware/logger"
-
-	log "github.com/sirupsen/logrus"
 )
 
 func main() {
-	// log.SetFormatter(&log.TextFormatter{
-	// 	DisableColors: false,
-	// 	FullTimestamp: true,
-	// })
+	runtime.GOMAXPROCS(runtime.NumCPU())
+	rand.New(rand.NewSource(time.Now().UnixNano()))
 
-	app := fiber.New()
-	app.Use(logger.New(logger.Config{
-		Format: "[${time}] | ${status} | ${latency} | ${ip}:${port} | ${method} | ${url}\n",
-		TimeFormat: time.DateTime,
-	}))
+	log.Info().Str("Version", config.Version).Str("Mode", config.Mode).Msg("Start")
 
-	app.Use(cors.New(cors.Config{
-		AllowHeaders: "Origin, Content-Type, Authorization, Accept",
-		AllowCredentials: true,
-		AllowOrigins: "http://141.164.56.77:3001, http://localhost:3000",
-		AllowMethods: strings.Join([]string{
-			fiber.MethodGet,
-			fiber.MethodPost,
-			fiber.MethodPut,
-			fiber.MethodDelete,
-			// fiber.MethodHead,
-			// fiber.MethodPatch,
-		}, ","),
-	}))
+	models.InitCache()
 
-	router.SetRouter(app)
+	tempPath := fmt.Sprintf("%v/temp", config.UploadPath)
+	os.MkdirAll(tempPath, 777)
+	os.Chmod(tempPath, os.FileMode(0755))
 
-	log.Fatal(app.Listen(":9004"))
+	setting.GetInstance()
+
+	services.Cron()
+	// services.Fcm()
+	services.Chat()
+	services.Notify()
+	services.Http()
 }

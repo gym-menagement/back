@@ -1,5 +1,0 @@
-{
-  "database": "mysql",
-  "connectionString": "gym:gymdb@tcp(go_mariadb:3306)/gym",
-  "secretCode": "SecretCodetigerstone"
-}

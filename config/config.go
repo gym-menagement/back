@@ -1,66 +1,90 @@
 package config
 
 import (
-	"fmt"
+	"encoding/json"
+	"io/ioutil"
+	"log"
+	"os"
+	"path"
 
-	"github.com/spf13/viper"
+	"gopkg.in/yaml.v3"
 )
 
-var (
-	Database			string
-	ConnectionString	string
-	SecretCode			string
+type GpaMap struct {
+	Name string   `json:"name"`
+	Data []string `json:"data"`
+}
 
-	Port				string
+type GpaJoin struct {
+	Name   string `json:"name"`
+	Column string `json:"column"`
+	Prefix string `json:"prefix"`
+}
 
-	UploadPath			string
-)
+type GpaCompare struct {
+	Name string `json:"name"`
+	Type string `json:"type"`
+}
 
-func init() {
-	UploadPath = "webdata"
-	Database = "mysql"
-	Port = "9004"
+type SessionPair struct {
+	Key    string `json:"key"`
+	Column string `json:"column"`
+}
 
+type Gpa struct {
+	Name    string        `json:"name"`
+	Map     []GpaMap      `json:"map"`
+	Method  []string      `json:"method"`
+	Join    []GpaJoin     `json:"join"`
+	Compare []GpaCompare  `json:"compare"`
+	Session []SessionPair `json:"session"`
+	Search  bool          `json:"search"`
+	Primary []string      `json:"primary"`
+}
 
-	// err := godotenv.Load()
+type ModelConfig struct {
+	Buildtool  string `json:"buildtool"`
+	Store      string `json:"store"`
+	Server     string `json:"server"`
+	Database   string `json:"database"`
+	User       string `json:"user"`
+	Password   string `json:"password"`
+	Auth       string `json:"auth"`
+	AdminLevel string `json:"adminLevel"`
+	Language   string `json:"language"`
+	Gpa        []Gpa  `json:"table"`
+}
 
-  	// if err != nil {
-    // 	log.Fatal("Error loading .env file")
-  	// }
+type Pubspec struct {
+	Name string `yaml:"name"`
+}
 
-	// Database = os.Getenv("DATABASE")
-	// ConnectionString = os.Getenv("DATABASE_URL")
-	// SecretCode = os.Getenv("SECRET_CODE")
+func Init(dir string) ModelConfig {
+	var modelConfig ModelConfig
 
-
-	viper.SetConfigType("json")
-	viper.SetConfigName("config")
-	viper.AddConfigPath("./config")
-	viper.AddConfigPath("../config")
-	viper.AddConfigPath(".")
-	err := viper.ReadInConfig()
-
+	log.Println("config dir", dir)
+	file, err := os.Open(path.Join(dir, "model.json"))
 	if err != nil {
-		panic(fmt.Errorf("Fatal error config file: %s \n", err))
+		log.Println(err)
+		return modelConfig
 	}
 
-	if value := viper.Get("connectionString"); value != nil {
-		ConnectionString = value.(string)
-	}
+	defer file.Close()
+	data, _ := ioutil.ReadAll(file)
 
-	if value := viper.Get("Database"); value != nil {
-		Database = value.(string)
-	}
+	json.Unmarshal(data, &modelConfig)
 
-	if value := viper.Get("SecretCode"); value != nil {
-		SecretCode = value.(string)
-	}
+	return modelConfig
+}
 
-	if value := viper.Get("port"); value != nil {
-		Port = value.(string)
-	}
+func GetPubspec() string {
+	file, _ := os.Open("pubspec.yml")
+	defer file.Close()
+	data, _ := ioutil.ReadAll(file)
 
-	if value := viper.Get("uploadPath"); value != nil {
-		UploadPath = value.(string)
-	}
+	var pubspec Pubspec
+
+	yaml.Unmarshal(data, &pubspec)
+
+	return pubspec.Name
 }

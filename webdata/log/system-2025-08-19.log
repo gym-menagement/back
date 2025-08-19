@@ -1,0 +1,42 @@
+{"level":"info","Version":"","Mode":"develop","time":"2025-08-19T14:57:22+09:00","message":"Start"}
+{"level":"error","time":"2025-08-19T14:57:22+09:00","message":"sql: unknown driver \"\" (forgotten import?)"}
+{"level":"info","model":"setting","time":"2025-08-19T14:57:22+09:00","message":"Cache Init"}
+{"level":"error","time":"2025-08-19T14:57:22+09:00","message":"sql: unknown driver \"\" (forgotten import?)"}
+{"level":"error","time":"2025-08-19T14:57:23+09:00","message":"sql: unknown driver \"\" (forgotten import?)"}
+{"level":"error","time":"2025-08-19T14:57:23+09:00","message":"sql: unknown driver \"\" (forgotten import?)"}
+{"level":"error","time":"2025-08-19T14:57:24+09:00","message":"sql: unknown driver \"\" (forgotten import?)"}
+{"level":"error","time":"2025-08-19T14:57:26+09:00","message":"sql: unknown driver \"\" (forgotten import?)"}
+{"level":"error","time":"2025-08-19T14:57:26+09:00","message":"sql: unknown driver \"\" (forgotten import?)"}
+{"level":"error","time":"2025-08-19T14:57:26+09:00","message":"sql: unknown driver \"\" (forgotten import?)"}
+{"level":"error","time":"2025-08-19T14:57:27+09:00","message":"sql: unknown driver \"\" (forgotten import?)"}
+{"level":"error","time":"2025-08-19T14:57:28+09:00","message":"sql: unknown driver \"\" (forgotten import?)"}
+{"level":"error","time":"2025-08-19T14:57:30+09:00","message":"sql: unknown driver \"\" (forgotten import?)"}
+{"level":"info","Version":"","Mode":"develop","time":"2025-08-19T15:02:04+09:00","message":"Start"}
+{"level":"error","time":"2025-08-19T15:02:04+09:00","message":"sql: unknown driver \"\" (forgotten import?)"}
+{"level":"info","model":"setting","time":"2025-08-19T15:02:04+09:00","message":"Cache Init"}
+{"level":"error","time":"2025-08-19T15:02:04+09:00","message":"sql: unknown driver \"\" (forgotten import?)"}
+{"level":"error","time":"2025-08-19T15:02:04+09:00","message":"sql: unknown driver \"\" (forgotten import?)"}
+{"level":"error","time":"2025-08-19T15:02:05+09:00","message":"sql: unknown driver \"\" (forgotten import?)"}
+{"level":"error","time":"2025-08-19T15:02:06+09:00","message":"sql: unknown driver \"\" (forgotten import?)"}
+{"level":"error","time":"2025-08-19T15:02:08+09:00","message":"sql: unknown driver \"\" (forgotten import?)"}
+{"level":"error","time":"2025-08-19T15:02:08+09:00","message":"sql: unknown driver \"\" (forgotten import?)"}
+{"level":"error","time":"2025-08-19T15:02:08+09:00","message":"sql: unknown driver \"\" (forgotten import?)"}
+{"level":"error","time":"2025-08-19T15:02:08+09:00","message":"sql: unknown driver \"\" (forgotten import?)"}
+{"level":"error","time":"2025-08-19T15:02:09+09:00","message":"sql: unknown driver \"\" (forgotten import?)"}
+{"level":"error","time":"2025-08-19T15:02:11+09:00","message":"sql: unknown driver \"\" (forgotten import?)"}
+{"level":"info","Version":"0.0.1","Mode":"develop","time":"2025-08-19T15:04:42+09:00","message":"Start"}
+{"level":"info","model":"setting","time":"2025-08-19T15:04:42+09:00","message":"Cache Init"}
+{"level":"info","service":"Cron","time":"2025-08-19T15:04:43+09:00","message":"Start Service"}
+{"level":"info","service":"FCM","time":"2025-08-19T15:04:43+09:00","message":"Start Service"}
+{"level":"info","service":"Session","time":"2025-08-19T15:04:43+09:00","message":"Start Service"}
+{"level":"info","service":"Notify","time":"2025-08-19T15:04:43+09:00","message":"Start Service"}
+{"level":"info","service":"HTTP","time":"2025-08-19T15:04:43+09:00","message":"Start Service"}
+{"level":"debug","time":"2025-08-19T15:04:43+09:00","message":"Error initializing Firebase Cloud Messaging client: project ID is required to access Firebase Cloud Messaging client\n"}
+{"level":"info","time":"2025-08-19T15:04:53+09:00","message":"Gracefully shutting down..."}
+{"level":"info","Version":"0.0.1","Mode":"develop","time":"2025-08-19T15:05:02+09:00","message":"Start"}
+{"level":"info","model":"setting","time":"2025-08-19T15:05:02+09:00","message":"Cache Init"}
+{"level":"info","service":"Cron","time":"2025-08-19T15:05:03+09:00","message":"Start Service"}
+{"level":"info","service":"Session","time":"2025-08-19T15:05:03+09:00","message":"Start Service"}
+{"level":"info","service":"Notify","time":"2025-08-19T15:05:03+09:00","message":"Start Service"}
+{"level":"info","service":"HTTP","time":"2025-08-19T15:05:03+09:00","message":"Start Service"}
+{"level":"info","time":"2025-08-19T15:05:09+09:00","message":"Gracefully shutting down..."}

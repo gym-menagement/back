@@ -1,0 +1,144 @@
+{
+  "buildtool": "1.4",
+  "database": "gym",
+  "server": "140.82.12.99",
+  "user": "gym",
+  "password": "gymdb",
+  "auth": "jwt",
+  "authTimeout": "not",
+  "adminLevel": "3",
+  "goModelFilePath": "../gym/back",
+  "table": [
+    {
+      "name": "user",
+      "map": [
+        {
+          "name": "level",
+          "data": [
+            "",
+            "normal:일반",
+            "manager:팀장",
+            "admin:관리자",
+            "superadmin:승인관리자",
+            "rootadmin:전체관리자"
+          ]
+        },
+        {
+          "name": "use",
+          "data": ["", "use:사용", "notuse:사용안함"]
+        },
+        {
+          "name": "type",
+          "data": [
+            "",
+            "normal:일반",
+            "kakao:카카오",
+            "naver:네이버",
+            "google:구글",
+            "apple:애플"
+          ]
+        },
+        {
+          "name": "role",
+          "data": [
+            "",
+            "supervisor:감독",
+            "coach:코치",
+            "parent:학부모",
+            "player:현역선수",
+            "use:동호회",
+            "normal:일반인"
+          ]
+        }
+      ],
+      "method": [
+        "GetByLoginid",
+        "GetByConnectid",
+        "CountByLoginid",
+        "UpdateLogindateById",
+        "FindByLevel"
+      ]
+    },
+    {
+      "name": "alarm",
+      "map": [
+        {
+          "name": "type",
+          "data": [
+            "",
+            "notice:공지",
+            "alarm:알람",
+            "comment:게시판",
+            "match:경기결과"
+          ]
+        },
+        {
+          "name": "status",
+          "data": ["", "success:성공", "fail:실패"]
+        }
+      ]
+    },
+    {
+      "name": "ipblock",
+      "map": [
+        {
+          "name": "type",
+          "data": ["", "admin:관리자 접근", "normal:일반 접근"]
+        },
+        {
+          "name": "policy",
+          "data": ["", "grant:허용", "deny:거부"]
+        },
+        {
+          "name": "use",
+          "data": ["", "use:사용", "notuse:사용안함"]
+        }
+      ],
+      "compare": [
+        {
+          "name": "address",
+          "type": "like"
+        }
+      ]
+    },
+    {
+      "name": "loginlog",
+      "join": [
+        {
+          "name": "user",
+          "column": "user"
+        }
+      ]
+    },
+    {
+      "name": "setting",
+      "map": [
+        {
+          "name": "type",
+          "data": [
+            "",
+            "numberType:숫자",
+            "stringType:문자",
+            "selectType:선택",
+            "weekType:요일"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "systemlog",
+      "map": [
+        {
+          "name": "type",
+          "data": ["", "login:로그인", "crawling:크롤링"]
+        }
+      ],
+      "compare": [
+        {
+          "name": "content",
+          "type": "like"
+        }
+      ]
+    }
+  ]
+}

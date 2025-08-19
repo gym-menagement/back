@@ -1,112 +1,242 @@
 package rest
 
+
 import (
 	"gym/controllers"
 	"gym/models"
+
+    "strings"
 )
 
-type PaymentFormController struct {
+type PaymentformController struct {
 	controllers.Controller
 }
 
-func (c *PaymentFormController) Index(page int, pagesize int) {
+func (c *PaymentformController) Read(id int64) {
+    
+    
 	conn := c.NewConnection()
 
-	manager := models.NewPaymentFormManager(conn)
+	manager := models.NewPaymentformManager(conn)
+	item := manager.Get(id)
+
+    
+    
+    c.Set("item", item)
+}
+
+func (c *PaymentformController) Index(page int, pagesize int) {
+    
+    
+	conn := c.NewConnection()
+
+	manager := models.NewPaymentformManager(conn)
 
     var args []interface{}
-
-    gym := c.Query("gym")
-    if gym != "" {
-        args = append(args, models.Where{Column:"gym", Value:gym, Compare:"="})
+    
+    _gym := c.Geti64("gym")
+    if _gym != 0 {
+        args = append(args, models.Where{Column:"gym", Value:_gym, Compare:"="})    
     }
-
-    payment := c.Query("payment")
-    if payment != "" {
-        args = append(args, models.Where{Column:"payment", Value:payment, Compare:"="})
+    _payment := c.Geti64("payment")
+    if _payment != 0 {
+        args = append(args, models.Where{Column:"payment", Value:_payment, Compare:"="})    
     }
-
-	cost := c.Query("cost")
-    if cost != "" {
-        args = append(args, models.Where{Column:"cost", Value:cost, Compare:"="})
+    _type := c.Geti64("type")
+    if _type != 0 {
+        args = append(args, models.Where{Column:"type", Value:_type, Compare:"="})    
     }
-
-    startday := c.Query("startday")
-    if startday != "" {
-        args = append(args, models.Where{Column:"startday", Value:startday, Compare:"="})
+    _cost := c.Geti("cost")
+    if _cost != 0 {
+        args = append(args, models.Where{Column:"cost", Value:_cost, Compare:"="})    
     }
-
-    endday := c.Query("endday")
-    if endday != "" {
-        args = append(args, models.Where{Column:"endday", Value:endday, Compare:"="})
-    }
-    startdate := c.Query("startdate")
-    enddate := c.Query("enddate")
-    if startdate != "" && enddate != "" {
+    _startdate := c.Get("startdate")
+    _enddate := c.Get("enddate")
+    if _startdate != "" && _enddate != "" {        
         var v [2]string
-        v[0] = startdate
-        v[1] = enddate
-        args = append(args, models.Where{Column:"date", Value:v, Compare:"between"})
-    } else if  startdate != "" {
-        args = append(args, models.Where{Column:"date", Value:startdate, Compare:">="})
-    } else if  enddate != "" {
-        args = append(args, models.Where{Column:"date", Value:enddate, Compare:"<="})
+        v[0] = _startdate
+        v[1] = _enddate  
+        args = append(args, models.Where{Column:"date", Value:v, Compare:"between"})    
+    } else if  _startdate != "" {          
+        args = append(args, models.Where{Column:"date", Value:_startdate, Compare:">="})
+    } else if  _enddate != "" {          
+        args = append(args, models.Where{Column:"date", Value:_enddate, Compare:"<="})            
     }
+    
+
+    
     
     if page != 0 && pagesize != 0 {
         args = append(args, models.Paging(page, pagesize))
     }
-
-    orderby := c.Query("orderby")
-    if orderby == "desc" {
-        // if page != 0 && pagesize != 0 {
+    
+    orderby := c.Get("orderby")
+    if orderby == "" {
+        if page != 0 && pagesize != 0 {
             orderby = "id desc"
-        // }
+            args = append(args, models.Ordering(orderby))
+        }
     } else {
-		orderby = ""
-	}
+        orderbys := strings.Split(orderby, ",")
 
-    if orderby != "" {
-        args = append(args, models.Ordering(orderby))
+        str := ""
+        for i, v := range orderbys {
+            if i == 0 {
+                str += v
+            } else {
+                if strings.Contains(v, "_") {                   
+                    str += ", " + strings.Trim(v, " ")
+                } else {
+                    str += ", pf_" + strings.Trim(v, " ")                
+                }
+            }
+        }
+        
+        args = append(args, models.Ordering(str))
     }
-
+    
 	items := manager.Find(args)
 	c.Set("items", items)
 
+    if page == 1 {
+       total := manager.Count(args)
+	   c.Set("total", total)
+    }
+}
+
+func (c *PaymentformController) Count() {
+    
+    
+	conn := c.NewConnection()
+
+	manager := models.NewPaymentformManager(conn)
+
+    var args []interface{}
+    
+    _gym := c.Geti64("gym")
+    if _gym != 0 {
+        args = append(args, models.Where{Column:"gym", Value:_gym, Compare:"="})    
+    }
+    _payment := c.Geti64("payment")
+    if _payment != 0 {
+        args = append(args, models.Where{Column:"payment", Value:_payment, Compare:"="})    
+    }
+    _type := c.Geti64("type")
+    if _type != 0 {
+        args = append(args, models.Where{Column:"type", Value:_type, Compare:"="})    
+    }
+    _cost := c.Geti("cost")
+    if _cost != 0 {
+        args = append(args, models.Where{Column:"cost", Value:_cost, Compare:"="})    
+    }
+    _startdate := c.Get("startdate")
+    _enddate := c.Get("enddate")
+
+    if _startdate != "" && _enddate != "" {        
+        var v [2]string
+        v[0] = _startdate
+        v[1] = _enddate  
+        args = append(args, models.Where{Column:"date", Value:v, Compare:"between"})    
+    } else if  _startdate != "" {          
+        args = append(args, models.Where{Column:"date", Value:_startdate, Compare:">="})
+    } else if  _enddate != "" {          
+        args = append(args, models.Where{Column:"date", Value:_enddate, Compare:"<="})            
+    }
+    
+    
+    
+    
     total := manager.Count(args)
 	c.Set("total", total)
 }
 
-func (c *PaymentFormController) Read(id int64) {
+func (c *PaymentformController) Insert(item *models.Paymentform) {
+    
+    
 	conn := c.NewConnection()
-
-	manager := models.NewPaymentFormManager(conn)
-	item := manager.Get(id)
-
-    c.Set("item", item)
-}
-
-func (c *PaymentFormController) Insert(item *models.PaymentForm) {
-	conn := c.NewConnection()
-
-	manager := models.NewPaymentFormManager(conn)
-	manager.Insert(item)
+    
+	manager := models.NewPaymentformManager(conn)
+	err := manager.Insert(item)
+    if err != nil {
+        c.Set("code", "error")    
+        c.Set("error", err)
+        return
+    }
 
     id := manager.GetIdentity()
     c.Result["id"] = id
     item.Id = id
 }
 
-func (c *PaymentFormController) Update(item *models.PaymentForm) {
-	conn := c.NewConnection()
+func (c *PaymentformController) Insertbatch(item *[]models.Paymentform) {  
+    if item == nil || len(*item) == 0 {
+        return
+    }
 
-	manager := models.NewPaymentFormManager(conn)
-	manager.Update(item)
+    rows := len(*item)
+    
+    
+    
+	conn := c.NewConnection()
+    
+	manager := models.NewPaymentformManager(conn)
+
+    for i := 0; i < rows; i++ {
+	    err := manager.Insert(&((*item)[i]))
+        if err != nil {
+            c.Set("code", "error")    
+            c.Set("error", err)
+            return
+        }
+    }
 }
 
-func (c *PaymentFormController) Delete(item *models.PaymentForm) {
+func (c *PaymentformController) Update(item *models.Paymentform) {
+    
+    
 	conn := c.NewConnection()
 
-	manager := models.NewPaymentFormManager(conn)
-	manager.Delete(item.Id)
+	manager := models.NewPaymentformManager(conn)
+    err := manager.Update(item)
+    if err != nil {
+        c.Set("code", "error")    
+        c.Set("error", err)
+        return
+    }
 }
+
+func (c *PaymentformController) Delete(item *models.Paymentform) {
+    
+    
+    conn := c.NewConnection()
+
+	manager := models.NewPaymentformManager(conn)
+
+    
+	err := manager.Delete(item.Id)
+    if err != nil {
+        c.Set("code", "error")    
+        c.Set("error", err)
+    }
+}
+
+func (c *PaymentformController) Deletebatch(item *[]models.Paymentform) {
+    
+    
+    conn := c.NewConnection()
+
+	manager := models.NewPaymentformManager(conn)
+
+    for _, v := range *item {
+        
+    
+	    err := manager.Delete(v.Id)
+        if err != nil {
+            c.Set("code", "error")    
+            c.Set("error", err)
+            return
+        }
+    }
+}
+
+

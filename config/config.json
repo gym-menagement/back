@@ -1,5 +1,0 @@
-{
-  "database": "mysql",
-  "connectionString": "gym:gymdb@tcp(141.164.56.77:3306)/gym",
-  "secretCode": "SecretCodetigerstone"
-}

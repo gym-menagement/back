@@ -1,19 +1,24 @@
 package models
 
 import (
+	"fmt"
+	"gym/global/config"
+	"gym/global/log"
+
 	"database/sql"
-	"gym/config"
-	"log"
 	"time"
+
+	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
 )
 
 type PagingType struct {
-	Page		int
-	Pagesize	int
+	Page     int
+	Pagesize int
 }
 
 type OrderingType struct {
-	Order 		string
+	Order string
 }
 
 type LimitType struct {
@@ -21,19 +26,32 @@ type LimitType struct {
 }
 
 type OptionType struct {
-	Page		int
-	Pagesize	int
-	Order		string
-	Limit		int
+	Page     int
+	Pagesize int
+	Order    string
+	Limit    int
 }
 
 type Where struct {
-	Column		string
-	Value		interface{}
-	Compare		string
+	Column  string
+	Value   interface{}
+	Compare string
 }
 
-func Paging(page int , pagesize int) PagingType {
+type Custom struct {
+	Query string
+}
+
+type Base struct {
+	Query string
+}
+
+type Groupby struct {
+	Value int `json:"value"`
+	Count int `json:"count"`
+}
+
+func Paging(page int, pagesize int) PagingType {
 	return PagingType{Page: page, Pagesize: pagesize}
 }
 
@@ -45,22 +63,83 @@ func Limit(limit int) LimitType {
 	return LimitType{Limit: limit}
 }
 
-func GetConnection() *sql.DB {
-	r1, err := sql.Open(config.Database, config.ConnectionString)
+type Connection struct {
+	Conn *sql.DB
+    Tx    *sql.Tx    
+	Transaction bool
+	Isolation bool
+}
+
+func (c *Connection) Close() {
+	c.Conn.Close()
+}
+
+func (c *Connection) IsConnect() bool {
+	return c.Conn != nil
+}
+
+func (c *Connection) Exec(query string, params ...interface{}) (sql.Result, error) {
+	if c.Transaction {
+       return c.Tx.Exec(query, params...)    
+	} else {
+       return c.Conn.Exec(query, params...)
+    }
+}
+
+func (c *Connection) Query(query string, params ...interface{}) (*sql.Rows, error) {
+	if c.Transaction {
+       return c.Tx.Query(query, params...)    
+	} else {
+       return c.Conn.Query(query, params...)
+    }
+}
+
+func (c *Connection) Begin() {
+	if c.Transaction {
+		return
+	}
+
+	c.Tx, _ = c.Conn.Begin()
+	c.Transaction = true
+	c.Isolation = true
+}
+
+func (c *Connection) Commit() error {
+	c.Transaction = false
+	return c.Tx.Commit()
+}
+
+func (c *Connection) Rollback() {
+	if !c.Transaction {
+		return
+	}
+
+	err := c.Tx.Rollback()
 	if err != nil {
-		log.Println("Database Connect Error")
+		log.Error().Msg(err.Error())
+	}
+	c.Transaction = false
+}
+
+func GetConnection() *Connection {
+	conn, err := sql.Open(config.Database.TypeString, config.Database.ConnectionString)
+	if err != nil {
+		log.Error().Msg(err.Error())
 		return nil
 	}
 
-	r1.SetMaxOpenConns(1000)
-	r1.SetMaxIdleConns(10)
-	r1.SetConnMaxIdleTime(5 * time.Minute)
+	conn.SetMaxOpenConns(100)
+	conn.SetMaxIdleConns(10)
+	conn.SetConnMaxLifetime(5 * time.Minute)
 
-	return r1
+	return &Connection{
+		Conn: conn,
+		Tx: nil,
+		Transaction: false,
+	}
 }
 
-
-func NewConnection() *sql.DB {
+func NewConnection() *Connection {
 	db := GetConnection()
 
 	if db != nil {
@@ -96,4 +175,33 @@ func NewConnection() *sql.DB {
 	db = GetConnection()
 
 	return db
+}
+
+func QueryArray(db *Connection, query string, items []interface{}) (*sql.Rows, error) {
+	var rows *sql.Rows
+	var err error
+
+	rows, err = db.Conn.Query(query, items...)
+	return rows, err
+}
+
+func ExecArray(db *Connection, query string, items []interface{}) error {
+	var err error
+
+	_, err = db.Conn.Exec(query, items...)
+	return err
+}
+
+func InitDate() string {
+	return "1000-01-01 00:00:00"
+}
+
+type Double float64
+
+func (c Double) MarshalJSON() ([]byte, error) {
+	if float64(c) == float64(int(c)) {
+		return []byte(fmt.Sprintf("%v.0", int64(c))), nil
+	}
+
+	return []byte(fmt.Sprintf("%v", float64(c))), nil
 }

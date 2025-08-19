@@ -9,28 +9,16 @@ import (
 )
 
 func SetRouter(app *fiber.App) {
+
 	app.Get("/api/jwt", func(ctx *fiber.Ctx) error {
 		loginid := ctx.Query("loginid")
 		passwd := ctx.Query("passwd")
-		return ctx.JSON(JwtAuth(loginid, passwd))
+		return ctx.JSON(JwtAuth(ctx, loginid, passwd))
 	})
-	// app.Get("/api/jwt/token", func(ctx *fiber.Ctx) error {
-	// 	token := ctx.Get("Authorization")
-	// 	return ctx.JSON(JwtToken(token))
-	// })
 	apiGroup := app.Group("/api")
-	apiGroup.Use(JwtAuthRequired())
+	apiGroup.Use(JwtAuthRequired)
 	{
-		apiGroup.Get("/user/me", func(ctx *fiber.Ctx) error {
-			token := ctx.Get("Authorization")
-			id := JwtMe(token)
-			var controller rest.UserController
-			controller.Init(ctx)
-			controller.Read(id)
-			controller.Close()
-			return ctx.JSON(controller.Result)
-		})
-
+		
 		apiGroup.Get("/user/:id", func(ctx *fiber.Ctx) error {
 			id_, _ := strconv.ParseInt(ctx.Params("id"), 10, 64)
 			var controller rest.UserController
@@ -94,7 +82,7 @@ func SetRouter(app *fiber.App) {
 
 		apiGroup.Get("/daytype/:id", func(ctx *fiber.Ctx) error {
 			id_, _ := strconv.ParseInt(ctx.Params("id"), 10, 64)
-			var controller rest.DayTypeController
+			var controller rest.DaytypeController
 			controller.Init(ctx)
 			controller.Read(id_)
 			controller.Close()
@@ -104,7 +92,7 @@ func SetRouter(app *fiber.App) {
 		apiGroup.Get("/daytype", func(ctx *fiber.Ctx) error {
 			page_, _ := strconv.Atoi(ctx.Query("page"))
 			pagesize_, _ := strconv.Atoi(ctx.Query("pagesize"))
-			var controller rest.DayTypeController
+			var controller rest.DaytypeController
 			controller.Init(ctx)
 			controller.Index(page_, pagesize_)
 			controller.Close()
@@ -112,9 +100,9 @@ func SetRouter(app *fiber.App) {
 		})
 
 		apiGroup.Post("/daytype", func(ctx *fiber.Ctx) error {
-			item_ := &models.DayType{}
+			item_ := &models.Daytype{}
 			ctx.BodyParser(item_)
-			var controller rest.DayTypeController
+			var controller rest.DaytypeController
 			controller.Init(ctx)
 			if item_ != nil {
 				controller.Insert(item_)
@@ -126,9 +114,9 @@ func SetRouter(app *fiber.App) {
 		})
 
 		apiGroup.Put("/daytype", func(ctx *fiber.Ctx) error {
-			item_ := &models.DayType{}
+			item_ := &models.Daytype{}
 			ctx.BodyParser(item_)
-			var controller rest.DayTypeController
+			var controller rest.DaytypeController
 			controller.Init(ctx)
 			if item_ != nil {
 				controller.Update(item_)
@@ -140,9 +128,9 @@ func SetRouter(app *fiber.App) {
 		})
 
 		apiGroup.Delete("/daytype", func(ctx *fiber.Ctx) error {
-			item_ := &models.DayType{}
+			item_ := &models.Daytype{}
 			ctx.BodyParser(item_)
-			var controller rest.DayTypeController
+			var controller rest.DaytypeController
 			controller.Init(ctx)
 			if item_ != nil {
 				controller.Delete(item_)
@@ -277,7 +265,7 @@ func SetRouter(app *fiber.App) {
 
 		apiGroup.Get("/helthcategory/:id", func(ctx *fiber.Ctx) error {
 			id_, _ := strconv.ParseInt(ctx.Params("id"), 10, 64)
-			var controller rest.HelthCategoryController
+			var controller rest.HelthcategoryController
 			controller.Init(ctx)
 			controller.Read(id_)
 			controller.Close()
@@ -287,7 +275,7 @@ func SetRouter(app *fiber.App) {
 		apiGroup.Get("/helthcategory", func(ctx *fiber.Ctx) error {
 			page_, _ := strconv.Atoi(ctx.Query("page"))
 			pagesize_, _ := strconv.Atoi(ctx.Query("pagesize"))
-			var controller rest.HelthCategoryController
+			var controller rest.HelthcategoryController
 			controller.Init(ctx)
 			controller.Index(page_, pagesize_)
 			controller.Close()
@@ -295,9 +283,9 @@ func SetRouter(app *fiber.App) {
 		})
 
 		apiGroup.Post("/helthcategory", func(ctx *fiber.Ctx) error {
-			item_ := &models.HelthCategory{}
+			item_ := &models.Helthcategory{}
 			ctx.BodyParser(item_)
-			var controller rest.HelthCategoryController
+			var controller rest.HelthcategoryController
 			controller.Init(ctx)
 			if item_ != nil {
 				controller.Insert(item_)
@@ -309,9 +297,9 @@ func SetRouter(app *fiber.App) {
 		})
 
 		apiGroup.Put("/helthcategory", func(ctx *fiber.Ctx) error {
-			item_ := &models.HelthCategory{}
+			item_ := &models.Helthcategory{}
 			ctx.BodyParser(item_)
-			var controller rest.HelthCategoryController
+			var controller rest.HelthcategoryController
 			controller.Init(ctx)
 			if item_ != nil {
 				controller.Update(item_)
@@ -323,9 +311,9 @@ func SetRouter(app *fiber.App) {
 		})
 
 		apiGroup.Delete("/helthcategory", func(ctx *fiber.Ctx) error {
-			item_ := &models.HelthCategory{}
+			item_ := &models.Helthcategory{}
 			ctx.BodyParser(item_)
-			var controller rest.HelthCategoryController
+			var controller rest.HelthcategoryController
 			controller.Init(ctx)
 			if item_ != nil {
 				controller.Delete(item_)
@@ -521,7 +509,7 @@ func SetRouter(app *fiber.App) {
 
 		apiGroup.Get("/paymenttype/:id", func(ctx *fiber.Ctx) error {
 			id_, _ := strconv.ParseInt(ctx.Params("id"), 10, 64)
-			var controller rest.PaymentTypeController
+			var controller rest.PaymenttypeController
 			controller.Init(ctx)
 			controller.Read(id_)
 			controller.Close()
@@ -531,7 +519,7 @@ func SetRouter(app *fiber.App) {
 		apiGroup.Get("/paymenttype", func(ctx *fiber.Ctx) error {
 			page_, _ := strconv.Atoi(ctx.Query("page"))
 			pagesize_, _ := strconv.Atoi(ctx.Query("pagesize"))
-			var controller rest.PaymentTypeController
+			var controller rest.PaymenttypeController
 			controller.Init(ctx)
 			controller.Index(page_, pagesize_)
 			controller.Close()
@@ -539,9 +527,9 @@ func SetRouter(app *fiber.App) {
 		})
 
 		apiGroup.Post("/paymenttype", func(ctx *fiber.Ctx) error {
-			item_ := &models.PaymentType{}
+			item_ := &models.Paymenttype{}
 			ctx.BodyParser(item_)
-			var controller rest.PaymentTypeController
+			var controller rest.PaymenttypeController
 			controller.Init(ctx)
 			if item_ != nil {
 				controller.Insert(item_)
@@ -553,9 +541,9 @@ func SetRouter(app *fiber.App) {
 		})
 
 		apiGroup.Put("/paymenttype", func(ctx *fiber.Ctx) error {
-			item_ := &models.PaymentType{}
+			item_ := &models.Paymenttype{}
 			ctx.BodyParser(item_)
-			var controller rest.PaymentTypeController
+			var controller rest.PaymenttypeController
 			controller.Init(ctx)
 			if item_ != nil {
 				controller.Update(item_)
@@ -567,9 +555,9 @@ func SetRouter(app *fiber.App) {
 		})
 
 		apiGroup.Delete("/paymenttype", func(ctx *fiber.Ctx) error {
-			item_ := &models.PaymentType{}
+			item_ := &models.Paymenttype{}
 			ctx.BodyParser(item_)
-			var controller rest.PaymentTypeController
+			var controller rest.PaymenttypeController
 			controller.Init(ctx)
 			if item_ != nil {
 				controller.Delete(item_)
@@ -582,7 +570,7 @@ func SetRouter(app *fiber.App) {
 
 		apiGroup.Get("/paymentform/:id", func(ctx *fiber.Ctx) error {
 			id_, _ := strconv.ParseInt(ctx.Params("id"), 10, 64)
-			var controller rest.PaymentFormController
+			var controller rest.PaymentformController
 			controller.Init(ctx)
 			controller.Read(id_)
 			controller.Close()
@@ -592,7 +580,7 @@ func SetRouter(app *fiber.App) {
 		apiGroup.Get("/paymentform", func(ctx *fiber.Ctx) error {
 			page_, _ := strconv.Atoi(ctx.Query("page"))
 			pagesize_, _ := strconv.Atoi(ctx.Query("pagesize"))
-			var controller rest.PaymentFormController
+			var controller rest.PaymentformController
 			controller.Init(ctx)
 			controller.Index(page_, pagesize_)
 			controller.Close()
@@ -600,9 +588,9 @@ func SetRouter(app *fiber.App) {
 		})
 
 		apiGroup.Post("/paymentform", func(ctx *fiber.Ctx) error {
-			item_ := &models.PaymentForm{}
+			item_ := &models.Paymentform{}
 			ctx.BodyParser(item_)
-			var controller rest.PaymentFormController
+			var controller rest.PaymentformController
 			controller.Init(ctx)
 			if item_ != nil {
 				controller.Insert(item_)
@@ -614,9 +602,9 @@ func SetRouter(app *fiber.App) {
 		})
 
 		apiGroup.Put("/paymentform", func(ctx *fiber.Ctx) error {
-			item_ := &models.PaymentForm{}
+			item_ := &models.Paymentform{}
 			ctx.BodyParser(item_)
-			var controller rest.PaymentFormController
+			var controller rest.PaymentformController
 			controller.Init(ctx)
 			if item_ != nil {
 				controller.Update(item_)
@@ -628,9 +616,9 @@ func SetRouter(app *fiber.App) {
 		})
 
 		apiGroup.Delete("/paymentform", func(ctx *fiber.Ctx) error {
-			item_ := &models.PaymentForm{}
+			item_ := &models.Paymentform{}
 			ctx.BodyParser(item_)
-			var controller rest.PaymentFormController
+			var controller rest.PaymentformController
 			controller.Init(ctx)
 			if item_ != nil {
 				controller.Delete(item_)
@@ -704,7 +692,7 @@ func SetRouter(app *fiber.App) {
 
 		apiGroup.Get("/rockergroup/:id", func(ctx *fiber.Ctx) error {
 			id_, _ := strconv.ParseInt(ctx.Params("id"), 10, 64)
-			var controller rest.RockerGroupController
+			var controller rest.RockergroupController
 			controller.Init(ctx)
 			controller.Read(id_)
 			controller.Close()
@@ -714,7 +702,7 @@ func SetRouter(app *fiber.App) {
 		apiGroup.Get("/rockergroup", func(ctx *fiber.Ctx) error {
 			page_, _ := strconv.Atoi(ctx.Query("page"))
 			pagesize_, _ := strconv.Atoi(ctx.Query("pagesize"))
-			var controller rest.RockerGroupController
+			var controller rest.RockergroupController
 			controller.Init(ctx)
 			controller.Index(page_, pagesize_)
 			controller.Close()
@@ -722,9 +710,9 @@ func SetRouter(app *fiber.App) {
 		})
 
 		apiGroup.Post("/rockergroup", func(ctx *fiber.Ctx) error {
-			item_ := &models.RockerGroup{}
+			item_ := &models.Rockergroup{}
 			ctx.BodyParser(item_)
-			var controller rest.RockerGroupController
+			var controller rest.RockergroupController
 			controller.Init(ctx)
 			if item_ != nil {
 				controller.Insert(item_)
@@ -736,9 +724,9 @@ func SetRouter(app *fiber.App) {
 		})
 
 		apiGroup.Put("/rockergroup", func(ctx *fiber.Ctx) error {
-			item_ := &models.RockerGroup{}
+			item_ := &models.Rockergroup{}
 			ctx.BodyParser(item_)
-			var controller rest.RockerGroupController
+			var controller rest.RockergroupController
 			controller.Init(ctx)
 			if item_ != nil {
 				controller.Update(item_)
@@ -750,9 +738,9 @@ func SetRouter(app *fiber.App) {
 		})
 
 		apiGroup.Delete("/rockergroup", func(ctx *fiber.Ctx) error {
-			item_ := &models.RockerGroup{}
+			item_ := &models.Rockergroup{}
 			ctx.BodyParser(item_)
-			var controller rest.RockerGroupController
+			var controller rest.RockergroupController
 			controller.Init(ctx)
 			if item_ != nil {
 				controller.Delete(item_)
@@ -1009,7 +997,7 @@ func SetRouter(app *fiber.App) {
 
 		apiGroup.Get("/usehelth/:id", func(ctx *fiber.Ctx) error {
 			id_, _ := strconv.ParseInt(ctx.Params("id"), 10, 64)
-			var controller rest.UseHelthController
+			var controller rest.UsehelthController
 			controller.Init(ctx)
 			controller.Read(id_)
 			controller.Close()
@@ -1019,7 +1007,7 @@ func SetRouter(app *fiber.App) {
 		apiGroup.Get("/usehelth", func(ctx *fiber.Ctx) error {
 			page_, _ := strconv.Atoi(ctx.Query("page"))
 			pagesize_, _ := strconv.Atoi(ctx.Query("pagesize"))
-			var controller rest.UseHelthController
+			var controller rest.UsehelthController
 			controller.Init(ctx)
 			controller.Index(page_, pagesize_)
 			controller.Close()
@@ -1027,9 +1015,9 @@ func SetRouter(app *fiber.App) {
 		})
 
 		apiGroup.Post("/usehelth", func(ctx *fiber.Ctx) error {
-			item_ := &models.UseHelth{}
+			item_ := &models.Usehelth{}
 			ctx.BodyParser(item_)
-			var controller rest.UseHelthController
+			var controller rest.UsehelthController
 			controller.Init(ctx)
 			if item_ != nil {
 				controller.Insert(item_)
@@ -1041,9 +1029,9 @@ func SetRouter(app *fiber.App) {
 		})
 
 		apiGroup.Put("/usehelth", func(ctx *fiber.Ctx) error {
-			item_ := &models.UseHelth{}
+			item_ := &models.Usehelth{}
 			ctx.BodyParser(item_)
-			var controller rest.UseHelthController
+			var controller rest.UsehelthController
 			controller.Init(ctx)
 			if item_ != nil {
 				controller.Update(item_)
@@ -1055,9 +1043,9 @@ func SetRouter(app *fiber.App) {
 		})
 
 		apiGroup.Delete("/usehelth", func(ctx *fiber.Ctx) error {
-			item_ := &models.UseHelth{}
+			item_ := &models.Usehelth{}
 			ctx.BodyParser(item_)
-			var controller rest.UseHelthController
+			var controller rest.UsehelthController
 			controller.Init(ctx)
 			if item_ != nil {
 				controller.Delete(item_)

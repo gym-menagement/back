@@ -1,112 +1,237 @@
 package rest
 
+
 import (
 	"gym/controllers"
 	"gym/models"
+
+    "strings"
 )
 
 type RockerController struct {
 	controllers.Controller
 }
 
-func (c *RockerController) Index(page int, pagesize int) {
-	conn := c.NewConnection()
-
-	manager := models.NewRockerManager(conn)
-
-    var args []interface{}
-
-    gym := c.Query("gym")
-    if gym != "" {
-        args = append(args, models.Where{Column:"gym", Value:gym, Compare:"="})
-    }    
-
-    name := c.Query("name")
-    if name != "" {
-        args = append(args, models.Where{Column:"name", Value:name, Compare:"="})
-    }
-
-	available := c.Query("available")
-    if available != "" {
-        args = append(args, models.Where{Column:"available", Value:available, Compare:"="})
-    }
-
-    startday := c.Query("startday")
-    if startday != "" {
-        args = append(args, models.Where{Column:"startday", Value:startday, Compare:"="})
-    }
-
-    endday := c.Query("endday")
-    if endday != "" {
-        args = append(args, models.Where{Column:"endday", Value:endday, Compare:"="})
-    }
-    startdate := c.Query("startdate")
-    enddate := c.Query("enddate")
-    if startdate != "" && enddate != "" {
-        var v [2]string
-        v[0] = startdate
-        v[1] = enddate
-        args = append(args, models.Where{Column:"date", Value:v, Compare:"between"})
-    } else if  startdate != "" {
-        args = append(args, models.Where{Column:"date", Value:startdate, Compare:">="})
-    } else if  enddate != "" {
-        args = append(args, models.Where{Column:"date", Value:enddate, Compare:"<="})
-    }
-    
-    if page != 0 && pagesize != 0 {
-        args = append(args, models.Paging(page, pagesize))
-    }
-
-    orderby := c.Query("orderby")
-    if orderby == "desc" {
-        // if page != 0 && pagesize != 0 {
-            orderby = "id desc"
-        // }
-    } else {
-		orderby = ""
-	}
-
-    if orderby != "" {
-        args = append(args, models.Ordering(orderby))
-    }
-
-	items := manager.Find(args)
-	c.Set("items", items)
-
-    total := manager.Count(args)
-	c.Set("total", total)
-}
-
 func (c *RockerController) Read(id int64) {
+    
+    
 	conn := c.NewConnection()
 
 	manager := models.NewRockerManager(conn)
 	item := manager.Get(id)
 
+    
+    
     c.Set("item", item)
 }
 
-func (c *RockerController) Insert(item *models.Rocker) {
+func (c *RockerController) Index(page int, pagesize int) {
+    
+    
 	conn := c.NewConnection()
 
 	manager := models.NewRockerManager(conn)
-	manager.Insert(item)
+
+    var args []interface{}
+    
+    _group := c.Geti64("group")
+    if _group != 0 {
+        args = append(args, models.Where{Column:"group", Value:_group, Compare:"="})    
+    }
+    _name := c.Get("name")
+    if _name != "" {
+        args = append(args, models.Where{Column:"name", Value:_name, Compare:"="})
+        
+    }
+    _available := c.Geti("available")
+    if _available != 0 {
+        args = append(args, models.Where{Column:"available", Value:_available, Compare:"="})    
+    }
+    _startdate := c.Get("startdate")
+    _enddate := c.Get("enddate")
+    if _startdate != "" && _enddate != "" {        
+        var v [2]string
+        v[0] = _startdate
+        v[1] = _enddate  
+        args = append(args, models.Where{Column:"date", Value:v, Compare:"between"})    
+    } else if  _startdate != "" {          
+        args = append(args, models.Where{Column:"date", Value:_startdate, Compare:">="})
+    } else if  _enddate != "" {          
+        args = append(args, models.Where{Column:"date", Value:_enddate, Compare:"<="})            
+    }
+    
+
+    
+    
+    if page != 0 && pagesize != 0 {
+        args = append(args, models.Paging(page, pagesize))
+    }
+    
+    orderby := c.Get("orderby")
+    if orderby == "" {
+        if page != 0 && pagesize != 0 {
+            orderby = "id desc"
+            args = append(args, models.Ordering(orderby))
+        }
+    } else {
+        orderbys := strings.Split(orderby, ",")
+
+        str := ""
+        for i, v := range orderbys {
+            if i == 0 {
+                str += v
+            } else {
+                if strings.Contains(v, "_") {                   
+                    str += ", " + strings.Trim(v, " ")
+                } else {
+                    str += ", r_" + strings.Trim(v, " ")                
+                }
+            }
+        }
+        
+        args = append(args, models.Ordering(str))
+    }
+    
+	items := manager.Find(args)
+	c.Set("items", items)
+
+    if page == 1 {
+       total := manager.Count(args)
+	   c.Set("total", total)
+    }
+}
+
+func (c *RockerController) Count() {
+    
+    
+	conn := c.NewConnection()
+
+	manager := models.NewRockerManager(conn)
+
+    var args []interface{}
+    
+    _group := c.Geti64("group")
+    if _group != 0 {
+        args = append(args, models.Where{Column:"group", Value:_group, Compare:"="})    
+    }
+    _name := c.Get("name")
+    if _name != "" {
+        args = append(args, models.Where{Column:"name", Value:_name, Compare:"="})
+        
+        
+    }
+    _available := c.Geti("available")
+    if _available != 0 {
+        args = append(args, models.Where{Column:"available", Value:_available, Compare:"="})    
+    }
+    _startdate := c.Get("startdate")
+    _enddate := c.Get("enddate")
+
+    if _startdate != "" && _enddate != "" {        
+        var v [2]string
+        v[0] = _startdate
+        v[1] = _enddate  
+        args = append(args, models.Where{Column:"date", Value:v, Compare:"between"})    
+    } else if  _startdate != "" {          
+        args = append(args, models.Where{Column:"date", Value:_startdate, Compare:">="})
+    } else if  _enddate != "" {          
+        args = append(args, models.Where{Column:"date", Value:_enddate, Compare:"<="})            
+    }
+    
+    
+    
+    
+    total := manager.Count(args)
+	c.Set("total", total)
+}
+
+func (c *RockerController) Insert(item *models.Rocker) {
+    
+    
+	conn := c.NewConnection()
+    
+	manager := models.NewRockerManager(conn)
+	err := manager.Insert(item)
+    if err != nil {
+        c.Set("code", "error")    
+        c.Set("error", err)
+        return
+    }
 
     id := manager.GetIdentity()
     c.Result["id"] = id
     item.Id = id
 }
 
+func (c *RockerController) Insertbatch(item *[]models.Rocker) {  
+    if item == nil || len(*item) == 0 {
+        return
+    }
+
+    rows := len(*item)
+    
+    
+    
+	conn := c.NewConnection()
+    
+	manager := models.NewRockerManager(conn)
+
+    for i := 0; i < rows; i++ {
+	    err := manager.Insert(&((*item)[i]))
+        if err != nil {
+            c.Set("code", "error")    
+            c.Set("error", err)
+            return
+        }
+    }
+}
+
 func (c *RockerController) Update(item *models.Rocker) {
+    
+    
 	conn := c.NewConnection()
 
 	manager := models.NewRockerManager(conn)
-	manager.Update(item)
+    err := manager.Update(item)
+    if err != nil {
+        c.Set("code", "error")    
+        c.Set("error", err)
+        return
+    }
 }
 
 func (c *RockerController) Delete(item *models.Rocker) {
-	conn := c.NewConnection()
+    
+    
+    conn := c.NewConnection()
 
 	manager := models.NewRockerManager(conn)
-	manager.Delete(item.Id)
+
+    
+	err := manager.Delete(item.Id)
+    if err != nil {
+        c.Set("code", "error")    
+        c.Set("error", err)
+    }
 }
+
+func (c *RockerController) Deletebatch(item *[]models.Rocker) {
+    
+    
+    conn := c.NewConnection()
+
+	manager := models.NewRockerManager(conn)
+
+    for _, v := range *item {
+        
+    
+	    err := manager.Delete(v.Id)
+        if err != nil {
+            c.Set("code", "error")    
+            c.Set("error", err)
+            return
+        }
+    }
+}
+
+

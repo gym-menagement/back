@@ -1,128 +1,308 @@
 package rest
 
+
 import (
 	"gym/controllers"
 	"gym/models"
+
+    "strings"
 )
 
-type UseHelthController struct {
+type UsehelthController struct {
 	controllers.Controller
 }
 
-func (c *UseHelthController) Index(page int, pagesize int) {
+func (c *UsehelthController) Read(id int64) {
+    
+    
 	conn := c.NewConnection()
 
-	manager := models.NewUseHelthManager(conn)
+	manager := models.NewUsehelthManager(conn)
+	item := manager.Get(id)
+
+    
+    
+    c.Set("item", item)
+}
+
+func (c *UsehelthController) Index(page int, pagesize int) {
+    
+    
+	conn := c.NewConnection()
+
+	manager := models.NewUsehelthManager(conn)
 
     var args []interface{}
-
-    order := c.Query("order")
-    if order != "" {
-        args = append(args, models.Where{Column:"order", Value:order, Compare:"="})
+    
+    _order := c.Geti64("order")
+    if _order != 0 {
+        args = append(args, models.Where{Column:"order", Value:_order, Compare:"="})    
     }
-
-	helth := c.Query("helth")
-    if helth != "" {
-        args = append(args, models.Where{Column:"helth", Value:helth, Compare:"="})
+    _helth := c.Geti64("helth")
+    if _helth != 0 {
+        args = append(args, models.Where{Column:"helth", Value:_helth, Compare:"="})    
     }
-
-    user := c.Query("user")
-    if user != "" {
-        args = append(args, models.Where{Column:"user", Value:user, Compare:"="})
+    _user := c.Geti64("user")
+    if _user != 0 {
+        args = append(args, models.Where{Column:"user", Value:_user, Compare:"="})    
     }
-
-	rocker := c.Query("rocker")
-    if rocker != "" {
-        args = append(args, models.Where{Column:"rocker", Value:rocker, Compare:"="})
+    _rocker := c.Geti64("rocker")
+    if _rocker != 0 {
+        args = append(args, models.Where{Column:"rocker", Value:_rocker, Compare:"="})    
     }
-
-	term := c.Query("term")
-    if term != "" {
-        args = append(args, models.Where{Column:"term", Value:term, Compare:"="})
+    _term := c.Geti64("term")
+    if _term != 0 {
+        args = append(args, models.Where{Column:"term", Value:_term, Compare:"="})    
     }
-
-	discount := c.Query("discount")
-    if discount != "" {
-        args = append(args, models.Where{Column:"discount", Value:discount, Compare:"="})
+    _discount := c.Geti64("discount")
+    if _discount != 0 {
+        args = append(args, models.Where{Column:"discount", Value:_discount, Compare:"="})    
     }
-
-    startday := c.Query("startday")
-    if startday != "" {
-        args = append(args, models.Where{Column:"startday", Value:startday, Compare:"="})
-    }
-
-    endday := c.Query("endday")
-    if endday != "" {
-        args = append(args, models.Where{Column:"endday", Value:endday, Compare:"="})
-    }
-	
-    startdate := c.Query("startdate")
-    enddate := c.Query("enddate")
-    if startdate != "" && enddate != "" {
+    _startstartday := c.Get("startstartday")
+    _endstartday := c.Get("endstartday")
+    if _startstartday != "" && _endstartday != "" {        
         var v [2]string
-        v[0] = startdate
-        v[1] = enddate
-        args = append(args, models.Where{Column:"date", Value:v, Compare:"between"})
-    } else if  startdate != "" {
-        args = append(args, models.Where{Column:"date", Value:startdate, Compare:">="})
-    } else if  enddate != "" {
-        args = append(args, models.Where{Column:"date", Value:enddate, Compare:"<="})
+        v[0] = _startstartday
+        v[1] = _endstartday  
+        args = append(args, models.Where{Column:"startday", Value:v, Compare:"between"})    
+    } else if  _startstartday != "" {          
+        args = append(args, models.Where{Column:"startday", Value:_startstartday, Compare:">="})
+    } else if  _endstartday != "" {          
+        args = append(args, models.Where{Column:"startday", Value:_endstartday, Compare:"<="})            
     }
+    _startendday := c.Get("startendday")
+    _endendday := c.Get("endendday")
+    if _startendday != "" && _endendday != "" {        
+        var v [2]string
+        v[0] = _startendday
+        v[1] = _endendday  
+        args = append(args, models.Where{Column:"endday", Value:v, Compare:"between"})    
+    } else if  _startendday != "" {          
+        args = append(args, models.Where{Column:"endday", Value:_startendday, Compare:">="})
+    } else if  _endendday != "" {          
+        args = append(args, models.Where{Column:"endday", Value:_endendday, Compare:"<="})            
+    }
+    _startdate := c.Get("startdate")
+    _enddate := c.Get("enddate")
+    if _startdate != "" && _enddate != "" {        
+        var v [2]string
+        v[0] = _startdate
+        v[1] = _enddate  
+        args = append(args, models.Where{Column:"date", Value:v, Compare:"between"})    
+    } else if  _startdate != "" {          
+        args = append(args, models.Where{Column:"date", Value:_startdate, Compare:">="})
+    } else if  _enddate != "" {          
+        args = append(args, models.Where{Column:"date", Value:_enddate, Compare:"<="})            
+    }
+    
+
+    
     
     if page != 0 && pagesize != 0 {
         args = append(args, models.Paging(page, pagesize))
     }
-
-    orderby := c.Query("orderby")
-    if orderby == "desc" {
-        // if page != 0 && pagesize != 0 {
+    
+    orderby := c.Get("orderby")
+    if orderby == "" {
+        if page != 0 && pagesize != 0 {
             orderby = "id desc"
-        // }
+            args = append(args, models.Ordering(orderby))
+        }
     } else {
-		orderby = ""
-	}
+        orderbys := strings.Split(orderby, ",")
 
-    if orderby != "" {
-        args = append(args, models.Ordering(orderby))
+        str := ""
+        for i, v := range orderbys {
+            if i == 0 {
+                str += v
+            } else {
+                if strings.Contains(v, "_") {                   
+                    str += ", " + strings.Trim(v, " ")
+                } else {
+                    str += ", uh_" + strings.Trim(v, " ")                
+                }
+            }
+        }
+        
+        args = append(args, models.Ordering(str))
     }
-
+    
 	items := manager.Find(args)
 	c.Set("items", items)
 
+    if page == 1 {
+       total := manager.Count(args)
+	   c.Set("total", total)
+    }
+}
+
+func (c *UsehelthController) Count() {
+    
+    
+	conn := c.NewConnection()
+
+	manager := models.NewUsehelthManager(conn)
+
+    var args []interface{}
+    
+    _order := c.Geti64("order")
+    if _order != 0 {
+        args = append(args, models.Where{Column:"order", Value:_order, Compare:"="})    
+    }
+    _helth := c.Geti64("helth")
+    if _helth != 0 {
+        args = append(args, models.Where{Column:"helth", Value:_helth, Compare:"="})    
+    }
+    _user := c.Geti64("user")
+    if _user != 0 {
+        args = append(args, models.Where{Column:"user", Value:_user, Compare:"="})    
+    }
+    _rocker := c.Geti64("rocker")
+    if _rocker != 0 {
+        args = append(args, models.Where{Column:"rocker", Value:_rocker, Compare:"="})    
+    }
+    _term := c.Geti64("term")
+    if _term != 0 {
+        args = append(args, models.Where{Column:"term", Value:_term, Compare:"="})    
+    }
+    _discount := c.Geti64("discount")
+    if _discount != 0 {
+        args = append(args, models.Where{Column:"discount", Value:_discount, Compare:"="})    
+    }
+    _startstartday := c.Get("startstartday")
+    _endstartday := c.Get("endstartday")
+
+    if _startstartday != "" && _endstartday != "" {        
+        var v [2]string
+        v[0] = _startstartday
+        v[1] = _endstartday  
+        args = append(args, models.Where{Column:"startday", Value:v, Compare:"between"})    
+    } else if  _startstartday != "" {          
+        args = append(args, models.Where{Column:"startday", Value:_startstartday, Compare:">="})
+    } else if  _endstartday != "" {          
+        args = append(args, models.Where{Column:"startday", Value:_endstartday, Compare:"<="})            
+    }
+    _startendday := c.Get("startendday")
+    _endendday := c.Get("endendday")
+
+    if _startendday != "" && _endendday != "" {        
+        var v [2]string
+        v[0] = _startendday
+        v[1] = _endendday  
+        args = append(args, models.Where{Column:"endday", Value:v, Compare:"between"})    
+    } else if  _startendday != "" {          
+        args = append(args, models.Where{Column:"endday", Value:_startendday, Compare:">="})
+    } else if  _endendday != "" {          
+        args = append(args, models.Where{Column:"endday", Value:_endendday, Compare:"<="})            
+    }
+    _startdate := c.Get("startdate")
+    _enddate := c.Get("enddate")
+
+    if _startdate != "" && _enddate != "" {        
+        var v [2]string
+        v[0] = _startdate
+        v[1] = _enddate  
+        args = append(args, models.Where{Column:"date", Value:v, Compare:"between"})    
+    } else if  _startdate != "" {          
+        args = append(args, models.Where{Column:"date", Value:_startdate, Compare:">="})
+    } else if  _enddate != "" {          
+        args = append(args, models.Where{Column:"date", Value:_enddate, Compare:"<="})            
+    }
+    
+    
+    
+    
     total := manager.Count(args)
 	c.Set("total", total)
 }
 
-func (c *UseHelthController) Read(id int64) {
+func (c *UsehelthController) Insert(item *models.Usehelth) {
+    
+    
 	conn := c.NewConnection()
-
-	manager := models.NewUseHelthManager(conn)
-	item := manager.Get(id)
-
-    c.Set("item", item)
-}
-
-func (c *UseHelthController) Insert(item *models.UseHelth) {
-	conn := c.NewConnection()
-
-	manager := models.NewUseHelthManager(conn)
-	manager.Insert(item)
+    
+	manager := models.NewUsehelthManager(conn)
+	err := manager.Insert(item)
+    if err != nil {
+        c.Set("code", "error")    
+        c.Set("error", err)
+        return
+    }
 
     id := manager.GetIdentity()
     c.Result["id"] = id
     item.Id = id
 }
 
-func (c *UseHelthController) Update(item *models.UseHelth) {
-	conn := c.NewConnection()
+func (c *UsehelthController) Insertbatch(item *[]models.Usehelth) {  
+    if item == nil || len(*item) == 0 {
+        return
+    }
 
-	manager := models.NewUseHelthManager(conn)
-	manager.Update(item)
+    rows := len(*item)
+    
+    
+    
+	conn := c.NewConnection()
+    
+	manager := models.NewUsehelthManager(conn)
+
+    for i := 0; i < rows; i++ {
+	    err := manager.Insert(&((*item)[i]))
+        if err != nil {
+            c.Set("code", "error")    
+            c.Set("error", err)
+            return
+        }
+    }
 }
 
-func (c *UseHelthController) Delete(item *models.UseHelth) {
+func (c *UsehelthController) Update(item *models.Usehelth) {
+    
+    
 	conn := c.NewConnection()
 
-	manager := models.NewUseHelthManager(conn)
-	manager.Delete(item.Id)
+	manager := models.NewUsehelthManager(conn)
+    err := manager.Update(item)
+    if err != nil {
+        c.Set("code", "error")    
+        c.Set("error", err)
+        return
+    }
 }
+
+func (c *UsehelthController) Delete(item *models.Usehelth) {
+    
+    
+    conn := c.NewConnection()
+
+	manager := models.NewUsehelthManager(conn)
+
+    
+	err := manager.Delete(item.Id)
+    if err != nil {
+        c.Set("code", "error")    
+        c.Set("error", err)
+    }
+}
+
+func (c *UsehelthController) Deletebatch(item *[]models.Usehelth) {
+    
+    
+    conn := c.NewConnection()
+
+	manager := models.NewUsehelthManager(conn)
+
+    for _, v := range *item {
+        
+    
+	    err := manager.Delete(v.Id)
+        if err != nil {
+            c.Set("code", "error")    
+            c.Set("error", err)
+            return
+        }
+    }
+}
+
+
