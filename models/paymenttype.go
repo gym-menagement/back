@@ -2,7 +2,7 @@ package models
 
 import (
     "gym/global/config"
-    
+    "gym/models/paymenttype"
     "database/sql"
     "errors"
     "fmt"
@@ -92,7 +92,7 @@ func (p *PaymenttypeManager) Exec(query string, params ...interface{}) (sql.Resu
 }
 
 func (p *PaymenttypeManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
-    if p.Isolation == true {
+    if p.Isolation {
         query += " for update"
     }
 
@@ -159,6 +159,28 @@ func (p *PaymenttypeManager) GetQuerySelect() string {
     return ret.String()
 }
 
+func (p *PaymenttypeManager) GetQueryGroup(name string) string {
+    if p.SelectQuery != "" {
+        return p.SelectQuery    
+    }
+
+    var ret strings.Builder
+    ret.WriteString("select pt_")
+    ret.WriteString(name)
+    ret.WriteString(", count(*) from paymenttype_tb ")
+
+    if p.Index != "" {
+        ret.WriteString(" use index(")
+        ret.WriteString(p.Index)
+        ret.WriteString(")")
+    }
+
+    ret.WriteString(" where 1=1 ")
+    
+
+    return ret.String()
+}
+
 func (p *PaymenttypeManager) Truncate() error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
@@ -216,6 +238,7 @@ func (p *PaymenttypeManager) Insert(item *Paymenttype) error {
 
     return err
 }
+
 func (p *PaymenttypeManager) Delete(id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
@@ -233,6 +256,113 @@ func (p *PaymenttypeManager) Delete(id int64) error {
     
     return err
 }
+
+func (p *PaymenttypeManager) DeleteAll() error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+    query := "delete from paymenttype_tb"
+    _, err := p.Exec(query)
+
+    if err != nil {
+       if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+       }
+    }
+
+    return err
+}
+
+func (p *PaymenttypeManager) MakeQuery(initQuery string , postQuery string, initParams []interface{}, args []interface{}) (string, []interface{}) {
+    var params []interface{}
+    if initParams != nil {
+        params = append(params, initParams...)
+    }
+
+    pos := 1
+
+    var query strings.Builder
+	query.WriteString(initQuery)
+
+    for _, arg := range args {
+        switch v := arg.(type) {        
+        case Where:
+            item := v
+
+            if strings.Contains(item.Column, "_") {
+                query.WriteString(" and ")
+            } else {
+                query.WriteString(" and pt_")
+            }
+            query.WriteString(item.Column)
+
+            if item.Compare == "in" {
+                query.WriteString(" in (")
+                query.WriteString(strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]"))
+                query.WriteString(")")
+            } else if item.Compare == "not in" {
+                query.WriteString(" not in (")
+                query.WriteString(strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]"))
+                query.WriteString(")")
+            } else if item.Compare == "between" {
+                if config.Database.Type == config.Postgresql {
+                    query.WriteString(fmt.Sprintf(" between $%v and $%v", pos, pos + 1))
+                    pos += 2
+                } else {
+                    query.WriteString(" between ? and ?")
+                }
+
+                s := item.Value.([2]string)
+                params = append(params, s[0])
+                params = append(params, s[1])
+            } else {
+                if config.Database.Type == config.Postgresql {
+                    query.WriteString(" ")
+                    query.WriteString(item.Compare)
+                    query.WriteString(fmt.Sprintf(" $%v", pos))
+                    pos++
+                } else {
+                    query.WriteString(" ")
+                    query.WriteString(item.Compare)
+                    query.WriteString(" ?")
+                }
+                if item.Compare == "like" {
+                    params = append(params, "%" + item.Value.(string) + "%")
+                } else {
+                    params = append(params, item.Value)                
+                }
+            }
+        case Custom:
+             item := v
+
+            query.WriteString(" and ")
+            query.WriteString(item.Query)
+        }        
+    }
+
+	query.WriteString(postQuery)
+
+    return query.String(), params
+}
+
+func (p *PaymenttypeManager) DeleteWhere(args []interface{}) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+    query, params := p.MakeQuery("delete from paymenttype_tb where 1=1", "", nil, args)
+    _, err := p.Exec(query, params...)
+
+    if err != nil {
+       if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+       }
+    }
+
+    return err
+}
+
 func (p *PaymenttypeManager) Update(item *Paymenttype) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
@@ -256,6 +386,109 @@ func (p *PaymenttypeManager) Update(item *Paymenttype) error {
         
     return err
 }
+
+func (p *PaymenttypeManager) UpdateWhere(columns []paymenttype.Params, args []interface{}) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+    var initQuery strings.Builder
+    var initParams []interface{}
+
+    initQuery.WriteString("update paymenttype_tb set ")
+    for i, v := range columns {
+        if i > 0 {
+            initQuery.WriteString(", ")
+        }
+
+        if v.Column == paymenttype.ColumnId {
+        initQuery.WriteString("pt_id = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == paymenttype.ColumnGym {
+        initQuery.WriteString("pt_gym = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == paymenttype.ColumnName {
+        initQuery.WriteString("pt_name = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == paymenttype.ColumnDate {
+        initQuery.WriteString("pt_date = ?")
+        initParams = append(initParams, v.Value)
+        } else {
+        
+        }
+    }
+
+    initQuery.WriteString(" where 1=1 ")
+
+    query, params := p.MakeQuery(initQuery.String(), "", initParams, args)
+    _, err := p.Exec(query, params...)
+
+    if err != nil {
+       if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+       }
+    }
+
+    
+    return err
+}
+
+/*
+
+
+func (p *PaymenttypeManager) UpdateGym(value int64, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update paymenttype_tb set pt_gym = ? where pt_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *PaymenttypeManager) UpdateName(value string, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update paymenttype_tb set pt_name = ? where pt_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *PaymenttypeManager) UpdateDate(value string, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update paymenttype_tb set pt_date = ? where pt_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+
+*/
 
 func (p *PaymenttypeManager) GetIdentity() int64 {
     if !p.Conn.IsConnect() {
@@ -381,78 +614,6 @@ func (p *PaymenttypeManager) GetWhere(args []interface{}) *Paymenttype {
     }
 
     return &items[0]
-}
-
-func (p *PaymenttypeManager) MakeQuery(initQuery string , postQuery string, initParams []interface{}, args []interface{}) (string, []interface{}) {
-    var params []interface{}
-    if initParams != nil {
-        params = append(params, initParams...)
-    }
-
-    pos := 1
-
-    var query strings.Builder
-	query.WriteString(initQuery)
-
-    for _, arg := range args {
-        switch v := arg.(type) {        
-        case Where:
-            item := v
-
-            if strings.Contains(item.Column, "_") {
-                query.WriteString(" and ")
-            } else {
-                query.WriteString(" and pt_")
-            }
-            query.WriteString(item.Column)
-
-            if item.Compare == "in" {
-                query.WriteString(" in (")
-                query.WriteString(strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]"))
-                query.WriteString(")")
-            } else if item.Compare == "not in" {
-                query.WriteString(" not in (")
-                query.WriteString(strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]"))
-                query.WriteString(")")
-            } else if item.Compare == "between" {
-                if config.Database.Type == config.Postgresql {
-                    query.WriteString(fmt.Sprintf(" between $%v and $%v", pos, pos + 1))
-                    pos += 2
-                } else {
-                    query.WriteString(" between ? and ?")
-                }
-
-                s := item.Value.([2]string)
-                params = append(params, s[0])
-                params = append(params, s[1])
-            } else {
-                if config.Database.Type == config.Postgresql {
-                    query.WriteString(" ")
-                    query.WriteString(item.Compare)
-                    query.WriteString(fmt.Sprintf(" $%v", pos))
-                    pos++
-                } else {
-                    query.WriteString(" ")
-                    query.WriteString(item.Compare)
-                    query.WriteString(" ?")
-                }
-                if item.Compare == "like" {
-                    params = append(params, "%" + item.Value.(string) + "%")
-                } else {
-                    params = append(params, item.Value)                
-                }
-            }
-        case Custom:
-             item := v
-
-            query.WriteString(" and ")
-            query.WriteString(item.Query)
-        }        
-    }
-
-	query.WriteString(postQuery)
-
-    return query.String(), params
 }
 
 func (p *PaymenttypeManager) Count(args []interface{}) int {
@@ -597,7 +758,9 @@ func (p *PaymenttypeManager) Find(args []interface{}) []Paymenttype {
             orderby = "pt_id desc"
         } else {
             if !strings.Contains(orderby, "_") {                   
-                orderby = "pt_" + orderby
+                if strings.ToUpper(orderby) != "RAND()" {
+                    orderby = "pt_" + orderby
+                }
             }
             
         }
@@ -621,7 +784,9 @@ func (p *PaymenttypeManager) Find(args []interface{}) []Paymenttype {
             orderby = "pt_id"
         } else {
             if !strings.Contains(orderby, "_") {
-                orderby = "pt_" + orderby
+                if strings.ToUpper(orderby) != "RAND()" {
+                    orderby = "pt_" + orderby
+                }
             }
         }
         query.WriteString(" order by ")
@@ -634,7 +799,7 @@ func (p *PaymenttypeManager) Find(args []interface{}) []Paymenttype {
        if p.Log {
           log.Error().Str("error", err.Error()).Msg("SQL")
        }
-        var items []Paymenttype
+        items := make([]Paymenttype, 0)
         return items
     }
 
@@ -646,3 +811,107 @@ func (p *PaymenttypeManager) Find(args []interface{}) []Paymenttype {
 
 
 
+
+func (p *PaymenttypeManager) GroupBy(name string, args []interface{}) []Groupby {
+    if !p.Conn.IsConnect() {
+        var items []Groupby
+        return items
+    }
+
+    var params []interface{}
+    baseQuery := p.GetQueryGroup(name)
+    var query strings.Builder
+    pos := 1
+
+    for _, arg := range args {
+        switch v := arg.(type) {
+        case Where:
+            item := v
+
+            if strings.Contains(item.Column, "_") {
+                query.WriteString(" and ")
+            } else {
+                query.WriteString(" and pt_")
+            }
+            query.WriteString(item.Column)
+            
+            if item.Compare == "in" {
+                query.WriteString(" in (")
+                query.WriteString(strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]"))
+                query.WriteString(")")
+            } else if item.Compare == "not in" {
+                query.WriteString(" not in (")
+                query.WriteString(strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]"))
+                query.WriteString(")")
+            } else if item.Compare == "between" {
+                if config.Database.Type == config.Postgresql {
+                    query.WriteString(fmt.Sprintf(" between $%v and $%v", pos, pos + 1))
+                    pos += 2
+                } else {
+                    query.WriteString(" between ? and ?")
+                }
+
+                s := item.Value.([2]string)
+                params = append(params, s[0])
+                params = append(params, s[1])
+            } else {
+                if config.Database.Type == config.Postgresql {
+                    query.WriteString(" ")
+                    query.WriteString(item.Compare)
+                    query.WriteString(fmt.Sprintf(" $%v", pos))
+                    pos++
+                } else {
+                    query.WriteString(" ")
+                    query.WriteString(item.Compare)
+                    query.WriteString(" ?")
+                }
+                if item.Compare == "like" {
+                    params = append(params, "%" + item.Value.(string) + "%")
+                } else {
+                    params = append(params, item.Value)                
+                }
+            }
+        case Custom:
+             item := v
+
+            query.WriteString(" and ")
+            query.WriteString(item.Query)
+        case Base:
+             item := v
+
+             baseQuery = item.Query
+        }
+    }
+    
+    query.WriteString(" group by pt_")
+    query.WriteString(name)
+
+    rows, err := p.Query(baseQuery + query.String(), params...)
+
+    if err != nil {
+       if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+       }
+        var items []Groupby
+        return items
+    }
+
+    defer rows.Close()
+
+    var items []Groupby
+
+    for rows.Next() {
+        var item Groupby
+        err := rows.Scan(&item.Value, &item.Count)
+        if err != nil {
+           if p.Log {
+                log.Error().Str("error", err.Error()).Msg("SQL")
+           }
+           break
+        }
+
+        items = append(items, item)
+    }
+
+    return items
+}

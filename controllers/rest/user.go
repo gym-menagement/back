@@ -309,7 +309,7 @@ func (c *UserController) Count() {
 	c.Set("total", total)
 }
 
-func (c *UserController) Insert(item *models.User) {
+func (c *UserController) Insert(item *models.UserUpdate) {
     
     
 	conn := c.NewConnection()
@@ -327,7 +327,7 @@ func (c *UserController) Insert(item *models.User) {
     item.Id = id
 }
 
-func (c *UserController) Insertbatch(item *[]models.User) {  
+func (c *UserController) Insertbatch(item *[]models.UserUpdate) {  
     if item == nil || len(*item) == 0 {
         return
     }
@@ -350,7 +350,7 @@ func (c *UserController) Insertbatch(item *[]models.User) {
     }
 }
 
-func (c *UserController) Update(item *models.User) {
+func (c *UserController) Update(item *models.UserUpdate) {
     
     
 	conn := c.NewConnection()

@@ -2,7 +2,7 @@ package models
 
 import (
     "gym/global/config"
-    
+    "gym/models/stop"
     "database/sql"
     "errors"
     "fmt"
@@ -94,7 +94,7 @@ func (p *StopManager) Exec(query string, params ...interface{}) (sql.Result, err
 }
 
 func (p *StopManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
-    if p.Isolation == true {
+    if p.Isolation {
         query += " for update"
     }
 
@@ -153,6 +153,28 @@ func (p *StopManager) GetQuerySelect() string {
     if p.JoinQuery != "" {
         ret.WriteString(", ")
         ret.WriteString(p.JoinQuery)
+    }
+
+    ret.WriteString(" where 1=1 ")
+    
+
+    return ret.String()
+}
+
+func (p *StopManager) GetQueryGroup(name string) string {
+    if p.SelectQuery != "" {
+        return p.SelectQuery    
+    }
+
+    var ret strings.Builder
+    ret.WriteString("select s_")
+    ret.WriteString(name)
+    ret.WriteString(", count(*) from stop_tb ")
+
+    if p.Index != "" {
+        ret.WriteString(" use index(")
+        ret.WriteString(p.Index)
+        ret.WriteString(")")
     }
 
     ret.WriteString(" where 1=1 ")
@@ -226,6 +248,7 @@ func (p *StopManager) Insert(item *Stop) error {
 
     return err
 }
+
 func (p *StopManager) Delete(id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
@@ -243,6 +266,113 @@ func (p *StopManager) Delete(id int64) error {
     
     return err
 }
+
+func (p *StopManager) DeleteAll() error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+    query := "delete from stop_tb"
+    _, err := p.Exec(query)
+
+    if err != nil {
+       if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+       }
+    }
+
+    return err
+}
+
+func (p *StopManager) MakeQuery(initQuery string , postQuery string, initParams []interface{}, args []interface{}) (string, []interface{}) {
+    var params []interface{}
+    if initParams != nil {
+        params = append(params, initParams...)
+    }
+
+    pos := 1
+
+    var query strings.Builder
+	query.WriteString(initQuery)
+
+    for _, arg := range args {
+        switch v := arg.(type) {        
+        case Where:
+            item := v
+
+            if strings.Contains(item.Column, "_") {
+                query.WriteString(" and ")
+            } else {
+                query.WriteString(" and s_")
+            }
+            query.WriteString(item.Column)
+
+            if item.Compare == "in" {
+                query.WriteString(" in (")
+                query.WriteString(strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]"))
+                query.WriteString(")")
+            } else if item.Compare == "not in" {
+                query.WriteString(" not in (")
+                query.WriteString(strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]"))
+                query.WriteString(")")
+            } else if item.Compare == "between" {
+                if config.Database.Type == config.Postgresql {
+                    query.WriteString(fmt.Sprintf(" between $%v and $%v", pos, pos + 1))
+                    pos += 2
+                } else {
+                    query.WriteString(" between ? and ?")
+                }
+
+                s := item.Value.([2]string)
+                params = append(params, s[0])
+                params = append(params, s[1])
+            } else {
+                if config.Database.Type == config.Postgresql {
+                    query.WriteString(" ")
+                    query.WriteString(item.Compare)
+                    query.WriteString(fmt.Sprintf(" $%v", pos))
+                    pos++
+                } else {
+                    query.WriteString(" ")
+                    query.WriteString(item.Compare)
+                    query.WriteString(" ?")
+                }
+                if item.Compare == "like" {
+                    params = append(params, "%" + item.Value.(string) + "%")
+                } else {
+                    params = append(params, item.Value)                
+                }
+            }
+        case Custom:
+             item := v
+
+            query.WriteString(" and ")
+            query.WriteString(item.Query)
+        }        
+    }
+
+	query.WriteString(postQuery)
+
+    return query.String(), params
+}
+
+func (p *StopManager) DeleteWhere(args []interface{}) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+    query, params := p.MakeQuery("delete from stop_tb where 1=1", "", nil, args)
+    _, err := p.Exec(query, params...)
+
+    if err != nil {
+       if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+       }
+    }
+
+    return err
+}
+
 func (p *StopManager) Update(item *Stop) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
@@ -274,6 +404,149 @@ func (p *StopManager) Update(item *Stop) error {
         
     return err
 }
+
+func (p *StopManager) UpdateWhere(columns []stop.Params, args []interface{}) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+    var initQuery strings.Builder
+    var initParams []interface{}
+
+    initQuery.WriteString("update stop_tb set ")
+    for i, v := range columns {
+        if i > 0 {
+            initQuery.WriteString(", ")
+        }
+
+        if v.Column == stop.ColumnId {
+        initQuery.WriteString("s_id = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == stop.ColumnUsehelth {
+        initQuery.WriteString("s_usehelth = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == stop.ColumnStartday {
+        initQuery.WriteString("s_startday = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == stop.ColumnEndday {
+        initQuery.WriteString("s_endday = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == stop.ColumnCount {
+        initQuery.WriteString("s_count = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == stop.ColumnDate {
+        initQuery.WriteString("s_date = ?")
+        initParams = append(initParams, v.Value)
+        } else {
+        
+        }
+    }
+
+    initQuery.WriteString(" where 1=1 ")
+
+    query, params := p.MakeQuery(initQuery.String(), "", initParams, args)
+    _, err := p.Exec(query, params...)
+
+    if err != nil {
+       if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+       }
+    }
+
+    
+    return err
+}
+
+/*
+
+
+func (p *StopManager) UpdateUsehelth(value int64, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update stop_tb set s_usehelth = ? where s_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *StopManager) UpdateStartday(value string, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update stop_tb set s_startday = ? where s_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *StopManager) UpdateEndday(value string, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update stop_tb set s_endday = ? where s_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *StopManager) UpdateCount(value int, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update stop_tb set s_count = ? where s_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *StopManager) UpdateDate(value string, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update stop_tb set s_date = ? where s_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+
+*/
 
 func (p *StopManager) GetIdentity() int64 {
     if !p.Conn.IsConnect() {
@@ -433,78 +706,6 @@ func (p *StopManager) GetWhere(args []interface{}) *Stop {
     return &items[0]
 }
 
-func (p *StopManager) MakeQuery(initQuery string , postQuery string, initParams []interface{}, args []interface{}) (string, []interface{}) {
-    var params []interface{}
-    if initParams != nil {
-        params = append(params, initParams...)
-    }
-
-    pos := 1
-
-    var query strings.Builder
-	query.WriteString(initQuery)
-
-    for _, arg := range args {
-        switch v := arg.(type) {        
-        case Where:
-            item := v
-
-            if strings.Contains(item.Column, "_") {
-                query.WriteString(" and ")
-            } else {
-                query.WriteString(" and s_")
-            }
-            query.WriteString(item.Column)
-
-            if item.Compare == "in" {
-                query.WriteString(" in (")
-                query.WriteString(strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]"))
-                query.WriteString(")")
-            } else if item.Compare == "not in" {
-                query.WriteString(" not in (")
-                query.WriteString(strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]"))
-                query.WriteString(")")
-            } else if item.Compare == "between" {
-                if config.Database.Type == config.Postgresql {
-                    query.WriteString(fmt.Sprintf(" between $%v and $%v", pos, pos + 1))
-                    pos += 2
-                } else {
-                    query.WriteString(" between ? and ?")
-                }
-
-                s := item.Value.([2]string)
-                params = append(params, s[0])
-                params = append(params, s[1])
-            } else {
-                if config.Database.Type == config.Postgresql {
-                    query.WriteString(" ")
-                    query.WriteString(item.Compare)
-                    query.WriteString(fmt.Sprintf(" $%v", pos))
-                    pos++
-                } else {
-                    query.WriteString(" ")
-                    query.WriteString(item.Compare)
-                    query.WriteString(" ?")
-                }
-                if item.Compare == "like" {
-                    params = append(params, "%" + item.Value.(string) + "%")
-                } else {
-                    params = append(params, item.Value)                
-                }
-            }
-        case Custom:
-             item := v
-
-            query.WriteString(" and ")
-            query.WriteString(item.Query)
-        }        
-    }
-
-	query.WriteString(postQuery)
-
-    return query.String(), params
-}
-
 func (p *StopManager) Count(args []interface{}) int {
     if !p.Conn.IsConnect() {
         return 0
@@ -647,7 +848,9 @@ func (p *StopManager) Find(args []interface{}) []Stop {
             orderby = "s_id desc"
         } else {
             if !strings.Contains(orderby, "_") {                   
-                orderby = "s_" + orderby
+                if strings.ToUpper(orderby) != "RAND()" {
+                    orderby = "s_" + orderby
+                }
             }
             
         }
@@ -671,7 +874,9 @@ func (p *StopManager) Find(args []interface{}) []Stop {
             orderby = "s_id"
         } else {
             if !strings.Contains(orderby, "_") {
-                orderby = "s_" + orderby
+                if strings.ToUpper(orderby) != "RAND()" {
+                    orderby = "s_" + orderby
+                }
             }
         }
         query.WriteString(" order by ")
@@ -684,7 +889,7 @@ func (p *StopManager) Find(args []interface{}) []Stop {
        if p.Log {
           log.Error().Str("error", err.Error()).Msg("SQL")
        }
-        var items []Stop
+        items := make([]Stop, 0)
         return items
     }
 
@@ -816,4 +1021,108 @@ func (p *StopManager) Sum(args []interface{}) *Stop {
     }
 
     return &item        
+}
+
+func (p *StopManager) GroupBy(name string, args []interface{}) []Groupby {
+    if !p.Conn.IsConnect() {
+        var items []Groupby
+        return items
+    }
+
+    var params []interface{}
+    baseQuery := p.GetQueryGroup(name)
+    var query strings.Builder
+    pos := 1
+
+    for _, arg := range args {
+        switch v := arg.(type) {
+        case Where:
+            item := v
+
+            if strings.Contains(item.Column, "_") {
+                query.WriteString(" and ")
+            } else {
+                query.WriteString(" and s_")
+            }
+            query.WriteString(item.Column)
+            
+            if item.Compare == "in" {
+                query.WriteString(" in (")
+                query.WriteString(strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]"))
+                query.WriteString(")")
+            } else if item.Compare == "not in" {
+                query.WriteString(" not in (")
+                query.WriteString(strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]"))
+                query.WriteString(")")
+            } else if item.Compare == "between" {
+                if config.Database.Type == config.Postgresql {
+                    query.WriteString(fmt.Sprintf(" between $%v and $%v", pos, pos + 1))
+                    pos += 2
+                } else {
+                    query.WriteString(" between ? and ?")
+                }
+
+                s := item.Value.([2]string)
+                params = append(params, s[0])
+                params = append(params, s[1])
+            } else {
+                if config.Database.Type == config.Postgresql {
+                    query.WriteString(" ")
+                    query.WriteString(item.Compare)
+                    query.WriteString(fmt.Sprintf(" $%v", pos))
+                    pos++
+                } else {
+                    query.WriteString(" ")
+                    query.WriteString(item.Compare)
+                    query.WriteString(" ?")
+                }
+                if item.Compare == "like" {
+                    params = append(params, "%" + item.Value.(string) + "%")
+                } else {
+                    params = append(params, item.Value)                
+                }
+            }
+        case Custom:
+             item := v
+
+            query.WriteString(" and ")
+            query.WriteString(item.Query)
+        case Base:
+             item := v
+
+             baseQuery = item.Query
+        }
+    }
+    
+    query.WriteString(" group by s_")
+    query.WriteString(name)
+
+    rows, err := p.Query(baseQuery + query.String(), params...)
+
+    if err != nil {
+       if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+       }
+        var items []Groupby
+        return items
+    }
+
+    defer rows.Close()
+
+    var items []Groupby
+
+    for rows.Next() {
+        var item Groupby
+        err := rows.Scan(&item.Value, &item.Count)
+        if err != nil {
+           if p.Log {
+                log.Error().Str("error", err.Error()).Msg("SQL")
+           }
+           break
+        }
+
+        items = append(items, item)
+    }
+
+    return items
 }

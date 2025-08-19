@@ -2,9 +2,7 @@ package models
 
 import (
     "gym/global/config"
-    
     "gym/models/ipblock"
-    
     "database/sql"
     "errors"
     "fmt"
@@ -97,7 +95,7 @@ func (p *IpblockManager) Exec(query string, params ...interface{}) (sql.Result, 
 }
 
 func (p *IpblockManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
-    if p.Isolation == true {
+    if p.Isolation {
         query += " for update"
     }
 
@@ -164,6 +162,28 @@ func (p *IpblockManager) GetQuerySelect() string {
     return ret.String()
 }
 
+func (p *IpblockManager) GetQueryGroup(name string) string {
+    if p.SelectQuery != "" {
+        return p.SelectQuery    
+    }
+
+    var ret strings.Builder
+    ret.WriteString("select ib_")
+    ret.WriteString(name)
+    ret.WriteString(", count(*) from ipblock_tb ")
+
+    if p.Index != "" {
+        ret.WriteString(" use index(")
+        ret.WriteString(p.Index)
+        ret.WriteString(")")
+    }
+
+    ret.WriteString(" where 1=1 ")
+    
+
+    return ret.String()
+}
+
 func (p *IpblockManager) Truncate() error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
@@ -221,6 +241,7 @@ func (p *IpblockManager) Insert(item *Ipblock) error {
 
     return err
 }
+
 func (p *IpblockManager) Delete(id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
@@ -238,6 +259,113 @@ func (p *IpblockManager) Delete(id int64) error {
     
     return err
 }
+
+func (p *IpblockManager) DeleteAll() error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+    query := "delete from ipblock_tb"
+    _, err := p.Exec(query)
+
+    if err != nil {
+       if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+       }
+    }
+
+    return err
+}
+
+func (p *IpblockManager) MakeQuery(initQuery string , postQuery string, initParams []interface{}, args []interface{}) (string, []interface{}) {
+    var params []interface{}
+    if initParams != nil {
+        params = append(params, initParams...)
+    }
+
+    pos := 1
+
+    var query strings.Builder
+	query.WriteString(initQuery)
+
+    for _, arg := range args {
+        switch v := arg.(type) {        
+        case Where:
+            item := v
+
+            if strings.Contains(item.Column, "_") {
+                query.WriteString(" and ")
+            } else {
+                query.WriteString(" and ib_")
+            }
+            query.WriteString(item.Column)
+
+            if item.Compare == "in" {
+                query.WriteString(" in (")
+                query.WriteString(strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]"))
+                query.WriteString(")")
+            } else if item.Compare == "not in" {
+                query.WriteString(" not in (")
+                query.WriteString(strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]"))
+                query.WriteString(")")
+            } else if item.Compare == "between" {
+                if config.Database.Type == config.Postgresql {
+                    query.WriteString(fmt.Sprintf(" between $%v and $%v", pos, pos + 1))
+                    pos += 2
+                } else {
+                    query.WriteString(" between ? and ?")
+                }
+
+                s := item.Value.([2]string)
+                params = append(params, s[0])
+                params = append(params, s[1])
+            } else {
+                if config.Database.Type == config.Postgresql {
+                    query.WriteString(" ")
+                    query.WriteString(item.Compare)
+                    query.WriteString(fmt.Sprintf(" $%v", pos))
+                    pos++
+                } else {
+                    query.WriteString(" ")
+                    query.WriteString(item.Compare)
+                    query.WriteString(" ?")
+                }
+                if item.Compare == "like" {
+                    params = append(params, "%" + item.Value.(string) + "%")
+                } else {
+                    params = append(params, item.Value)                
+                }
+            }
+        case Custom:
+             item := v
+
+            query.WriteString(" and ")
+            query.WriteString(item.Query)
+        }        
+    }
+
+	query.WriteString(postQuery)
+
+    return query.String(), params
+}
+
+func (p *IpblockManager) DeleteWhere(args []interface{}) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+    query, params := p.MakeQuery("delete from ipblock_tb where 1=1", "", nil, args)
+    _, err := p.Exec(query, params...)
+
+    if err != nil {
+       if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+       }
+    }
+
+    return err
+}
+
 func (p *IpblockManager) Update(item *Ipblock) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
@@ -261,6 +389,169 @@ func (p *IpblockManager) Update(item *Ipblock) error {
         
     return err
 }
+
+func (p *IpblockManager) UpdateWhere(columns []ipblock.Params, args []interface{}) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+    var initQuery strings.Builder
+    var initParams []interface{}
+
+    initQuery.WriteString("update ipblock_tb set ")
+    for i, v := range columns {
+        if i > 0 {
+            initQuery.WriteString(", ")
+        }
+
+        if v.Column == ipblock.ColumnId {
+        initQuery.WriteString("ib_id = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == ipblock.ColumnAddress {
+        initQuery.WriteString("ib_address = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == ipblock.ColumnType {
+        initQuery.WriteString("ib_type = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == ipblock.ColumnPolicy {
+        initQuery.WriteString("ib_policy = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == ipblock.ColumnUse {
+        initQuery.WriteString("ib_use = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == ipblock.ColumnOrder {
+        initQuery.WriteString("ib_order = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == ipblock.ColumnDate {
+        initQuery.WriteString("ib_date = ?")
+        initParams = append(initParams, v.Value)
+        } else {
+        
+        }
+    }
+
+    initQuery.WriteString(" where 1=1 ")
+
+    query, params := p.MakeQuery(initQuery.String(), "", initParams, args)
+    _, err := p.Exec(query, params...)
+
+    if err != nil {
+       if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+       }
+    }
+
+    
+    return err
+}
+
+/*
+
+
+func (p *IpblockManager) UpdateAddress(value string, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update ipblock_tb set ib_address = ? where ib_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *IpblockManager) UpdateType(value ipblock.Type, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update ipblock_tb set ib_type = ? where ib_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *IpblockManager) UpdatePolicy(value ipblock.Policy, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update ipblock_tb set ib_policy = ? where ib_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *IpblockManager) UpdateUse(value ipblock.Use, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update ipblock_tb set ib_use = ? where ib_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *IpblockManager) UpdateOrder(value int, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update ipblock_tb set ib_order = ? where ib_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *IpblockManager) UpdateDate(value string, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update ipblock_tb set ib_date = ? where ib_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+
+*/
 
 func (p *IpblockManager) GetIdentity() int64 {
     if !p.Conn.IsConnect() {
@@ -389,78 +680,6 @@ func (p *IpblockManager) GetWhere(args []interface{}) *Ipblock {
     }
 
     return &items[0]
-}
-
-func (p *IpblockManager) MakeQuery(initQuery string , postQuery string, initParams []interface{}, args []interface{}) (string, []interface{}) {
-    var params []interface{}
-    if initParams != nil {
-        params = append(params, initParams...)
-    }
-
-    pos := 1
-
-    var query strings.Builder
-	query.WriteString(initQuery)
-
-    for _, arg := range args {
-        switch v := arg.(type) {        
-        case Where:
-            item := v
-
-            if strings.Contains(item.Column, "_") {
-                query.WriteString(" and ")
-            } else {
-                query.WriteString(" and ib_")
-            }
-            query.WriteString(item.Column)
-
-            if item.Compare == "in" {
-                query.WriteString(" in (")
-                query.WriteString(strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]"))
-                query.WriteString(")")
-            } else if item.Compare == "not in" {
-                query.WriteString(" not in (")
-                query.WriteString(strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]"))
-                query.WriteString(")")
-            } else if item.Compare == "between" {
-                if config.Database.Type == config.Postgresql {
-                    query.WriteString(fmt.Sprintf(" between $%v and $%v", pos, pos + 1))
-                    pos += 2
-                } else {
-                    query.WriteString(" between ? and ?")
-                }
-
-                s := item.Value.([2]string)
-                params = append(params, s[0])
-                params = append(params, s[1])
-            } else {
-                if config.Database.Type == config.Postgresql {
-                    query.WriteString(" ")
-                    query.WriteString(item.Compare)
-                    query.WriteString(fmt.Sprintf(" $%v", pos))
-                    pos++
-                } else {
-                    query.WriteString(" ")
-                    query.WriteString(item.Compare)
-                    query.WriteString(" ?")
-                }
-                if item.Compare == "like" {
-                    params = append(params, "%" + item.Value.(string) + "%")
-                } else {
-                    params = append(params, item.Value)                
-                }
-            }
-        case Custom:
-             item := v
-
-            query.WriteString(" and ")
-            query.WriteString(item.Query)
-        }        
-    }
-
-	query.WriteString(postQuery)
-
-    return query.String(), params
 }
 
 func (p *IpblockManager) Count(args []interface{}) int {
@@ -605,7 +824,9 @@ func (p *IpblockManager) Find(args []interface{}) []Ipblock {
             orderby = "ib_id desc"
         } else {
             if !strings.Contains(orderby, "_") {                   
-                orderby = "ib_" + orderby
+                if strings.ToUpper(orderby) != "RAND()" {
+                    orderby = "ib_" + orderby
+                }
             }
             
         }
@@ -629,7 +850,9 @@ func (p *IpblockManager) Find(args []interface{}) []Ipblock {
             orderby = "ib_id"
         } else {
             if !strings.Contains(orderby, "_") {
-                orderby = "ib_" + orderby
+                if strings.ToUpper(orderby) != "RAND()" {
+                    orderby = "ib_" + orderby
+                }
             }
         }
         query.WriteString(" order by ")
@@ -642,7 +865,7 @@ func (p *IpblockManager) Find(args []interface{}) []Ipblock {
        if p.Log {
           log.Error().Str("error", err.Error()).Msg("SQL")
        }
-        var items []Ipblock
+        items := make([]Ipblock, 0)
         return items
     }
 
@@ -654,3 +877,107 @@ func (p *IpblockManager) Find(args []interface{}) []Ipblock {
 
 
 
+
+func (p *IpblockManager) GroupBy(name string, args []interface{}) []Groupby {
+    if !p.Conn.IsConnect() {
+        var items []Groupby
+        return items
+    }
+
+    var params []interface{}
+    baseQuery := p.GetQueryGroup(name)
+    var query strings.Builder
+    pos := 1
+
+    for _, arg := range args {
+        switch v := arg.(type) {
+        case Where:
+            item := v
+
+            if strings.Contains(item.Column, "_") {
+                query.WriteString(" and ")
+            } else {
+                query.WriteString(" and ib_")
+            }
+            query.WriteString(item.Column)
+            
+            if item.Compare == "in" {
+                query.WriteString(" in (")
+                query.WriteString(strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]"))
+                query.WriteString(")")
+            } else if item.Compare == "not in" {
+                query.WriteString(" not in (")
+                query.WriteString(strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]"))
+                query.WriteString(")")
+            } else if item.Compare == "between" {
+                if config.Database.Type == config.Postgresql {
+                    query.WriteString(fmt.Sprintf(" between $%v and $%v", pos, pos + 1))
+                    pos += 2
+                } else {
+                    query.WriteString(" between ? and ?")
+                }
+
+                s := item.Value.([2]string)
+                params = append(params, s[0])
+                params = append(params, s[1])
+            } else {
+                if config.Database.Type == config.Postgresql {
+                    query.WriteString(" ")
+                    query.WriteString(item.Compare)
+                    query.WriteString(fmt.Sprintf(" $%v", pos))
+                    pos++
+                } else {
+                    query.WriteString(" ")
+                    query.WriteString(item.Compare)
+                    query.WriteString(" ?")
+                }
+                if item.Compare == "like" {
+                    params = append(params, "%" + item.Value.(string) + "%")
+                } else {
+                    params = append(params, item.Value)                
+                }
+            }
+        case Custom:
+             item := v
+
+            query.WriteString(" and ")
+            query.WriteString(item.Query)
+        case Base:
+             item := v
+
+             baseQuery = item.Query
+        }
+    }
+    
+    query.WriteString(" group by ib_")
+    query.WriteString(name)
+
+    rows, err := p.Query(baseQuery + query.String(), params...)
+
+    if err != nil {
+       if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+       }
+        var items []Groupby
+        return items
+    }
+
+    defer rows.Close()
+
+    var items []Groupby
+
+    for rows.Next() {
+        var item Groupby
+        err := rows.Scan(&item.Value, &item.Count)
+        if err != nil {
+           if p.Log {
+                log.Error().Str("error", err.Error()).Msg("SQL")
+           }
+           break
+        }
+
+        items = append(items, item)
+    }
+
+    return items
+}

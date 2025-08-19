@@ -4,25 +4,25 @@ type Column int
 
 const (
     _ Column = iota
+    
     ColumnId
     ColumnLoginid
     ColumnPasswd
-    ColumnName
     ColumnEmail
+    ColumnName
     ColumnTel
-    ColumnHp
+    ColumnAddress
+    ColumnImage
+    ColumnSex
+    ColumnBirth
     ColumnType
     ColumnConnectid
     ColumnLevel
     ColumnRole
-    ColumnPoint
-    ColumnScout
-    ColumnScoutlogo
     ColumnUse
     ColumnLogindate
     ColumnLastchangepasswddate
     ColumnDate
-
 )
 
 type Params struct {
@@ -56,17 +56,6 @@ const (
 
 var Uses = []string{ "", "사용", "사용안함" }
 
-type Scout int
-
-const (
-    _ Scout  = iota
-
-    ScoutNormal
-    ScoutScout
-)
-
-var Scouts = []string{ "", "일반", "스카우터" }
-
 type Type int
 
 const (
@@ -76,6 +65,7 @@ const (
     TypeKakao
     TypeNaver
     TypeGoogle
+    TypeApple
 )
 
 var Types = []string{ "", "일반", "카카오", "네이버", "구글", "애플" }
@@ -150,35 +140,6 @@ func ConvertUse(value []int) []Use {
 
      for item := range value {
          items = append(items, Use(item))
-     }
-     
-     return items
-}
-
-func GetScout(value Scout) string {
-    i := int(value)
-    if i <= 0 || i >= len(Scouts) {
-        return ""
-    }
-     
-    return Scouts[i]
-}
-
-func FindScout(value string) Scout {
-    for i := 1; i < len(Scouts); i++ {
-        if Scouts[i] == value {
-            return Scout(i)
-        }
-    }
-     
-    return 0
-}
-
-func ConvertScout(value []int) []Scout {
-     items := make([]Scout, 0)
-
-     for item := range value {
-         items = append(items, Scout(item))
      }
      
      return items

@@ -5,3 +5,7 @@
 
 # local env file
 .env
+.env.yml
+
+# model.json
+model.json

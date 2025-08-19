@@ -4,6 +4,7 @@ type Column int
 
 const (
     _ Column = iota
+    
     ColumnId
     ColumnAddress
     ColumnType
@@ -11,7 +12,6 @@ const (
     ColumnUse
     ColumnOrder
     ColumnDate
-
 )
 
 type Params struct {

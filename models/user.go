@@ -2,9 +2,7 @@ package models
 
 import (
     "gym/global/config"
-    
     "gym/models/user"
-    
     "database/sql"
     "errors"
     "fmt"
@@ -18,6 +16,29 @@ import (
 )
 
 type User struct {
+            
+    Id                int64 `json:"id"`         
+    Loginid                string `json:"loginid"`         
+    Passwd                string `json:"-"`         
+    Email                string `json:"email"`         
+    Name                string `json:"name"`         
+    Tel                string `json:"tel"`         
+    Address                string `json:"address"`         
+    Image                string `json:"image"`         
+    Sex                int `json:"sex"`         
+    Birth                string `json:"birth"`         
+    Type                user.Type `json:"type"`         
+    Connectid                string `json:"connectid"`         
+    Level                user.Level `json:"level"`         
+    Role                user.Role `json:"role"`         
+    Use                user.Use `json:"use"`         
+    Logindate                string `json:"logindate"`         
+    Lastchangepasswddate                string `json:"lastchangepasswddate"`         
+    Date                string `json:"date"` 
+    
+    Extra                    map[string]interface{} `json:"extra"`
+}
+type UserUpdate struct {
             
     Id                int64 `json:"id"`         
     Loginid                string `json:"loginid"`         
@@ -52,6 +73,30 @@ type UserManager struct {
     GroupQuery string
     SelectLog bool
     Log bool
+}
+func (c *User) ConvertUpdate() *UserUpdate {    
+    item := &UserUpdate{}
+            
+    item.Id = c.Id        
+    item.Loginid = c.Loginid        
+    item.Passwd = c.Passwd        
+    item.Email = c.Email        
+    item.Name = c.Name        
+    item.Tel = c.Tel        
+    item.Address = c.Address        
+    item.Image = c.Image        
+    item.Sex = c.Sex        
+    item.Birth = c.Birth        
+    item.Type = c.Type        
+    item.Connectid = c.Connectid        
+    item.Level = c.Level        
+    item.Role = c.Role        
+    item.Use = c.Use        
+    item.Logindate = c.Logindate        
+    item.Lastchangepasswddate = c.Lastchangepasswddate        
+    item.Date = c.Date
+
+    return item
 }
 
 func (c *User) AddExtra(key string, value interface{}) {    
@@ -108,7 +153,7 @@ func (p *UserManager) Exec(query string, params ...interface{}) (sql.Result, err
 }
 
 func (p *UserManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
-    if p.Isolation == true {
+    if p.Isolation {
         query += " for update"
     }
 
@@ -175,6 +220,28 @@ func (p *UserManager) GetQuerySelect() string {
     return ret.String()
 }
 
+func (p *UserManager) GetQueryGroup(name string) string {
+    if p.SelectQuery != "" {
+        return p.SelectQuery    
+    }
+
+    var ret strings.Builder
+    ret.WriteString("select u_")
+    ret.WriteString(name)
+    ret.WriteString(", count(*) from user_tb ")
+
+    if p.Index != "" {
+        ret.WriteString(" use index(")
+        ret.WriteString(p.Index)
+        ret.WriteString(")")
+    }
+
+    ret.WriteString(" where 1=1 ")
+    
+
+    return ret.String()
+}
+
 func (p *UserManager) Truncate() error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
@@ -192,7 +259,7 @@ func (p *UserManager) Truncate() error {
     return nil
 }
 
-func (p *UserManager) Insert(item *User) error {
+func (p *UserManager) Insert(item *UserUpdate) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
@@ -244,6 +311,7 @@ func (p *UserManager) Insert(item *User) error {
 
     return err
 }
+
 func (p *UserManager) Delete(id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
@@ -261,7 +329,114 @@ func (p *UserManager) Delete(id int64) error {
     
     return err
 }
-func (p *UserManager) Update(item *User) error {
+
+func (p *UserManager) DeleteAll() error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+    query := "delete from user_tb"
+    _, err := p.Exec(query)
+
+    if err != nil {
+       if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+       }
+    }
+
+    return err
+}
+
+func (p *UserManager) MakeQuery(initQuery string , postQuery string, initParams []interface{}, args []interface{}) (string, []interface{}) {
+    var params []interface{}
+    if initParams != nil {
+        params = append(params, initParams...)
+    }
+
+    pos := 1
+
+    var query strings.Builder
+	query.WriteString(initQuery)
+
+    for _, arg := range args {
+        switch v := arg.(type) {        
+        case Where:
+            item := v
+
+            if strings.Contains(item.Column, "_") {
+                query.WriteString(" and ")
+            } else {
+                query.WriteString(" and u_")
+            }
+            query.WriteString(item.Column)
+
+            if item.Compare == "in" {
+                query.WriteString(" in (")
+                query.WriteString(strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]"))
+                query.WriteString(")")
+            } else if item.Compare == "not in" {
+                query.WriteString(" not in (")
+                query.WriteString(strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]"))
+                query.WriteString(")")
+            } else if item.Compare == "between" {
+                if config.Database.Type == config.Postgresql {
+                    query.WriteString(fmt.Sprintf(" between $%v and $%v", pos, pos + 1))
+                    pos += 2
+                } else {
+                    query.WriteString(" between ? and ?")
+                }
+
+                s := item.Value.([2]string)
+                params = append(params, s[0])
+                params = append(params, s[1])
+            } else {
+                if config.Database.Type == config.Postgresql {
+                    query.WriteString(" ")
+                    query.WriteString(item.Compare)
+                    query.WriteString(fmt.Sprintf(" $%v", pos))
+                    pos++
+                } else {
+                    query.WriteString(" ")
+                    query.WriteString(item.Compare)
+                    query.WriteString(" ?")
+                }
+                if item.Compare == "like" {
+                    params = append(params, "%" + item.Value.(string) + "%")
+                } else {
+                    params = append(params, item.Value)                
+                }
+            }
+        case Custom:
+             item := v
+
+            query.WriteString(" and ")
+            query.WriteString(item.Query)
+        }        
+    }
+
+	query.WriteString(postQuery)
+
+    return query.String(), params
+}
+
+func (p *UserManager) DeleteWhere(args []interface{}) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+    query, params := p.MakeQuery("delete from user_tb where 1=1", "", nil, args)
+    _, err := p.Exec(query, params...)
+
+    if err != nil {
+       if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+       }
+    }
+
+    return err
+}
+
+func (p *UserManager) Update(item *UserUpdate) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
@@ -296,6 +471,389 @@ func (p *UserManager) Update(item *User) error {
         
     return err
 }
+
+func (p *UserManager) UpdateWhere(columns []user.Params, args []interface{}) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+    var initQuery strings.Builder
+    var initParams []interface{}
+
+    initQuery.WriteString("update user_tb set ")
+    for i, v := range columns {
+        if i > 0 {
+            initQuery.WriteString(", ")
+        }
+
+        if v.Column == user.ColumnId {
+        initQuery.WriteString("u_id = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == user.ColumnLoginid {
+        initQuery.WriteString("u_loginid = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == user.ColumnPasswd {
+        initQuery.WriteString("u_passwd = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == user.ColumnEmail {
+        initQuery.WriteString("u_email = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == user.ColumnName {
+        initQuery.WriteString("u_name = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == user.ColumnTel {
+        initQuery.WriteString("u_tel = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == user.ColumnAddress {
+        initQuery.WriteString("u_address = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == user.ColumnImage {
+        initQuery.WriteString("u_image = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == user.ColumnSex {
+        initQuery.WriteString("u_sex = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == user.ColumnBirth {
+        initQuery.WriteString("u_birth = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == user.ColumnType {
+        initQuery.WriteString("u_type = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == user.ColumnConnectid {
+        initQuery.WriteString("u_connectid = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == user.ColumnLevel {
+        initQuery.WriteString("u_level = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == user.ColumnRole {
+        initQuery.WriteString("u_role = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == user.ColumnUse {
+        initQuery.WriteString("u_use = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == user.ColumnLogindate {
+        initQuery.WriteString("u_logindate = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == user.ColumnLastchangepasswddate {
+        initQuery.WriteString("u_lastchangepasswddate = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == user.ColumnDate {
+        initQuery.WriteString("u_date = ?")
+        initParams = append(initParams, v.Value)
+        } else {
+        
+        }
+    }
+
+    initQuery.WriteString(" where 1=1 ")
+
+    query, params := p.MakeQuery(initQuery.String(), "", initParams, args)
+    _, err := p.Exec(query, params...)
+
+    if err != nil {
+       if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+       }
+    }
+
+    
+    return err
+}
+
+/*
+
+
+func (p *UserManager) UpdateLoginid(value string, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update user_tb set u_loginid = ? where u_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *UserManager) UpdatePasswd(value string, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update user_tb set u_passwd = ? where u_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *UserManager) UpdateEmail(value string, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update user_tb set u_email = ? where u_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *UserManager) UpdateName(value string, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update user_tb set u_name = ? where u_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *UserManager) UpdateTel(value string, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update user_tb set u_tel = ? where u_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *UserManager) UpdateAddress(value string, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update user_tb set u_address = ? where u_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *UserManager) UpdateImage(value string, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update user_tb set u_image = ? where u_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *UserManager) UpdateSex(value int, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update user_tb set u_sex = ? where u_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *UserManager) UpdateBirth(value string, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update user_tb set u_birth = ? where u_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *UserManager) UpdateType(value user.Type, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update user_tb set u_type = ? where u_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *UserManager) UpdateConnectid(value string, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update user_tb set u_connectid = ? where u_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *UserManager) UpdateLevel(value user.Level, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update user_tb set u_level = ? where u_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *UserManager) UpdateRole(value user.Role, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update user_tb set u_role = ? where u_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *UserManager) UpdateUse(value user.Use, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update user_tb set u_use = ? where u_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *UserManager) UpdateLogindate(value string, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update user_tb set u_logindate = ? where u_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *UserManager) UpdateLastchangepasswddate(value string, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update user_tb set u_lastchangepasswddate = ? where u_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *UserManager) UpdateDate(value string, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update user_tb set u_date = ? where u_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+
+*/
 
 func (p *UserManager) GetIdentity() int64 {
     if !p.Conn.IsConnect() {
@@ -475,78 +1033,6 @@ func (p *UserManager) GetWhere(args []interface{}) *User {
     return &items[0]
 }
 
-func (p *UserManager) MakeQuery(initQuery string , postQuery string, initParams []interface{}, args []interface{}) (string, []interface{}) {
-    var params []interface{}
-    if initParams != nil {
-        params = append(params, initParams...)
-    }
-
-    pos := 1
-
-    var query strings.Builder
-	query.WriteString(initQuery)
-
-    for _, arg := range args {
-        switch v := arg.(type) {        
-        case Where:
-            item := v
-
-            if strings.Contains(item.Column, "_") {
-                query.WriteString(" and ")
-            } else {
-                query.WriteString(" and u_")
-            }
-            query.WriteString(item.Column)
-
-            if item.Compare == "in" {
-                query.WriteString(" in (")
-                query.WriteString(strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]"))
-                query.WriteString(")")
-            } else if item.Compare == "not in" {
-                query.WriteString(" not in (")
-                query.WriteString(strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]"))
-                query.WriteString(")")
-            } else if item.Compare == "between" {
-                if config.Database.Type == config.Postgresql {
-                    query.WriteString(fmt.Sprintf(" between $%v and $%v", pos, pos + 1))
-                    pos += 2
-                } else {
-                    query.WriteString(" between ? and ?")
-                }
-
-                s := item.Value.([2]string)
-                params = append(params, s[0])
-                params = append(params, s[1])
-            } else {
-                if config.Database.Type == config.Postgresql {
-                    query.WriteString(" ")
-                    query.WriteString(item.Compare)
-                    query.WriteString(fmt.Sprintf(" $%v", pos))
-                    pos++
-                } else {
-                    query.WriteString(" ")
-                    query.WriteString(item.Compare)
-                    query.WriteString(" ?")
-                }
-                if item.Compare == "like" {
-                    params = append(params, "%" + item.Value.(string) + "%")
-                } else {
-                    params = append(params, item.Value)                
-                }
-            }
-        case Custom:
-             item := v
-
-            query.WriteString(" and ")
-            query.WriteString(item.Query)
-        }        
-    }
-
-	query.WriteString(postQuery)
-
-    return query.String(), params
-}
-
 func (p *UserManager) Count(args []interface{}) int {
     if !p.Conn.IsConnect() {
         return 0
@@ -689,7 +1175,9 @@ func (p *UserManager) Find(args []interface{}) []User {
             orderby = "u_id desc"
         } else {
             if !strings.Contains(orderby, "_") {                   
-                orderby = "u_" + orderby
+                if strings.ToUpper(orderby) != "RAND()" {
+                    orderby = "u_" + orderby
+                }
             }
             
         }
@@ -713,7 +1201,9 @@ func (p *UserManager) Find(args []interface{}) []User {
             orderby = "u_id"
         } else {
             if !strings.Contains(orderby, "_") {
-                orderby = "u_" + orderby
+                if strings.ToUpper(orderby) != "RAND()" {
+                    orderby = "u_" + orderby
+                }
             }
         }
         query.WriteString(" order by ")
@@ -726,7 +1216,7 @@ func (p *UserManager) Find(args []interface{}) []User {
        if p.Log {
           log.Error().Str("error", err.Error()).Msg("SQL")
        }
-        var items []User
+        items := make([]User, 0)
         return items
     }
 
@@ -737,6 +1227,8 @@ func (p *UserManager) Find(args []interface{}) []User {
 
 
 func (p *UserManager) GetByLoginid(loginid string, args ...interface{}) *User {
+    rets := make([]interface{}, 0)
+    rets = append(rets, args...)
     if loginid != "" {
         args = append(args, Where{Column:"loginid", Value:loginid, Compare:"="})        
     }
@@ -751,6 +1243,8 @@ func (p *UserManager) GetByLoginid(loginid string, args ...interface{}) *User {
 }
 
 func (p *UserManager) GetByConnectid(connectid string, args ...interface{}) *User {
+    rets := make([]interface{}, 0)
+    rets = append(rets, args...)
     if connectid != "" {
         args = append(args, Where{Column:"connectid", Value:connectid, Compare:"="})        
     }
@@ -783,6 +1277,12 @@ func (p *UserManager) UpdateLogindateById(logindate string, id int64) error {
     query := "update user_tb set u_logindate = ? where 1=1 and u_id = ?"
 	_, err := p.Exec(query, logindate, id)
 
+    if err != nil {
+       if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+       }
+    }
+
     return err    
 }
 
@@ -799,3 +1299,107 @@ func (p *UserManager) FindByLevel(level user.Level, args ...interface{}) []User 
 
 
 
+
+func (p *UserManager) GroupBy(name string, args []interface{}) []Groupby {
+    if !p.Conn.IsConnect() {
+        var items []Groupby
+        return items
+    }
+
+    var params []interface{}
+    baseQuery := p.GetQueryGroup(name)
+    var query strings.Builder
+    pos := 1
+
+    for _, arg := range args {
+        switch v := arg.(type) {
+        case Where:
+            item := v
+
+            if strings.Contains(item.Column, "_") {
+                query.WriteString(" and ")
+            } else {
+                query.WriteString(" and u_")
+            }
+            query.WriteString(item.Column)
+            
+            if item.Compare == "in" {
+                query.WriteString(" in (")
+                query.WriteString(strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]"))
+                query.WriteString(")")
+            } else if item.Compare == "not in" {
+                query.WriteString(" not in (")
+                query.WriteString(strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]"))
+                query.WriteString(")")
+            } else if item.Compare == "between" {
+                if config.Database.Type == config.Postgresql {
+                    query.WriteString(fmt.Sprintf(" between $%v and $%v", pos, pos + 1))
+                    pos += 2
+                } else {
+                    query.WriteString(" between ? and ?")
+                }
+
+                s := item.Value.([2]string)
+                params = append(params, s[0])
+                params = append(params, s[1])
+            } else {
+                if config.Database.Type == config.Postgresql {
+                    query.WriteString(" ")
+                    query.WriteString(item.Compare)
+                    query.WriteString(fmt.Sprintf(" $%v", pos))
+                    pos++
+                } else {
+                    query.WriteString(" ")
+                    query.WriteString(item.Compare)
+                    query.WriteString(" ?")
+                }
+                if item.Compare == "like" {
+                    params = append(params, "%" + item.Value.(string) + "%")
+                } else {
+                    params = append(params, item.Value)                
+                }
+            }
+        case Custom:
+             item := v
+
+            query.WriteString(" and ")
+            query.WriteString(item.Query)
+        case Base:
+             item := v
+
+             baseQuery = item.Query
+        }
+    }
+    
+    query.WriteString(" group by u_")
+    query.WriteString(name)
+
+    rows, err := p.Query(baseQuery + query.String(), params...)
+
+    if err != nil {
+       if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+       }
+        var items []Groupby
+        return items
+    }
+
+    defer rows.Close()
+
+    var items []Groupby
+
+    for rows.Next() {
+        var item Groupby
+        err := rows.Scan(&item.Value, &item.Count)
+        if err != nil {
+           if p.Log {
+                log.Error().Str("error", err.Error()).Msg("SQL")
+           }
+           break
+        }
+
+        items = append(items, item)
+    }
+
+    return items
+}

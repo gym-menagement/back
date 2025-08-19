@@ -4,12 +4,12 @@ type Column int
 
 const (
     _ Column = iota
+    
     ColumnId
     ColumnIp
     ColumnIpvalue
-    ColumnDate
     ColumnUser
-
+    ColumnDate
 )
 
 type Params struct {

@@ -39,7 +39,7 @@ func SetRouter(app *fiber.App) {
 		})
 
 		apiGroup.Post("/user", func(ctx *fiber.Ctx) error {
-			item_ := &models.User{}
+			item_ := &models.UserUpdate{}
 			ctx.BodyParser(item_)
 			var controller rest.UserController
 			controller.Init(ctx)
@@ -53,7 +53,7 @@ func SetRouter(app *fiber.App) {
 		})
 
 		apiGroup.Put("/user", func(ctx *fiber.Ctx) error {
-			item_ := &models.User{}
+			item_ := &models.UserUpdate{}
 			ctx.BodyParser(item_)
 			var controller rest.UserController
 			controller.Init(ctx)
