@@ -27,7 +27,7 @@ func main() {
 
 	setting.GetInstance()
 
-	services.Cron()
+	// services.Cron()
 	// services.Fcm()
 	services.Chat()
 	services.Notify()

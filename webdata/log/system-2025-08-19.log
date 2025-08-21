@@ -40,3 +40,11 @@
 {"level":"info","service":"Notify","time":"2025-08-19T15:05:03+09:00","message":"Start Service"}
 {"level":"info","service":"HTTP","time":"2025-08-19T15:05:03+09:00","message":"Start Service"}
 {"level":"info","time":"2025-08-19T15:05:09+09:00","message":"Gracefully shutting down..."}
+{"level":"info","Version":"0.0.1","Mode":"develop","time":"2025-08-19T18:22:48+09:00","message":"Start"}
+{"level":"info","model":"setting","time":"2025-08-19T18:22:48+09:00","message":"Cache Init"}
+{"level":"info","service":"Session","time":"2025-08-19T18:22:49+09:00","message":"Start Service"}
+{"level":"info","service":"Notify","time":"2025-08-19T18:22:49+09:00","message":"Start Service"}
+{"level":"info","service":"HTTP","time":"2025-08-19T18:22:49+09:00","message":"Start Service"}
+{"level":"debug","query":"insert into user_tb (u_loginid, u_passwd, u_email, u_name, u_tel, u_address, u_image, u_sex, u_birth, u_type, u_connectid, u_level, u_role, u_use, u_logindate, u_lastchangepasswddate, u_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)","param":["admin139","admin139","admin139@naver.com","김매니저10","01012341234","경기도 성남시 분당구 땡땡로","image.path",1,"2025-08-19 00:00:00",1,"",1,3,1,"1000-01-01 00:00:00","1000-01-01 00:00:00","2025-08-19 23:59:59"],"time":"2025-08-19T18:26:04+09:00","message":"SQL"}
+{"level":"info","ip":"127.0.0.1","latency":"941.665833ms","status":200,"method":"POST","url":"/api/user","time":"2025-08-19T18:26:05+09:00","message":"Success"}
+{"level":"info","time":"2025-08-20T15:18:45+09:00","message":"Gracefully shutting down..."}
