@@ -17,6 +17,19 @@ import (
 // SetupPaymentRoutes sets up routes for payment domain
 func SetupPaymentRoutes(group fiber.Router) {
 
+	group.Post("/payment/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Payment{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.PaymentController
+		controller.Init(c)
+		controller.Insertbatch(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
 	group.Put("/payment", func(c *fiber.Ctx) error {
 			item_ := &models.Payment{}
 			err := c.BodyParser(item_)
@@ -93,19 +106,6 @@ func SetupPaymentRoutes(group fiber.Router) {
 		var controller rest.PaymentController
 		controller.Init(c)
 		controller.Insert(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Post("/payment/batch", func(c *fiber.Ctx) error {
-			item_ := &[]models.Payment{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.PaymentController
-		controller.Init(c)
-		controller.Insertbatch(item_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

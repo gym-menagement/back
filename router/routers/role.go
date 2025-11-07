@@ -17,6 +17,45 @@ import (
 // SetupRoleRoutes sets up routes for role domain
 func SetupRoleRoutes(group fiber.Router) {
 
+	group.Put("/role", func(c *fiber.Ctx) error {
+			item_ := &models.Role{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.RoleController
+		controller.Init(c)
+		controller.Update(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Delete("/role", func(c *fiber.Ctx) error {
+			item_ := &models.Role{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.RoleController
+		controller.Init(c)
+		controller.Delete(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Delete("/role/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Role{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.RoleController
+		controller.Init(c)
+		controller.Deletebatch(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
 	group.Get("/role/:id", func(c *fiber.Ctx) error {
 			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 		var controller rest.RoleController
@@ -67,45 +106,6 @@ func SetupRoleRoutes(group fiber.Router) {
 		var controller rest.RoleController
 		controller.Init(c)
 		controller.Insertbatch(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Put("/role", func(c *fiber.Ctx) error {
-			item_ := &models.Role{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.RoleController
-		controller.Init(c)
-		controller.Update(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Delete("/role", func(c *fiber.Ctx) error {
-			item_ := &models.Role{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.RoleController
-		controller.Init(c)
-		controller.Delete(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Delete("/role/batch", func(c *fiber.Ctx) error {
-			item_ := &[]models.Role{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.RoleController
-		controller.Init(c)
-		controller.Deletebatch(item_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

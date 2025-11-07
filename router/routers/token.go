@@ -17,6 +17,19 @@ import (
 // SetupTokenRoutes sets up routes for token domain
 func SetupTokenRoutes(group fiber.Router) {
 
+	group.Put("/token", func(c *fiber.Ctx) error {
+			item_ := &models.Token{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.TokenController
+		controller.Init(c)
+		controller.Update(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
 	group.Delete("/token", func(c *fiber.Ctx) error {
 			item_ := &models.Token{}
 			err := c.BodyParser(item_)
@@ -93,19 +106,6 @@ func SetupTokenRoutes(group fiber.Router) {
 		var controller rest.TokenController
 		controller.Init(c)
 		controller.Insertbatch(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Put("/token", func(c *fiber.Ctx) error {
-			item_ := &models.Token{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.TokenController
-		controller.Init(c)
-		controller.Update(item_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

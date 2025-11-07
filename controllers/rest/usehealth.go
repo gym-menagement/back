@@ -8,16 +8,16 @@ import (
     "strings"
 )
 
-type UsehelthController struct {
+type UsehealthController struct {
 	controllers.Controller
 }
 
-func (c *UsehelthController) Read(id int64) {
+func (c *UsehealthController) Read(id int64) {
     
     
 	conn := c.NewConnection()
 
-	manager := models.NewUsehelthManager(conn)
+	manager := models.NewUsehealthManager(conn)
 	item := manager.Get(id)
 
     
@@ -25,12 +25,12 @@ func (c *UsehelthController) Read(id int64) {
     c.Set("item", item)
 }
 
-func (c *UsehelthController) Index(page int, pagesize int) {
+func (c *UsehealthController) Index(page int, pagesize int) {
     
     
 	conn := c.NewConnection()
 
-	manager := models.NewUsehelthManager(conn)
+	manager := models.NewUsehealthManager(conn)
 
     var args []interface{}
     
@@ -38,9 +38,9 @@ func (c *UsehelthController) Index(page int, pagesize int) {
     if _order != 0 {
         args = append(args, models.Where{Column:"order", Value:_order, Compare:"="})    
     }
-    _helth := c.Geti64("helth")
-    if _helth != 0 {
-        args = append(args, models.Where{Column:"helth", Value:_helth, Compare:"="})    
+    _health := c.Geti64("health")
+    if _health != 0 {
+        args = append(args, models.Where{Column:"health", Value:_health, Compare:"="})    
     }
     _user := c.Geti64("user")
     if _user != 0 {
@@ -136,12 +136,12 @@ func (c *UsehelthController) Index(page int, pagesize int) {
     }
 }
 
-func (c *UsehelthController) Count() {
+func (c *UsehealthController) Count() {
     
     
 	conn := c.NewConnection()
 
-	manager := models.NewUsehelthManager(conn)
+	manager := models.NewUsehealthManager(conn)
 
     var args []interface{}
     
@@ -149,9 +149,9 @@ func (c *UsehelthController) Count() {
     if _order != 0 {
         args = append(args, models.Where{Column:"order", Value:_order, Compare:"="})    
     }
-    _helth := c.Geti64("helth")
-    if _helth != 0 {
-        args = append(args, models.Where{Column:"helth", Value:_helth, Compare:"="})    
+    _health := c.Geti64("health")
+    if _health != 0 {
+        args = append(args, models.Where{Column:"health", Value:_health, Compare:"="})    
     }
     _user := c.Geti64("user")
     if _user != 0 {
@@ -216,12 +216,12 @@ func (c *UsehelthController) Count() {
 	c.Set("total", total)
 }
 
-func (c *UsehelthController) Insert(item *models.Usehelth) {
+func (c *UsehealthController) Insert(item *models.Usehealth) {
     
     
 	conn := c.NewConnection()
     
-	manager := models.NewUsehelthManager(conn)
+	manager := models.NewUsehealthManager(conn)
 	err := manager.Insert(item)
     if err != nil {
         c.Set("code", "error")    
@@ -234,7 +234,7 @@ func (c *UsehelthController) Insert(item *models.Usehelth) {
     item.Id = id
 }
 
-func (c *UsehelthController) Insertbatch(item *[]models.Usehelth) {  
+func (c *UsehealthController) Insertbatch(item *[]models.Usehealth) {  
     if item == nil || len(*item) == 0 {
         return
     }
@@ -245,7 +245,7 @@ func (c *UsehelthController) Insertbatch(item *[]models.Usehelth) {
     
 	conn := c.NewConnection()
     
-	manager := models.NewUsehelthManager(conn)
+	manager := models.NewUsehealthManager(conn)
 
     for i := 0; i < rows; i++ {
 	    err := manager.Insert(&((*item)[i]))
@@ -257,12 +257,12 @@ func (c *UsehelthController) Insertbatch(item *[]models.Usehelth) {
     }
 }
 
-func (c *UsehelthController) Update(item *models.Usehelth) {
+func (c *UsehealthController) Update(item *models.Usehealth) {
     
     
 	conn := c.NewConnection()
 
-	manager := models.NewUsehelthManager(conn)
+	manager := models.NewUsehealthManager(conn)
     err := manager.Update(item)
     if err != nil {
         c.Set("code", "error")    
@@ -271,12 +271,12 @@ func (c *UsehelthController) Update(item *models.Usehelth) {
     }
 }
 
-func (c *UsehelthController) Delete(item *models.Usehelth) {
+func (c *UsehealthController) Delete(item *models.Usehealth) {
     
     
     conn := c.NewConnection()
 
-	manager := models.NewUsehelthManager(conn)
+	manager := models.NewUsehealthManager(conn)
 
     
 	err := manager.Delete(item.Id)
@@ -286,12 +286,12 @@ func (c *UsehelthController) Delete(item *models.Usehelth) {
     }
 }
 
-func (c *UsehelthController) Deletebatch(item *[]models.Usehelth) {
+func (c *UsehealthController) Deletebatch(item *[]models.Usehealth) {
     
     
     conn := c.NewConnection()
 
-	manager := models.NewUsehelthManager(conn)
+	manager := models.NewUsehealthManager(conn)
 
     for _, v := range *item {
         

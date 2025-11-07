@@ -2,7 +2,7 @@ package models
 
 import (
     "gym/global/config"
-    "gym/models/usehelth"
+    "gym/models/health"
     "database/sql"
     "errors"
     "fmt"
@@ -15,23 +15,23 @@ import (
 
 )
 
-type Usehelth struct {
+type Health struct {
             
     Id                int64 `json:"id"`         
-    Order                int64 `json:"order"`         
-    Helth                int64 `json:"helth"`         
-    User                int64 `json:"user"`         
-    Rocker                int64 `json:"rocker"`         
+    Category                int64 `json:"category"`         
     Term                int64 `json:"term"`         
+    Name                string `json:"name"`         
+    Count                int `json:"count"`         
+    Cost                int `json:"cost"`         
     Discount                int64 `json:"discount"`         
-    Startday                string `json:"startday"`         
-    Endday                string `json:"endday"`         
+    Costdiscount                int `json:"costdiscount"`         
+    Content                string `json:"content"`         
     Date                string `json:"date"` 
     
     Extra                    map[string]interface{} `json:"extra"`
 }
 
-type UsehelthManager struct {
+type HealthManager struct {
     Conn    *Connection
     Result  *sql.Result
     Index   string
@@ -44,12 +44,12 @@ type UsehelthManager struct {
     Log bool
 }
 
-func (c *Usehelth) AddExtra(key string, value interface{}) {    
+func (c *Health) AddExtra(key string, value interface{}) {    
 	c.Extra[key] = value     
 }
 
-func NewUsehelthManager(conn *Connection) *UsehelthManager {
-    var item UsehelthManager
+func NewHealthManager(conn *Connection) *HealthManager {
+    var item HealthManager
 
 
     if conn == nil {
@@ -67,25 +67,25 @@ func NewUsehelthManager(conn *Connection) *UsehelthManager {
     return &item
 }
 
-func (p *UsehelthManager) Close() {
+func (p *HealthManager) Close() {
     if p.Conn != nil {
         p.Conn.Close()
     }
 }
 
-func (p *UsehelthManager) SetIndex(index string) {
+func (p *HealthManager) SetIndex(index string) {
     p.Index = index
 }
 
-func (p *UsehelthManager) SetCountQuery(query string) {
+func (p *HealthManager) SetCountQuery(query string) {
     p.CountQuery = query
 }
 
-func (p *UsehelthManager) SetSelectQuery(query string) {
+func (p *HealthManager) SetSelectQuery(query string) {
     p.SelectQuery = query
 }
 
-func (p *UsehelthManager) Exec(query string, params ...interface{}) (sql.Result, error) {
+func (p *HealthManager) Exec(query string, params ...interface{}) (sql.Result, error) {
     if p.Log {
        if len(params) > 0 {
 	       log.Debug().Str("query", query).Any("param", params).Msg("SQL")
@@ -97,7 +97,7 @@ func (p *UsehelthManager) Exec(query string, params ...interface{}) (sql.Result,
     return p.Conn.Exec(query, params...)
 }
 
-func (p *UsehelthManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
+func (p *HealthManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
     if p.Isolation {
         query += " for update"
     }
@@ -113,14 +113,14 @@ func (p *UsehelthManager) Query(query string, params ...interface{}) (*sql.Rows,
     return p.Conn.Query(query, params...)
 }
 
-func (p *UsehelthManager) GetQuery() string {
+func (p *HealthManager) GetQuery() string {
     if p.SelectQuery != "" {
         return p.SelectQuery    
     }
 
     var ret strings.Builder
 
-    ret.WriteString("select uh_id, uh_order, uh_helth, uh_user, uh_rocker, uh_term, uh_discount, uh_startday, uh_endday, uh_date from usehelth_tb")
+    ret.WriteString("select h_id, h_category, h_term, h_name, h_count, h_cost, h_discount, h_costdiscount, h_content, h_date from health_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -139,14 +139,14 @@ func (p *UsehelthManager) GetQuery() string {
     return ret.String()
 }
 
-func (p *UsehelthManager) GetQuerySelect() string {
+func (p *HealthManager) GetQuerySelect() string {
     if p.CountQuery != "" {
         return p.CountQuery    
     }
 
     var ret strings.Builder
     
-    ret.WriteString("select count(*) from usehelth_tb")
+    ret.WriteString("select count(*) from health_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -165,15 +165,15 @@ func (p *UsehelthManager) GetQuerySelect() string {
     return ret.String()
 }
 
-func (p *UsehelthManager) GetQueryGroup(name string) string {
+func (p *HealthManager) GetQueryGroup(name string) string {
     if p.SelectQuery != "" {
         return p.SelectQuery    
     }
 
     var ret strings.Builder
-    ret.WriteString("select uh_")
+    ret.WriteString("select h_")
     ret.WriteString(name)
-    ret.WriteString(", count(*) from usehelth_tb ")
+    ret.WriteString(", count(*) from health_tb ")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -187,12 +187,12 @@ func (p *UsehelthManager) GetQueryGroup(name string) string {
     return ret.String()
 }
 
-func (p *UsehelthManager) Truncate() error {
+func (p *HealthManager) Truncate() error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
     
-    query := "truncate usehelth_tb "
+    query := "truncate health_tb "
     _, err := p.Exec(query)
 
     if err != nil {
@@ -204,7 +204,7 @@ func (p *UsehelthManager) Truncate() error {
     return nil
 }
 
-func (p *UsehelthManager) Insert(item *Usehelth) error {
+func (p *HealthManager) Insert(item *Health) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
@@ -216,14 +216,6 @@ func (p *UsehelthManager) Insert(item *Usehelth) error {
     }
 
     
-    if item.Startday == "" {
-       item.Startday = "1000-01-01 00:00:00"
-    }
-	
-    if item.Endday == "" {
-       item.Endday = "1000-01-01 00:00:00"
-    }
-	
     if item.Date == "" {
        item.Date = "1000-01-01 00:00:00"
     }
@@ -233,11 +225,11 @@ func (p *UsehelthManager) Insert(item *Usehelth) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into usehelth_tb (uh_id, uh_order, uh_helth, uh_user, uh_rocker, uh_term, uh_discount, uh_startday, uh_endday, uh_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query, item.Id, item.Order, item.Helth, item.User, item.Rocker, item.Term, item.Discount, item.Startday, item.Endday, item.Date)
+        query = "insert into health_tb (h_id, h_category, h_term, h_name, h_count, h_cost, h_discount, h_costdiscount, h_content, h_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query, item.Id, item.Category, item.Term, item.Name, item.Count, item.Cost, item.Discount, item.Costdiscount, item.Content, item.Date)
     } else {
-        query = "insert into usehelth_tb (uh_order, uh_helth, uh_user, uh_rocker, uh_term, uh_discount, uh_startday, uh_endday, uh_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query, item.Order, item.Helth, item.User, item.Rocker, item.Term, item.Discount, item.Startday, item.Endday, item.Date)
+        query = "insert into health_tb (h_category, h_term, h_name, h_count, h_cost, h_discount, h_costdiscount, h_content, h_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query, item.Category, item.Term, item.Name, item.Count, item.Cost, item.Discount, item.Costdiscount, item.Content, item.Date)
     }
     
     if err == nil {
@@ -253,12 +245,12 @@ func (p *UsehelthManager) Insert(item *Usehelth) error {
     return err
 }
 
-func (p *UsehelthManager) Delete(id int64) error {
+func (p *HealthManager) Delete(id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
 
-    query := "delete from usehelth_tb where uh_id = ?"
+    query := "delete from health_tb where h_id = ?"
     _, err := p.Exec(query, id)
 
     if err != nil {
@@ -271,12 +263,12 @@ func (p *UsehelthManager) Delete(id int64) error {
     return err
 }
 
-func (p *UsehelthManager) DeleteAll() error {
+func (p *HealthManager) DeleteAll() error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
 
-    query := "delete from usehelth_tb"
+    query := "delete from health_tb"
     _, err := p.Exec(query)
 
     if err != nil {
@@ -288,7 +280,7 @@ func (p *UsehelthManager) DeleteAll() error {
     return err
 }
 
-func (p *UsehelthManager) MakeQuery(initQuery string , postQuery string, initParams []interface{}, args []interface{}) (string, []interface{}) {
+func (p *HealthManager) MakeQuery(initQuery string , postQuery string, initParams []interface{}, args []interface{}) (string, []interface{}) {
     var params []interface{}
     if initParams != nil {
         params = append(params, initParams...)
@@ -307,7 +299,7 @@ func (p *UsehelthManager) MakeQuery(initQuery string , postQuery string, initPar
             if strings.Contains(item.Column, "_") {
                 query.WriteString(" and ")
             } else {
-                query.WriteString(" and uh_")
+                query.WriteString(" and h_")
             }
             query.WriteString(item.Column)
 
@@ -360,12 +352,12 @@ func (p *UsehelthManager) MakeQuery(initQuery string , postQuery string, initPar
     return query.String(), params
 }
 
-func (p *UsehelthManager) DeleteWhere(args []interface{}) error {
+func (p *HealthManager) DeleteWhere(args []interface{}) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
 
-    query, params := p.MakeQuery("delete from usehelth_tb where 1=1", "", nil, args)
+    query, params := p.MakeQuery("delete from health_tb where 1=1", "", nil, args)
     _, err := p.Exec(query, params...)
 
     if err != nil {
@@ -377,27 +369,19 @@ func (p *UsehelthManager) DeleteWhere(args []interface{}) error {
     return err
 }
 
-func (p *UsehelthManager) Update(item *Usehelth) error {
+func (p *HealthManager) Update(item *Health) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
     
     
-    if item.Startday == "" {
-       item.Startday = "1000-01-01 00:00:00"
-    }
-	
-    if item.Endday == "" {
-       item.Endday = "1000-01-01 00:00:00"
-    }
-	
     if item.Date == "" {
        item.Date = "1000-01-01 00:00:00"
     }
 	
 
-	query := "update usehelth_tb set uh_order = ?, uh_helth = ?, uh_user = ?, uh_rocker = ?, uh_term = ?, uh_discount = ?, uh_startday = ?, uh_endday = ?, uh_date = ? where uh_id = ?"
-	_, err := p.Exec(query, item.Order, item.Helth, item.User, item.Rocker, item.Term, item.Discount, item.Startday, item.Endday, item.Date, item.Id)
+	query := "update health_tb set h_category = ?, h_term = ?, h_name = ?, h_count = ?, h_cost = ?, h_discount = ?, h_costdiscount = ?, h_content = ?, h_date = ? where h_id = ?"
+	_, err := p.Exec(query, item.Category, item.Term, item.Name, item.Count, item.Cost, item.Discount, item.Costdiscount, item.Content, item.Date, item.Id)
 
     if err != nil {
         if p.Log {
@@ -409,7 +393,7 @@ func (p *UsehelthManager) Update(item *Usehelth) error {
     return err
 }
 
-func (p *UsehelthManager) UpdateWhere(columns []usehelth.Params, args []interface{}) error {
+func (p *HealthManager) UpdateWhere(columns []health.Params, args []interface{}) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
@@ -417,41 +401,41 @@ func (p *UsehelthManager) UpdateWhere(columns []usehelth.Params, args []interfac
     var initQuery strings.Builder
     var initParams []interface{}
 
-    initQuery.WriteString("update usehelth_tb set ")
+    initQuery.WriteString("update health_tb set ")
     for i, v := range columns {
         if i > 0 {
             initQuery.WriteString(", ")
         }
 
-        if v.Column == usehelth.ColumnId {
-        initQuery.WriteString("uh_id = ?")
+        if v.Column == health.ColumnId {
+        initQuery.WriteString("h_id = ?")
         initParams = append(initParams, v.Value)
-        } else if v.Column == usehelth.ColumnOrder {
-        initQuery.WriteString("uh_order = ?")
+        } else if v.Column == health.ColumnCategory {
+        initQuery.WriteString("h_category = ?")
         initParams = append(initParams, v.Value)
-        } else if v.Column == usehelth.ColumnHelth {
-        initQuery.WriteString("uh_helth = ?")
+        } else if v.Column == health.ColumnTerm {
+        initQuery.WriteString("h_term = ?")
         initParams = append(initParams, v.Value)
-        } else if v.Column == usehelth.ColumnUser {
-        initQuery.WriteString("uh_user = ?")
+        } else if v.Column == health.ColumnName {
+        initQuery.WriteString("h_name = ?")
         initParams = append(initParams, v.Value)
-        } else if v.Column == usehelth.ColumnRocker {
-        initQuery.WriteString("uh_rocker = ?")
+        } else if v.Column == health.ColumnCount {
+        initQuery.WriteString("h_count = ?")
         initParams = append(initParams, v.Value)
-        } else if v.Column == usehelth.ColumnTerm {
-        initQuery.WriteString("uh_term = ?")
+        } else if v.Column == health.ColumnCost {
+        initQuery.WriteString("h_cost = ?")
         initParams = append(initParams, v.Value)
-        } else if v.Column == usehelth.ColumnDiscount {
-        initQuery.WriteString("uh_discount = ?")
+        } else if v.Column == health.ColumnDiscount {
+        initQuery.WriteString("h_discount = ?")
         initParams = append(initParams, v.Value)
-        } else if v.Column == usehelth.ColumnStartday {
-        initQuery.WriteString("uh_startday = ?")
+        } else if v.Column == health.ColumnCostdiscount {
+        initQuery.WriteString("h_costdiscount = ?")
         initParams = append(initParams, v.Value)
-        } else if v.Column == usehelth.ColumnEndday {
-        initQuery.WriteString("uh_endday = ?")
+        } else if v.Column == health.ColumnContent {
+        initQuery.WriteString("h_content = ?")
         initParams = append(initParams, v.Value)
-        } else if v.Column == usehelth.ColumnDate {
-        initQuery.WriteString("uh_date = ?")
+        } else if v.Column == health.ColumnDate {
+        initQuery.WriteString("h_date = ?")
         initParams = append(initParams, v.Value)
         } else {
         
@@ -476,12 +460,12 @@ func (p *UsehelthManager) UpdateWhere(columns []usehelth.Params, args []interfac
 /*
 
 
-func (p *UsehelthManager) UpdateOrder(value int64, id int64) error {
+func (p *HealthManager) UpdateCategory(value int64, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
 
-	query := "update usehelth_tb set uh_order = ? where uh_id = ?"
+	query := "update health_tb set h_category = ? where h_id = ?"
 	_, err := p.Exec(query, value, id)
 
     if err != nil {
@@ -493,12 +477,12 @@ func (p *UsehelthManager) UpdateOrder(value int64, id int64) error {
     return err
 }
 
-func (p *UsehelthManager) UpdateHelth(value int64, id int64) error {
+func (p *HealthManager) UpdateTerm(value int64, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
 
-	query := "update usehelth_tb set uh_helth = ? where uh_id = ?"
+	query := "update health_tb set h_term = ? where h_id = ?"
 	_, err := p.Exec(query, value, id)
 
     if err != nil {
@@ -510,12 +494,12 @@ func (p *UsehelthManager) UpdateHelth(value int64, id int64) error {
     return err
 }
 
-func (p *UsehelthManager) UpdateUser(value int64, id int64) error {
+func (p *HealthManager) UpdateName(value string, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
 
-	query := "update usehelth_tb set uh_user = ? where uh_id = ?"
+	query := "update health_tb set h_name = ? where h_id = ?"
 	_, err := p.Exec(query, value, id)
 
     if err != nil {
@@ -527,12 +511,12 @@ func (p *UsehelthManager) UpdateUser(value int64, id int64) error {
     return err
 }
 
-func (p *UsehelthManager) UpdateRocker(value int64, id int64) error {
+func (p *HealthManager) UpdateCount(value int, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
 
-	query := "update usehelth_tb set uh_rocker = ? where uh_id = ?"
+	query := "update health_tb set h_count = ? where h_id = ?"
 	_, err := p.Exec(query, value, id)
 
     if err != nil {
@@ -544,12 +528,12 @@ func (p *UsehelthManager) UpdateRocker(value int64, id int64) error {
     return err
 }
 
-func (p *UsehelthManager) UpdateTerm(value int64, id int64) error {
+func (p *HealthManager) UpdateCost(value int, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
 
-	query := "update usehelth_tb set uh_term = ? where uh_id = ?"
+	query := "update health_tb set h_cost = ? where h_id = ?"
 	_, err := p.Exec(query, value, id)
 
     if err != nil {
@@ -561,12 +545,12 @@ func (p *UsehelthManager) UpdateTerm(value int64, id int64) error {
     return err
 }
 
-func (p *UsehelthManager) UpdateDiscount(value int64, id int64) error {
+func (p *HealthManager) UpdateDiscount(value int64, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
 
-	query := "update usehelth_tb set uh_discount = ? where uh_id = ?"
+	query := "update health_tb set h_discount = ? where h_id = ?"
 	_, err := p.Exec(query, value, id)
 
     if err != nil {
@@ -578,12 +562,12 @@ func (p *UsehelthManager) UpdateDiscount(value int64, id int64) error {
     return err
 }
 
-func (p *UsehelthManager) UpdateStartday(value string, id int64) error {
+func (p *HealthManager) UpdateCostdiscount(value int, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
 
-	query := "update usehelth_tb set uh_startday = ? where uh_id = ?"
+	query := "update health_tb set h_costdiscount = ? where h_id = ?"
 	_, err := p.Exec(query, value, id)
 
     if err != nil {
@@ -595,12 +579,12 @@ func (p *UsehelthManager) UpdateStartday(value string, id int64) error {
     return err
 }
 
-func (p *UsehelthManager) UpdateEndday(value string, id int64) error {
+func (p *HealthManager) UpdateContent(value string, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
 
-	query := "update usehelth_tb set uh_endday = ? where uh_id = ?"
+	query := "update health_tb set h_content = ? where h_id = ?"
 	_, err := p.Exec(query, value, id)
 
     if err != nil {
@@ -612,12 +596,12 @@ func (p *UsehelthManager) UpdateEndday(value string, id int64) error {
     return err
 }
 
-func (p *UsehelthManager) UpdateDate(value string, id int64) error {
+func (p *HealthManager) UpdateDate(value string, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
 
-	query := "update usehelth_tb set uh_date = ? where uh_id = ?"
+	query := "update health_tb set h_date = ? where h_id = ?"
 	_, err := p.Exec(query, value, id)
 
     if err != nil {
@@ -632,7 +616,7 @@ func (p *UsehelthManager) UpdateDate(value string, id int64) error {
 
 */
 
-func (p *UsehelthManager) GetIdentity() int64 {
+func (p *HealthManager) GetIdentity() int64 {
     if !p.Conn.IsConnect() {
         return 0
     }
@@ -649,37 +633,21 @@ func (p *UsehelthManager) GetIdentity() int64 {
     }
 }
 
-func (p *Usehelth) InitExtra() {
+func (p *Health) InitExtra() {
     p.Extra = map[string]interface{}{
 
     }
 }
 
-func (p *UsehelthManager) ReadRow(rows *sql.Rows) *Usehelth {
-    var item Usehelth
+func (p *HealthManager) ReadRow(rows *sql.Rows) *Health {
+    var item Health
     var err error
 
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Order, &item.Helth, &item.User, &item.Rocker, &item.Term, &item.Discount, &item.Startday, &item.Endday, &item.Date)
+        err = rows.Scan(&item.Id, &item.Category, &item.Term, &item.Name, &item.Count, &item.Cost, &item.Discount, &item.Costdiscount, &item.Content, &item.Date)
         
-        if item.Startday == "0000-00-00 00:00:00" || item.Startday == "1000-01-01 00:00:00" || item.Startday == "9999-01-01 00:00:00" {
-            item.Startday = ""
-        }
-
-        if config.Database.Type == config.Postgresql {
-            item.Startday = strings.ReplaceAll(strings.ReplaceAll(item.Startday, "T", " "), "Z", "")
-        }
-		
-        if item.Endday == "0000-00-00 00:00:00" || item.Endday == "1000-01-01 00:00:00" || item.Endday == "9999-01-01 00:00:00" {
-            item.Endday = ""
-        }
-
-        if config.Database.Type == config.Postgresql {
-            item.Endday = strings.ReplaceAll(strings.ReplaceAll(item.Endday, "T", " "), "Z", "")
-        }
-		
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" || item.Date == "9999-01-01 00:00:00" {
             item.Date = ""
         }
@@ -706,14 +674,14 @@ func (p *UsehelthManager) ReadRow(rows *sql.Rows) *Usehelth {
     }
 }
 
-func (p *UsehelthManager) ReadRows(rows *sql.Rows) []Usehelth {
-    var items []Usehelth
+func (p *HealthManager) ReadRows(rows *sql.Rows) []Health {
+    var items []Health
 
     for rows.Next() {
-        var item Usehelth
+        var item Health
         
     
-        err := rows.Scan(&item.Id, &item.Order, &item.Helth, &item.User, &item.Rocker, &item.Term, &item.Discount, &item.Startday, &item.Endday, &item.Date)
+        err := rows.Scan(&item.Id, &item.Category, &item.Term, &item.Name, &item.Count, &item.Cost, &item.Discount, &item.Costdiscount, &item.Content, &item.Date)
         if err != nil {
            if p.Log {
              log.Error().Str("error", err.Error()).Msg("SQL")
@@ -722,22 +690,6 @@ func (p *UsehelthManager) ReadRows(rows *sql.Rows) []Usehelth {
         }
 
         
-        if item.Startday == "0000-00-00 00:00:00" || item.Startday == "1000-01-01 00:00:00" || item.Startday == "9999-01-01 00:00:00" {
-            item.Startday = ""
-        }
-
-        if config.Database.Type == config.Postgresql {
-            item.Startday = strings.ReplaceAll(strings.ReplaceAll(item.Startday, "T", " "), "Z", "")
-        }
-		
-        if item.Endday == "0000-00-00 00:00:00" || item.Endday == "1000-01-01 00:00:00" || item.Endday == "9999-01-01 00:00:00" {
-            item.Endday = ""
-        }
-
-        if config.Database.Type == config.Postgresql {
-            item.Endday = strings.ReplaceAll(strings.ReplaceAll(item.Endday, "T", " "), "Z", "")
-        }
-		
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" || item.Date == "9999-01-01 00:00:00" {
             item.Date = ""
         }
@@ -756,14 +708,14 @@ func (p *UsehelthManager) ReadRows(rows *sql.Rows) []Usehelth {
      return items
 }
 
-func (p *UsehelthManager) Get(id int64) *Usehelth {
+func (p *HealthManager) Get(id int64) *Health {
     if !p.Conn.IsConnect() {
         return nil
     }
 
     var query strings.Builder
     query.WriteString(p.GetQuery())
-    query.WriteString(" and uh_id = ?")
+    query.WriteString(" and h_id = ?")
 
     
     
@@ -781,7 +733,7 @@ func (p *UsehelthManager) Get(id int64) *Usehelth {
     return p.ReadRow(rows)
 }
 
-func (p *UsehelthManager) GetWhere(args []interface{}) *Usehelth {
+func (p *HealthManager) GetWhere(args []interface{}) *Health {
     items := p.Find(args)
     if len(items) == 0 {
         return nil
@@ -790,7 +742,7 @@ func (p *UsehelthManager) GetWhere(args []interface{}) *Usehelth {
     return &items[0]
 }
 
-func (p *UsehelthManager) Count(args []interface{}) int {
+func (p *HealthManager) Count(args []interface{}) int {
     if !p.Conn.IsConnect() {
         return 0
     }
@@ -821,13 +773,13 @@ func (p *UsehelthManager) Count(args []interface{}) int {
     }
 }
 
-func (p *UsehelthManager) FindAll() []Usehelth {
+func (p *HealthManager) FindAll() []Health {
     return p.Find(nil)
 }
 
-func (p *UsehelthManager) Find(args []interface{}) []Usehelth {
+func (p *HealthManager) Find(args []interface{}) []Health {
     if !p.Conn.IsConnect() {
-        var items []Usehelth
+        var items []Health
         return items
     }
 
@@ -871,7 +823,7 @@ func (p *UsehelthManager) Find(args []interface{}) []Usehelth {
             if strings.Contains(item.Column, "_") {
                 query.WriteString(" and ")
             } else {
-                query.WriteString(" and uh_")
+                query.WriteString(" and h_")
             }
             query.WriteString(item.Column)
             
@@ -929,11 +881,11 @@ func (p *UsehelthManager) Find(args []interface{}) []Usehelth {
     
     if page > 0 && pagesize > 0 {
         if orderby == "" {
-            orderby = "uh_id desc"
+            orderby = "h_id desc"
         } else {
             if !strings.Contains(orderby, "_") {                   
                 if strings.ToUpper(orderby) != "RAND()" {
-                    orderby = "uh_" + orderby
+                    orderby = "h_" + orderby
                 }
             }
             
@@ -955,11 +907,11 @@ func (p *UsehelthManager) Find(args []interface{}) []Usehelth {
         }
     } else {
         if orderby == "" {
-            orderby = "uh_id"
+            orderby = "h_id"
         } else {
             if !strings.Contains(orderby, "_") {
                 if strings.ToUpper(orderby) != "RAND()" {
-                    orderby = "uh_" + orderby
+                    orderby = "h_" + orderby
                 }
             }
         }
@@ -973,7 +925,7 @@ func (p *UsehelthManager) Find(args []interface{}) []Usehelth {
        if p.Log {
           log.Error().Str("error", err.Error()).Msg("SQL")
        }
-        items := make([]Usehelth, 0)
+        items := make([]Health, 0)
         return items
     }
 
@@ -984,9 +936,130 @@ func (p *UsehelthManager) Find(args []interface{}) []Usehelth {
 
 
 
+func (p *HealthManager) Sum(args []interface{}) *Health {
+    if !p.Conn.IsConnect() {
+        var item Health
+        return &item
+    }
 
+    var params []interface{}
 
-func (p *UsehelthManager) GroupBy(name string, args []interface{}) []Groupby {
+    
+    query := "select sum(h_count) from health_tb"
+
+    if p.Index != "" {
+        query = query + " use index(" + p.Index + ") "
+    }
+
+    query += "where 1=1 "
+
+    page := 0
+    pagesize := 0
+    orderby := ""
+    
+    for _, arg := range args {
+        switch v := arg.(type) {
+        case PagingType:
+            item := v
+            page = item.Page
+            pagesize = item.Pagesize
+        case OrderingType:
+            item := v
+            orderby = item.Order
+        case LimitType:
+            item := v
+            page = 1
+            pagesize = item.Limit
+        case OptionType:
+            item := v
+            if item.Limit > 0 {
+                page = 1
+                pagesize = item.Limit
+            } else {
+                page = item.Page
+                pagesize = item.Pagesize                
+            }
+            orderby = item.Order
+        case Where:
+            item := v
+
+            if item.Compare == "in" {
+                query += " and h_id in (" + strings.Trim(strings.Replace(fmt.Sprint(item.Value), " ", ", ", -1), "[]") + ")"
+            } else if item.Compare == "between" {
+                query += " and h_" + item.Column + " between ? and ?"
+
+                s := item.Value.([2]string)
+                params = append(params, s[0])
+                params = append(params, s[1])
+            } else {
+                query += " and h_" + item.Column + " " + item.Compare + " ?"
+                if item.Compare == "like" {
+                    params = append(params, "%" + item.Value.(string) + "%")
+                } else {
+                    params = append(params, item.Value)                
+                }
+            }
+        case Custom:
+             item := v
+
+             query += " and " + item.Query
+        }        
+    }
+    
+    startpage := (page - 1) * pagesize
+    
+    if page > 0 && pagesize > 0 {
+        if orderby == "" {
+            orderby = "h_id desc"
+        } else {
+            if !strings.Contains(orderby, "_") {                   
+                orderby = "h_" + orderby
+            }
+            
+        }
+        query += " order by " + orderby
+        //if config.Database == "mysql" {
+            query += " limit ? offset ?"
+            params = append(params, pagesize)
+            params = append(params, startpage)
+            /*
+        } else if config.Database == "mssql" || config.Database == "sqlserver" {
+            query += "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY"
+            params = append(params, startpage)
+            params = append(params, pagesize)
+        }
+        */
+    } else {
+        if orderby == "" {
+            orderby = "h_id"
+        } else {
+            if !strings.Contains(orderby, "_") {
+                orderby = "h_" + orderby
+            }
+        }
+        query += " order by " + orderby
+    }
+
+    rows, err := p.Query(query, params...)
+
+    var item Health
+    
+    if err != nil {
+        log.Printf("query error : %v, %v\n", err, query)
+        return &item
+    }
+
+    defer rows.Close()
+
+    if rows.Next() {
+        
+        rows.Scan(&item.Count)        
+    }
+
+    return &item        
+}
+
+func (p *HealthManager) GroupBy(name string, args []interface{}) []Groupby {
     if !p.Conn.IsConnect() {
         var items []Groupby
         return items
@@ -1005,7 +1078,7 @@ func (p *UsehelthManager) GroupBy(name string, args []interface{}) []Groupby {
             if strings.Contains(item.Column, "_") {
                 query.WriteString(" and ")
             } else {
-                query.WriteString(" and uh_")
+                query.WriteString(" and h_")
             }
             query.WriteString(item.Column)
             
@@ -1057,7 +1130,7 @@ func (p *UsehelthManager) GroupBy(name string, args []interface{}) []Groupby {
         }
     }
     
-    query.WriteString(" group by uh_")
+    query.WriteString(" group by h_")
     query.WriteString(name)
 
     rows, err := p.Query(baseQuery + query.String(), params...)

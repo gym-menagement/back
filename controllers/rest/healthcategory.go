@@ -8,16 +8,16 @@ import (
     "strings"
 )
 
-type HelthcategoryController struct {
+type HealthcategoryController struct {
 	controllers.Controller
 }
 
-func (c *HelthcategoryController) Read(id int64) {
+func (c *HealthcategoryController) Read(id int64) {
     
     
 	conn := c.NewConnection()
 
-	manager := models.NewHelthcategoryManager(conn)
+	manager := models.NewHealthcategoryManager(conn)
 	item := manager.Get(id)
 
     
@@ -25,12 +25,12 @@ func (c *HelthcategoryController) Read(id int64) {
     c.Set("item", item)
 }
 
-func (c *HelthcategoryController) Index(page int, pagesize int) {
+func (c *HealthcategoryController) Index(page int, pagesize int) {
     
     
 	conn := c.NewConnection()
 
-	manager := models.NewHelthcategoryManager(conn)
+	manager := models.NewHealthcategoryManager(conn)
 
     var args []interface{}
     
@@ -97,12 +97,12 @@ func (c *HelthcategoryController) Index(page int, pagesize int) {
     }
 }
 
-func (c *HelthcategoryController) Count() {
+func (c *HealthcategoryController) Count() {
     
     
 	conn := c.NewConnection()
 
-	manager := models.NewHelthcategoryManager(conn)
+	manager := models.NewHealthcategoryManager(conn)
 
     var args []interface{}
     
@@ -137,12 +137,12 @@ func (c *HelthcategoryController) Count() {
 	c.Set("total", total)
 }
 
-func (c *HelthcategoryController) Insert(item *models.Helthcategory) {
+func (c *HealthcategoryController) Insert(item *models.Healthcategory) {
     
     
 	conn := c.NewConnection()
     
-	manager := models.NewHelthcategoryManager(conn)
+	manager := models.NewHealthcategoryManager(conn)
 	err := manager.Insert(item)
     if err != nil {
         c.Set("code", "error")    
@@ -155,7 +155,7 @@ func (c *HelthcategoryController) Insert(item *models.Helthcategory) {
     item.Id = id
 }
 
-func (c *HelthcategoryController) Insertbatch(item *[]models.Helthcategory) {  
+func (c *HealthcategoryController) Insertbatch(item *[]models.Healthcategory) {  
     if item == nil || len(*item) == 0 {
         return
     }
@@ -166,7 +166,7 @@ func (c *HelthcategoryController) Insertbatch(item *[]models.Helthcategory) {
     
 	conn := c.NewConnection()
     
-	manager := models.NewHelthcategoryManager(conn)
+	manager := models.NewHealthcategoryManager(conn)
 
     for i := 0; i < rows; i++ {
 	    err := manager.Insert(&((*item)[i]))
@@ -178,12 +178,12 @@ func (c *HelthcategoryController) Insertbatch(item *[]models.Helthcategory) {
     }
 }
 
-func (c *HelthcategoryController) Update(item *models.Helthcategory) {
+func (c *HealthcategoryController) Update(item *models.Healthcategory) {
     
     
 	conn := c.NewConnection()
 
-	manager := models.NewHelthcategoryManager(conn)
+	manager := models.NewHealthcategoryManager(conn)
     err := manager.Update(item)
     if err != nil {
         c.Set("code", "error")    
@@ -192,12 +192,12 @@ func (c *HelthcategoryController) Update(item *models.Helthcategory) {
     }
 }
 
-func (c *HelthcategoryController) Delete(item *models.Helthcategory) {
+func (c *HealthcategoryController) Delete(item *models.Healthcategory) {
     
     
     conn := c.NewConnection()
 
-	manager := models.NewHelthcategoryManager(conn)
+	manager := models.NewHealthcategoryManager(conn)
 
     
 	err := manager.Delete(item.Id)
@@ -207,12 +207,12 @@ func (c *HelthcategoryController) Delete(item *models.Helthcategory) {
     }
 }
 
-func (c *HelthcategoryController) Deletebatch(item *[]models.Helthcategory) {
+func (c *HealthcategoryController) Deletebatch(item *[]models.Healthcategory) {
     
     
     conn := c.NewConnection()
 
-	manager := models.NewHelthcategoryManager(conn)
+	manager := models.NewHealthcategoryManager(conn)
 
     for _, v := range *item {
         

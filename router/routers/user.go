@@ -30,6 +30,25 @@ func SetupUserRoutes(group fiber.Router) {
 		return c.JSON(controller.Result)
 	})
 
+	group.Get("/user", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+		var controller rest.UserController
+		controller.Init(c)
+		controller.Index(page_, pagesize_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Post("/user/count", func(c *fiber.Ctx) error {
+
+		var controller rest.UserController
+		controller.Init(c)
+		controller.Count()
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
 	group.Post("/user", func(c *fiber.Ctx) error {
 			item_ := &models.UserUpdate{}
 			err := c.BodyParser(item_)
@@ -89,6 +108,15 @@ func SetupUserRoutes(group fiber.Router) {
 		return c.JSON(controller.Result)
 	})
 
+	group.Get("/user/count/loginid/:loginid", func(c *fiber.Ctx) error {
+			loginid_ := c.Params("loginid")
+		var controller rest.UserController
+		controller.Init(c)
+		controller.CountByLoginid(loginid_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
 	group.Delete("/user/batch", func(c *fiber.Ctx) error {
 			item_ := &[]models.User{}
 			err := c.BodyParser(item_)
@@ -116,34 +144,6 @@ func SetupUserRoutes(group fiber.Router) {
 		var controller rest.UserController
 		controller.Init(c)
 		controller.GetByConnectid(connectid_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Get("/user", func(c *fiber.Ctx) error {
-			page_, _ := strconv.Atoi(c.Query("page"))
-			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
-		var controller rest.UserController
-		controller.Init(c)
-		controller.Index(page_, pagesize_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Post("/user/count", func(c *fiber.Ctx) error {
-
-		var controller rest.UserController
-		controller.Init(c)
-		controller.Count()
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Get("/user/count/loginid/:loginid", func(c *fiber.Ctx) error {
-			loginid_ := c.Params("loginid")
-		var controller rest.UserController
-		controller.Init(c)
-		controller.CountByLoginid(loginid_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

@@ -2,7 +2,7 @@ package models
 
 import (
     "gym/global/config"
-    "gym/models/helthcategory"
+    "gym/models/healthcategory"
     "database/sql"
     "errors"
     "fmt"
@@ -15,7 +15,7 @@ import (
 
 )
 
-type Helthcategory struct {
+type Healthcategory struct {
             
     Id                int64 `json:"id"`         
     Gym                int64 `json:"gym"`         
@@ -25,7 +25,7 @@ type Helthcategory struct {
     Extra                    map[string]interface{} `json:"extra"`
 }
 
-type HelthcategoryManager struct {
+type HealthcategoryManager struct {
     Conn    *Connection
     Result  *sql.Result
     Index   string
@@ -38,12 +38,12 @@ type HelthcategoryManager struct {
     Log bool
 }
 
-func (c *Helthcategory) AddExtra(key string, value interface{}) {    
+func (c *Healthcategory) AddExtra(key string, value interface{}) {    
 	c.Extra[key] = value     
 }
 
-func NewHelthcategoryManager(conn *Connection) *HelthcategoryManager {
-    var item HelthcategoryManager
+func NewHealthcategoryManager(conn *Connection) *HealthcategoryManager {
+    var item HealthcategoryManager
 
 
     if conn == nil {
@@ -61,25 +61,25 @@ func NewHelthcategoryManager(conn *Connection) *HelthcategoryManager {
     return &item
 }
 
-func (p *HelthcategoryManager) Close() {
+func (p *HealthcategoryManager) Close() {
     if p.Conn != nil {
         p.Conn.Close()
     }
 }
 
-func (p *HelthcategoryManager) SetIndex(index string) {
+func (p *HealthcategoryManager) SetIndex(index string) {
     p.Index = index
 }
 
-func (p *HelthcategoryManager) SetCountQuery(query string) {
+func (p *HealthcategoryManager) SetCountQuery(query string) {
     p.CountQuery = query
 }
 
-func (p *HelthcategoryManager) SetSelectQuery(query string) {
+func (p *HealthcategoryManager) SetSelectQuery(query string) {
     p.SelectQuery = query
 }
 
-func (p *HelthcategoryManager) Exec(query string, params ...interface{}) (sql.Result, error) {
+func (p *HealthcategoryManager) Exec(query string, params ...interface{}) (sql.Result, error) {
     if p.Log {
        if len(params) > 0 {
 	       log.Debug().Str("query", query).Any("param", params).Msg("SQL")
@@ -91,7 +91,7 @@ func (p *HelthcategoryManager) Exec(query string, params ...interface{}) (sql.Re
     return p.Conn.Exec(query, params...)
 }
 
-func (p *HelthcategoryManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
+func (p *HealthcategoryManager) Query(query string, params ...interface{}) (*sql.Rows, error) {
     if p.Isolation {
         query += " for update"
     }
@@ -107,14 +107,14 @@ func (p *HelthcategoryManager) Query(query string, params ...interface{}) (*sql.
     return p.Conn.Query(query, params...)
 }
 
-func (p *HelthcategoryManager) GetQuery() string {
+func (p *HealthcategoryManager) GetQuery() string {
     if p.SelectQuery != "" {
         return p.SelectQuery    
     }
 
     var ret strings.Builder
 
-    ret.WriteString("select hc_id, hc_gym, hc_name, hc_date from helthcategory_tb")
+    ret.WriteString("select hc_id, hc_gym, hc_name, hc_date from healthcategory_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -133,14 +133,14 @@ func (p *HelthcategoryManager) GetQuery() string {
     return ret.String()
 }
 
-func (p *HelthcategoryManager) GetQuerySelect() string {
+func (p *HealthcategoryManager) GetQuerySelect() string {
     if p.CountQuery != "" {
         return p.CountQuery    
     }
 
     var ret strings.Builder
     
-    ret.WriteString("select count(*) from helthcategory_tb")
+    ret.WriteString("select count(*) from healthcategory_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -159,7 +159,7 @@ func (p *HelthcategoryManager) GetQuerySelect() string {
     return ret.String()
 }
 
-func (p *HelthcategoryManager) GetQueryGroup(name string) string {
+func (p *HealthcategoryManager) GetQueryGroup(name string) string {
     if p.SelectQuery != "" {
         return p.SelectQuery    
     }
@@ -167,7 +167,7 @@ func (p *HelthcategoryManager) GetQueryGroup(name string) string {
     var ret strings.Builder
     ret.WriteString("select hc_")
     ret.WriteString(name)
-    ret.WriteString(", count(*) from helthcategory_tb ")
+    ret.WriteString(", count(*) from healthcategory_tb ")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -181,12 +181,12 @@ func (p *HelthcategoryManager) GetQueryGroup(name string) string {
     return ret.String()
 }
 
-func (p *HelthcategoryManager) Truncate() error {
+func (p *HealthcategoryManager) Truncate() error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
     
-    query := "truncate helthcategory_tb "
+    query := "truncate healthcategory_tb "
     _, err := p.Exec(query)
 
     if err != nil {
@@ -198,7 +198,7 @@ func (p *HelthcategoryManager) Truncate() error {
     return nil
 }
 
-func (p *HelthcategoryManager) Insert(item *Helthcategory) error {
+func (p *HealthcategoryManager) Insert(item *Healthcategory) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
@@ -219,10 +219,10 @@ func (p *HelthcategoryManager) Insert(item *Helthcategory) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into helthcategory_tb (hc_id, hc_gym, hc_name, hc_date) values (?, ?, ?, ?)"
+        query = "insert into healthcategory_tb (hc_id, hc_gym, hc_name, hc_date) values (?, ?, ?, ?)"
         res, err = p.Exec(query, item.Id, item.Gym, item.Name, item.Date)
     } else {
-        query = "insert into helthcategory_tb (hc_gym, hc_name, hc_date) values (?, ?, ?)"
+        query = "insert into healthcategory_tb (hc_gym, hc_name, hc_date) values (?, ?, ?)"
         res, err = p.Exec(query, item.Gym, item.Name, item.Date)
     }
     
@@ -239,12 +239,12 @@ func (p *HelthcategoryManager) Insert(item *Helthcategory) error {
     return err
 }
 
-func (p *HelthcategoryManager) Delete(id int64) error {
+func (p *HealthcategoryManager) Delete(id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
 
-    query := "delete from helthcategory_tb where hc_id = ?"
+    query := "delete from healthcategory_tb where hc_id = ?"
     _, err := p.Exec(query, id)
 
     if err != nil {
@@ -257,12 +257,12 @@ func (p *HelthcategoryManager) Delete(id int64) error {
     return err
 }
 
-func (p *HelthcategoryManager) DeleteAll() error {
+func (p *HealthcategoryManager) DeleteAll() error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
 
-    query := "delete from helthcategory_tb"
+    query := "delete from healthcategory_tb"
     _, err := p.Exec(query)
 
     if err != nil {
@@ -274,7 +274,7 @@ func (p *HelthcategoryManager) DeleteAll() error {
     return err
 }
 
-func (p *HelthcategoryManager) MakeQuery(initQuery string , postQuery string, initParams []interface{}, args []interface{}) (string, []interface{}) {
+func (p *HealthcategoryManager) MakeQuery(initQuery string , postQuery string, initParams []interface{}, args []interface{}) (string, []interface{}) {
     var params []interface{}
     if initParams != nil {
         params = append(params, initParams...)
@@ -346,12 +346,12 @@ func (p *HelthcategoryManager) MakeQuery(initQuery string , postQuery string, in
     return query.String(), params
 }
 
-func (p *HelthcategoryManager) DeleteWhere(args []interface{}) error {
+func (p *HealthcategoryManager) DeleteWhere(args []interface{}) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
 
-    query, params := p.MakeQuery("delete from helthcategory_tb where 1=1", "", nil, args)
+    query, params := p.MakeQuery("delete from healthcategory_tb where 1=1", "", nil, args)
     _, err := p.Exec(query, params...)
 
     if err != nil {
@@ -363,7 +363,7 @@ func (p *HelthcategoryManager) DeleteWhere(args []interface{}) error {
     return err
 }
 
-func (p *HelthcategoryManager) Update(item *Helthcategory) error {
+func (p *HealthcategoryManager) Update(item *Healthcategory) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
@@ -374,7 +374,7 @@ func (p *HelthcategoryManager) Update(item *Helthcategory) error {
     }
 	
 
-	query := "update helthcategory_tb set hc_gym = ?, hc_name = ?, hc_date = ? where hc_id = ?"
+	query := "update healthcategory_tb set hc_gym = ?, hc_name = ?, hc_date = ? where hc_id = ?"
 	_, err := p.Exec(query, item.Gym, item.Name, item.Date, item.Id)
 
     if err != nil {
@@ -387,7 +387,7 @@ func (p *HelthcategoryManager) Update(item *Helthcategory) error {
     return err
 }
 
-func (p *HelthcategoryManager) UpdateWhere(columns []helthcategory.Params, args []interface{}) error {
+func (p *HealthcategoryManager) UpdateWhere(columns []healthcategory.Params, args []interface{}) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
@@ -395,22 +395,22 @@ func (p *HelthcategoryManager) UpdateWhere(columns []helthcategory.Params, args 
     var initQuery strings.Builder
     var initParams []interface{}
 
-    initQuery.WriteString("update helthcategory_tb set ")
+    initQuery.WriteString("update healthcategory_tb set ")
     for i, v := range columns {
         if i > 0 {
             initQuery.WriteString(", ")
         }
 
-        if v.Column == helthcategory.ColumnId {
+        if v.Column == healthcategory.ColumnId {
         initQuery.WriteString("hc_id = ?")
         initParams = append(initParams, v.Value)
-        } else if v.Column == helthcategory.ColumnGym {
+        } else if v.Column == healthcategory.ColumnGym {
         initQuery.WriteString("hc_gym = ?")
         initParams = append(initParams, v.Value)
-        } else if v.Column == helthcategory.ColumnName {
+        } else if v.Column == healthcategory.ColumnName {
         initQuery.WriteString("hc_name = ?")
         initParams = append(initParams, v.Value)
-        } else if v.Column == helthcategory.ColumnDate {
+        } else if v.Column == healthcategory.ColumnDate {
         initQuery.WriteString("hc_date = ?")
         initParams = append(initParams, v.Value)
         } else {
@@ -436,12 +436,12 @@ func (p *HelthcategoryManager) UpdateWhere(columns []helthcategory.Params, args 
 /*
 
 
-func (p *HelthcategoryManager) UpdateGym(value int64, id int64) error {
+func (p *HealthcategoryManager) UpdateGym(value int64, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
 
-	query := "update helthcategory_tb set hc_gym = ? where hc_id = ?"
+	query := "update healthcategory_tb set hc_gym = ? where hc_id = ?"
 	_, err := p.Exec(query, value, id)
 
     if err != nil {
@@ -453,12 +453,12 @@ func (p *HelthcategoryManager) UpdateGym(value int64, id int64) error {
     return err
 }
 
-func (p *HelthcategoryManager) UpdateName(value string, id int64) error {
+func (p *HealthcategoryManager) UpdateName(value string, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
 
-	query := "update helthcategory_tb set hc_name = ? where hc_id = ?"
+	query := "update healthcategory_tb set hc_name = ? where hc_id = ?"
 	_, err := p.Exec(query, value, id)
 
     if err != nil {
@@ -470,12 +470,12 @@ func (p *HelthcategoryManager) UpdateName(value string, id int64) error {
     return err
 }
 
-func (p *HelthcategoryManager) UpdateDate(value string, id int64) error {
+func (p *HealthcategoryManager) UpdateDate(value string, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
 
-	query := "update helthcategory_tb set hc_date = ? where hc_id = ?"
+	query := "update healthcategory_tb set hc_date = ? where hc_id = ?"
 	_, err := p.Exec(query, value, id)
 
     if err != nil {
@@ -490,7 +490,7 @@ func (p *HelthcategoryManager) UpdateDate(value string, id int64) error {
 
 */
 
-func (p *HelthcategoryManager) GetIdentity() int64 {
+func (p *HealthcategoryManager) GetIdentity() int64 {
     if !p.Conn.IsConnect() {
         return 0
     }
@@ -507,14 +507,14 @@ func (p *HelthcategoryManager) GetIdentity() int64 {
     }
 }
 
-func (p *Helthcategory) InitExtra() {
+func (p *Healthcategory) InitExtra() {
     p.Extra = map[string]interface{}{
 
     }
 }
 
-func (p *HelthcategoryManager) ReadRow(rows *sql.Rows) *Helthcategory {
-    var item Helthcategory
+func (p *HealthcategoryManager) ReadRow(rows *sql.Rows) *Healthcategory {
+    var item Healthcategory
     var err error
 
     
@@ -548,11 +548,11 @@ func (p *HelthcategoryManager) ReadRow(rows *sql.Rows) *Helthcategory {
     }
 }
 
-func (p *HelthcategoryManager) ReadRows(rows *sql.Rows) []Helthcategory {
-    var items []Helthcategory
+func (p *HealthcategoryManager) ReadRows(rows *sql.Rows) []Healthcategory {
+    var items []Healthcategory
 
     for rows.Next() {
-        var item Helthcategory
+        var item Healthcategory
         
     
         err := rows.Scan(&item.Id, &item.Gym, &item.Name, &item.Date)
@@ -582,7 +582,7 @@ func (p *HelthcategoryManager) ReadRows(rows *sql.Rows) []Helthcategory {
      return items
 }
 
-func (p *HelthcategoryManager) Get(id int64) *Helthcategory {
+func (p *HealthcategoryManager) Get(id int64) *Healthcategory {
     if !p.Conn.IsConnect() {
         return nil
     }
@@ -607,7 +607,7 @@ func (p *HelthcategoryManager) Get(id int64) *Helthcategory {
     return p.ReadRow(rows)
 }
 
-func (p *HelthcategoryManager) GetWhere(args []interface{}) *Helthcategory {
+func (p *HealthcategoryManager) GetWhere(args []interface{}) *Healthcategory {
     items := p.Find(args)
     if len(items) == 0 {
         return nil
@@ -616,7 +616,7 @@ func (p *HelthcategoryManager) GetWhere(args []interface{}) *Helthcategory {
     return &items[0]
 }
 
-func (p *HelthcategoryManager) Count(args []interface{}) int {
+func (p *HealthcategoryManager) Count(args []interface{}) int {
     if !p.Conn.IsConnect() {
         return 0
     }
@@ -647,13 +647,13 @@ func (p *HelthcategoryManager) Count(args []interface{}) int {
     }
 }
 
-func (p *HelthcategoryManager) FindAll() []Helthcategory {
+func (p *HealthcategoryManager) FindAll() []Healthcategory {
     return p.Find(nil)
 }
 
-func (p *HelthcategoryManager) Find(args []interface{}) []Helthcategory {
+func (p *HealthcategoryManager) Find(args []interface{}) []Healthcategory {
     if !p.Conn.IsConnect() {
-        var items []Helthcategory
+        var items []Healthcategory
         return items
     }
 
@@ -799,7 +799,7 @@ func (p *HelthcategoryManager) Find(args []interface{}) []Helthcategory {
        if p.Log {
           log.Error().Str("error", err.Error()).Msg("SQL")
        }
-        items := make([]Helthcategory, 0)
+        items := make([]Healthcategory, 0)
         return items
     }
 
@@ -812,7 +812,7 @@ func (p *HelthcategoryManager) Find(args []interface{}) []Helthcategory {
 
 
 
-func (p *HelthcategoryManager) GroupBy(name string, args []interface{}) []Groupby {
+func (p *HealthcategoryManager) GroupBy(name string, args []interface{}) []Groupby {
     if !p.Conn.IsConnect() {
         var items []Groupby
         return items

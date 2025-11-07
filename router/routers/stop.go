@@ -17,6 +17,25 @@ import (
 // SetupStopRoutes sets up routes for stop domain
 func SetupStopRoutes(group fiber.Router) {
 
+	group.Get("/stop/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+		var controller rest.StopController
+		controller.Init(c)
+		controller.Read(id_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Get("/stop", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+		var controller rest.StopController
+		controller.Init(c)
+		controller.Index(page_, pagesize_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
 	group.Post("/stop/count", func(c *fiber.Ctx) error {
 
 		var controller rest.StopController
@@ -87,25 +106,6 @@ func SetupStopRoutes(group fiber.Router) {
 		var controller rest.StopController
 		controller.Init(c)
 		controller.Deletebatch(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Get("/stop/:id", func(c *fiber.Ctx) error {
-			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
-		var controller rest.StopController
-		controller.Init(c)
-		controller.Read(id_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Get("/stop", func(c *fiber.Ctx) error {
-			page_, _ := strconv.Atoi(c.Query("page"))
-			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
-		var controller rest.StopController
-		controller.Init(c)
-		controller.Index(page_, pagesize_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})
