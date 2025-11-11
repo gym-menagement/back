@@ -116,7 +116,7 @@ func (p *PaymentformManager) GetQuery() string {
 
     var ret strings.Builder
 
-    ret.WriteString("select pf_id, pf_gym, pf_payment, pf_type, pf_cost, pf_date from paymentform_tb")
+    ret.WriteString("select pf_id, pf_gym, pf_payment, pf_type, pf_cost, pf_date, g_id, g_name, g_date, p_id, p_gym, p_order, p_membership, p_cost, p_date, pt_id, pt_gym, pt_name, pt_date from paymentform_tb, gym_tb, payment_tb, paymenttype_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -130,6 +130,12 @@ func (p *PaymentformManager) GetQuery() string {
     }
 
     ret.WriteString(" where 1=1 ")
+    
+    ret.WriteString("and pf_gym = g_id ")
+    
+    ret.WriteString("and pf_payment = p_id ")
+    
+    ret.WriteString("and pf_type = pt_id ")
     
 
     return ret.String()
@@ -157,6 +163,12 @@ func (p *PaymentformManager) GetQuerySelect() string {
 
     ret.WriteString(" where 1=1 ")
     
+    ret.WriteString("and pf_gym = g_id ")
+    
+    ret.WriteString("and pf_payment = p_id ")
+    
+    ret.WriteString("and pf_type = pt_id ")
+    
 
     return ret.String()
 }
@@ -178,6 +190,12 @@ func (p *PaymentformManager) GetQueryGroup(name string) string {
     }
 
     ret.WriteString(" where 1=1 ")
+    
+    ret.WriteString("and pf_gym = g_id ")
+    
+    ret.WriteString("and pf_payment = p_id ")
+    
+    ret.WriteString("and pf_type = pt_id ")
     
 
     return ret.String()
@@ -559,10 +577,13 @@ func (p *PaymentformManager) ReadRow(rows *sql.Rows) *Paymentform {
     var item Paymentform
     var err error
 
+    var _gym Gym
+    var _payment Payment
+    var _paymenttype Paymenttype
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Gym, &item.Payment, &item.Type, &item.Cost, &item.Date)
+        err = rows.Scan(&item.Id, &item.Gym, &item.Payment, &item.Type, &item.Cost, &item.Date, &_gym.Id, &_gym.Name, &_gym.Date, &_payment.Id, &_payment.Gym, &_payment.Order, &_payment.Membership, &_payment.Cost, &_payment.Date, &_paymenttype.Id, &_paymenttype.Gym, &_paymenttype.Name, &_paymenttype.Date)
         
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" || item.Date == "9999-01-01 00:00:00" {
             item.Date = ""
@@ -585,7 +606,13 @@ func (p *PaymentformManager) ReadRow(rows *sql.Rows) *Paymentform {
     } else {
 
         item.InitExtra()
-        
+        _gym.InitExtra()
+        item.AddExtra("gym",  _gym)
+_payment.InitExtra()
+        item.AddExtra("payment",  _payment)
+_paymenttype.InitExtra()
+        item.AddExtra("paymenttype",  _paymenttype)
+
         return &item
     }
 }
@@ -595,9 +622,12 @@ func (p *PaymentformManager) ReadRows(rows *sql.Rows) []Paymentform {
 
     for rows.Next() {
         var item Paymentform
+        var _gym Gym
+        var _payment Payment
+        var _paymenttype Paymenttype
         
-    
-        err := rows.Scan(&item.Id, &item.Gym, &item.Payment, &item.Type, &item.Cost, &item.Date)
+
+        err := rows.Scan(&item.Id, &item.Gym, &item.Payment, &item.Type, &item.Cost, &item.Date, &_gym.Id, &_gym.Name, &_gym.Date, &_payment.Id, &_payment.Gym, &_payment.Order, &_payment.Membership, &_payment.Cost, &_payment.Date, &_paymenttype.Id, &_paymenttype.Gym, &_paymenttype.Name, &_paymenttype.Date)
         if err != nil {
            if p.Log {
              log.Error().Str("error", err.Error()).Msg("SQL")
@@ -614,9 +644,15 @@ func (p *PaymentformManager) ReadRows(rows *sql.Rows) []Paymentform {
             item.Date = strings.ReplaceAll(strings.ReplaceAll(item.Date, "T", " "), "Z", "")
         }
 		
-        
-        item.InitExtra()        
-        
+
+        item.InitExtra()
+        _gym.InitExtra()
+        item.AddExtra("gym",  _gym)
+_payment.InitExtra()
+        item.AddExtra("payment",  _payment)
+_paymenttype.InitExtra()
+        item.AddExtra("paymenttype",  _paymenttype)
+
         items = append(items, item)
     }
 
@@ -633,6 +669,12 @@ func (p *PaymentformManager) Get(id int64) *Paymentform {
     query.WriteString(p.GetQuery())
     query.WriteString(" and pf_id = ?")
 
+    
+    query.WriteString(" and pf_gym = g_id")
+    
+    query.WriteString(" and pf_payment = p_id")
+    
+    query.WriteString(" and pf_type = pt_id")
     
     
     rows, err := p.Query(query.String(), id)

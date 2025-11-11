@@ -19,7 +19,7 @@ type Role struct {
             
     Id                int64 `json:"id"`         
     Gym                int64 `json:"gym"`         
-    Role                int `json:"role"`         
+    Role                role.Role `json:"role"`         
     Name                string `json:"name"`         
     Date                string `json:"date"` 
     
@@ -115,7 +115,7 @@ func (p *RoleManager) GetQuery() string {
 
     var ret strings.Builder
 
-    ret.WriteString("select r_id, r_gym, r_role, r_name, r_date from role_tb")
+    ret.WriteString("select r_id, r_gym, r_role, r_name, r_date, g_id, g_name, g_date from role_tb, gym_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -129,6 +129,8 @@ func (p *RoleManager) GetQuery() string {
     }
 
     ret.WriteString(" where 1=1 ")
+    
+    ret.WriteString("and r_gym = g_id ")
     
 
     return ret.String()
@@ -156,6 +158,8 @@ func (p *RoleManager) GetQuerySelect() string {
 
     ret.WriteString(" where 1=1 ")
     
+    ret.WriteString("and r_gym = g_id ")
+    
 
     return ret.String()
 }
@@ -177,6 +181,8 @@ func (p *RoleManager) GetQueryGroup(name string) string {
     }
 
     ret.WriteString(" where 1=1 ")
+    
+    ret.WriteString("and r_gym = g_id ")
     
 
     return ret.String()
@@ -457,7 +463,7 @@ func (p *RoleManager) UpdateGym(value int64, id int64) error {
     return err
 }
 
-func (p *RoleManager) UpdateRole(value int, id int64) error {
+func (p *RoleManager) UpdateRole(value role.Role, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
@@ -530,6 +536,7 @@ func (p *RoleManager) GetIdentity() int64 {
 
 func (p *Role) InitExtra() {
     p.Extra = map[string]interface{}{
+            "role":     role.GetRole(p.Role),
 
     }
 }
@@ -538,10 +545,11 @@ func (p *RoleManager) ReadRow(rows *sql.Rows) *Role {
     var item Role
     var err error
 
+    var _gym Gym
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Gym, &item.Role, &item.Name, &item.Date)
+        err = rows.Scan(&item.Id, &item.Gym, &item.Role, &item.Name, &item.Date, &_gym.Id, &_gym.Name, &_gym.Date)
         
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" || item.Date == "9999-01-01 00:00:00" {
             item.Date = ""
@@ -564,7 +572,9 @@ func (p *RoleManager) ReadRow(rows *sql.Rows) *Role {
     } else {
 
         item.InitExtra()
-        
+        _gym.InitExtra()
+        item.AddExtra("gym",  _gym)
+
         return &item
     }
 }
@@ -574,9 +584,10 @@ func (p *RoleManager) ReadRows(rows *sql.Rows) []Role {
 
     for rows.Next() {
         var item Role
+        var _gym Gym
         
-    
-        err := rows.Scan(&item.Id, &item.Gym, &item.Role, &item.Name, &item.Date)
+
+        err := rows.Scan(&item.Id, &item.Gym, &item.Role, &item.Name, &item.Date, &_gym.Id, &_gym.Name, &_gym.Date)
         if err != nil {
            if p.Log {
              log.Error().Str("error", err.Error()).Msg("SQL")
@@ -593,9 +604,11 @@ func (p *RoleManager) ReadRows(rows *sql.Rows) []Role {
             item.Date = strings.ReplaceAll(strings.ReplaceAll(item.Date, "T", " "), "Z", "")
         }
 		
-        
-        item.InitExtra()        
-        
+
+        item.InitExtra()
+        _gym.InitExtra()
+        item.AddExtra("gym",  _gym)
+
         items = append(items, item)
     }
 
@@ -612,6 +625,8 @@ func (p *RoleManager) Get(id int64) *Role {
     query.WriteString(p.GetQuery())
     query.WriteString(" and r_id = ?")
 
+    
+    query.WriteString(" and r_gym = g_id")
     
     
     rows, err := p.Query(query.String(), id)

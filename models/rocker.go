@@ -20,7 +20,7 @@ type Rocker struct {
     Id                int64 `json:"id"`         
     Group                int64 `json:"group"`         
     Name                string `json:"name"`         
-    Available                bool `json:"available"`         
+    Available                rocker.Available `json:"available"`         
     Date                string `json:"date"` 
     
     Extra                    map[string]interface{} `json:"extra"`
@@ -115,7 +115,7 @@ func (p *RockerManager) GetQuery() string {
 
     var ret strings.Builder
 
-    ret.WriteString("select r_id, r_group, r_name, r_available, r_date from rocker_tb")
+    ret.WriteString("select r_id, r_group, r_name, r_available, r_date, rg_id, rg_gym, rg_name, rg_date from rocker_tb, rockergroup_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -129,6 +129,8 @@ func (p *RockerManager) GetQuery() string {
     }
 
     ret.WriteString(" where 1=1 ")
+    
+    ret.WriteString("and r_group = rg_id ")
     
 
     return ret.String()
@@ -156,6 +158,8 @@ func (p *RockerManager) GetQuerySelect() string {
 
     ret.WriteString(" where 1=1 ")
     
+    ret.WriteString("and r_group = rg_id ")
+    
 
     return ret.String()
 }
@@ -177,6 +181,8 @@ func (p *RockerManager) GetQueryGroup(name string) string {
     }
 
     ret.WriteString(" where 1=1 ")
+    
+    ret.WriteString("and r_group = rg_id ")
     
 
     return ret.String()
@@ -474,7 +480,7 @@ func (p *RockerManager) UpdateName(value string, id int64) error {
     return err
 }
 
-func (p *RockerManager) UpdateAvailable(value bool, id int64) error {
+func (p *RockerManager) UpdateAvailable(value rocker.Available, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
@@ -530,6 +536,7 @@ func (p *RockerManager) GetIdentity() int64 {
 
 func (p *Rocker) InitExtra() {
     p.Extra = map[string]interface{}{
+            "available":     rocker.GetAvailable(p.Available),
 
     }
 }
@@ -538,10 +545,11 @@ func (p *RockerManager) ReadRow(rows *sql.Rows) *Rocker {
     var item Rocker
     var err error
 
+    var _rockergroup Rockergroup
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Group, &item.Name, &item.Available, &item.Date)
+        err = rows.Scan(&item.Id, &item.Group, &item.Name, &item.Available, &item.Date, &_rockergroup.Id, &_rockergroup.Gym, &_rockergroup.Name, &_rockergroup.Date)
         
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" || item.Date == "9999-01-01 00:00:00" {
             item.Date = ""
@@ -564,7 +572,9 @@ func (p *RockerManager) ReadRow(rows *sql.Rows) *Rocker {
     } else {
 
         item.InitExtra()
-        
+        _rockergroup.InitExtra()
+        item.AddExtra("rockergroup",  _rockergroup)
+
         return &item
     }
 }
@@ -574,9 +584,10 @@ func (p *RockerManager) ReadRows(rows *sql.Rows) []Rocker {
 
     for rows.Next() {
         var item Rocker
+        var _rockergroup Rockergroup
         
-    
-        err := rows.Scan(&item.Id, &item.Group, &item.Name, &item.Available, &item.Date)
+
+        err := rows.Scan(&item.Id, &item.Group, &item.Name, &item.Available, &item.Date, &_rockergroup.Id, &_rockergroup.Gym, &_rockergroup.Name, &_rockergroup.Date)
         if err != nil {
            if p.Log {
              log.Error().Str("error", err.Error()).Msg("SQL")
@@ -593,9 +604,11 @@ func (p *RockerManager) ReadRows(rows *sql.Rows) []Rocker {
             item.Date = strings.ReplaceAll(strings.ReplaceAll(item.Date, "T", " "), "Z", "")
         }
 		
-        
-        item.InitExtra()        
-        
+
+        item.InitExtra()
+        _rockergroup.InitExtra()
+        item.AddExtra("rockergroup",  _rockergroup)
+
         items = append(items, item)
     }
 
@@ -612,6 +625,8 @@ func (p *RockerManager) Get(id int64) *Rocker {
     query.WriteString(p.GetQuery())
     query.WriteString(" and r_id = ?")
 
+    
+    query.WriteString(" and r_group = rg_id")
     
     
     rows, err := p.Query(query.String(), id)

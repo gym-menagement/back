@@ -533,7 +533,7 @@ func (p *GymManager) ReadRows(rows *sql.Rows) []Gym {
     for rows.Next() {
         var item Gym
         
-    
+
         err := rows.Scan(&item.Id, &item.Name, &item.Date)
         if err != nil {
            if p.Log {
@@ -551,8 +551,8 @@ func (p *GymManager) ReadRows(rows *sql.Rows) []Gym {
             item.Date = strings.ReplaceAll(strings.ReplaceAll(item.Date, "T", " "), "Z", "")
         }
 		
-        
-        item.InitExtra()        
+
+        item.InitExtra()
         
         items = append(items, item)
     }

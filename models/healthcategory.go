@@ -114,7 +114,7 @@ func (p *HealthcategoryManager) GetQuery() string {
 
     var ret strings.Builder
 
-    ret.WriteString("select hc_id, hc_gym, hc_name, hc_date from healthcategory_tb")
+    ret.WriteString("select hc_id, hc_gym, hc_name, hc_date, g_id, g_name, g_date from healthcategory_tb, gym_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -128,6 +128,8 @@ func (p *HealthcategoryManager) GetQuery() string {
     }
 
     ret.WriteString(" where 1=1 ")
+    
+    ret.WriteString("and hc_gym = g_id ")
     
 
     return ret.String()
@@ -155,6 +157,8 @@ func (p *HealthcategoryManager) GetQuerySelect() string {
 
     ret.WriteString(" where 1=1 ")
     
+    ret.WriteString("and hc_gym = g_id ")
+    
 
     return ret.String()
 }
@@ -176,6 +180,8 @@ func (p *HealthcategoryManager) GetQueryGroup(name string) string {
     }
 
     ret.WriteString(" where 1=1 ")
+    
+    ret.WriteString("and hc_gym = g_id ")
     
 
     return ret.String()
@@ -517,10 +523,11 @@ func (p *HealthcategoryManager) ReadRow(rows *sql.Rows) *Healthcategory {
     var item Healthcategory
     var err error
 
+    var _gym Gym
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Gym, &item.Name, &item.Date)
+        err = rows.Scan(&item.Id, &item.Gym, &item.Name, &item.Date, &_gym.Id, &_gym.Name, &_gym.Date)
         
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" || item.Date == "9999-01-01 00:00:00" {
             item.Date = ""
@@ -543,7 +550,9 @@ func (p *HealthcategoryManager) ReadRow(rows *sql.Rows) *Healthcategory {
     } else {
 
         item.InitExtra()
-        
+        _gym.InitExtra()
+        item.AddExtra("gym",  _gym)
+
         return &item
     }
 }
@@ -553,9 +562,10 @@ func (p *HealthcategoryManager) ReadRows(rows *sql.Rows) []Healthcategory {
 
     for rows.Next() {
         var item Healthcategory
+        var _gym Gym
         
-    
-        err := rows.Scan(&item.Id, &item.Gym, &item.Name, &item.Date)
+
+        err := rows.Scan(&item.Id, &item.Gym, &item.Name, &item.Date, &_gym.Id, &_gym.Name, &_gym.Date)
         if err != nil {
            if p.Log {
              log.Error().Str("error", err.Error()).Msg("SQL")
@@ -572,9 +582,11 @@ func (p *HealthcategoryManager) ReadRows(rows *sql.Rows) []Healthcategory {
             item.Date = strings.ReplaceAll(strings.ReplaceAll(item.Date, "T", " "), "Z", "")
         }
 		
-        
-        item.InitExtra()        
-        
+
+        item.InitExtra()
+        _gym.InitExtra()
+        item.AddExtra("gym",  _gym)
+
         items = append(items, item)
     }
 
@@ -591,6 +603,8 @@ func (p *HealthcategoryManager) Get(id int64) *Healthcategory {
     query.WriteString(p.GetQuery())
     query.WriteString(" and hc_id = ?")
 
+    
+    query.WriteString(" and hc_gym = g_id")
     
     
     rows, err := p.Query(query.String(), id)

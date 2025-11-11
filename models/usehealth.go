@@ -120,7 +120,7 @@ func (p *UsehealthManager) GetQuery() string {
 
     var ret strings.Builder
 
-    ret.WriteString("select uh_id, uh_order, uh_health, uh_user, uh_rocker, uh_term, uh_discount, uh_startday, uh_endday, uh_date from usehealth_tb")
+    ret.WriteString("select uh_id, uh_order, uh_health, uh_user, uh_rocker, uh_term, uh_discount, uh_startday, uh_endday, uh_date, o_id, o_membership, o_date, h_id, h_category, h_term, h_name, h_count, h_cost, h_discount, h_costdiscount, h_content, h_date, u_id, u_loginid, u_passwd, u_email, u_name, u_tel, u_address, u_image, u_sex, u_birth, u_type, u_connectid, u_level, u_role, u_use, u_logindate, u_lastchangepasswddate, u_date, r_id, r_group, r_name, r_available, r_date, t_id, t_gym, t_daytype, t_name, t_term, t_date, d_id, d_name, d_discount, d_date from usehealth_tb, order_tb, health_tb, user_tb, rocker_tb, term_tb, discount_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -134,6 +134,18 @@ func (p *UsehealthManager) GetQuery() string {
     }
 
     ret.WriteString(" where 1=1 ")
+    
+    ret.WriteString("and uh_order = o_id ")
+    
+    ret.WriteString("and uh_health = h_id ")
+    
+    ret.WriteString("and uh_user = u_id ")
+    
+    ret.WriteString("and uh_rocker = r_id ")
+    
+    ret.WriteString("and uh_term = t_id ")
+    
+    ret.WriteString("and uh_discount = d_id ")
     
 
     return ret.String()
@@ -161,6 +173,18 @@ func (p *UsehealthManager) GetQuerySelect() string {
 
     ret.WriteString(" where 1=1 ")
     
+    ret.WriteString("and uh_order = o_id ")
+    
+    ret.WriteString("and uh_health = h_id ")
+    
+    ret.WriteString("and uh_user = u_id ")
+    
+    ret.WriteString("and uh_rocker = r_id ")
+    
+    ret.WriteString("and uh_term = t_id ")
+    
+    ret.WriteString("and uh_discount = d_id ")
+    
 
     return ret.String()
 }
@@ -182,6 +206,18 @@ func (p *UsehealthManager) GetQueryGroup(name string) string {
     }
 
     ret.WriteString(" where 1=1 ")
+    
+    ret.WriteString("and uh_order = o_id ")
+    
+    ret.WriteString("and uh_health = h_id ")
+    
+    ret.WriteString("and uh_user = u_id ")
+    
+    ret.WriteString("and uh_rocker = r_id ")
+    
+    ret.WriteString("and uh_term = t_id ")
+    
+    ret.WriteString("and uh_discount = d_id ")
     
 
     return ret.String()
@@ -659,10 +695,16 @@ func (p *UsehealthManager) ReadRow(rows *sql.Rows) *Usehealth {
     var item Usehealth
     var err error
 
+    var _order Order
+    var _health Health
+    var _user User
+    var _rocker Rocker
+    var _term Term
+    var _discount Discount
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Order, &item.Health, &item.User, &item.Rocker, &item.Term, &item.Discount, &item.Startday, &item.Endday, &item.Date)
+        err = rows.Scan(&item.Id, &item.Order, &item.Health, &item.User, &item.Rocker, &item.Term, &item.Discount, &item.Startday, &item.Endday, &item.Date, &_order.Id, &_order.Membership, &_order.Date, &_health.Id, &_health.Category, &_health.Term, &_health.Name, &_health.Count, &_health.Cost, &_health.Discount, &_health.Costdiscount, &_health.Content, &_health.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Email, &_user.Name, &_user.Tel, &_user.Address, &_user.Image, &_user.Sex, &_user.Birth, &_user.Type, &_user.Connectid, &_user.Level, &_user.Role, &_user.Use, &_user.Logindate, &_user.Lastchangepasswddate, &_user.Date, &_rocker.Id, &_rocker.Group, &_rocker.Name, &_rocker.Available, &_rocker.Date, &_term.Id, &_term.Gym, &_term.Daytype, &_term.Name, &_term.Term, &_term.Date, &_discount.Id, &_discount.Name, &_discount.Discount, &_discount.Date)
         
         if item.Startday == "0000-00-00 00:00:00" || item.Startday == "1000-01-01 00:00:00" || item.Startday == "9999-01-01 00:00:00" {
             item.Startday = ""
@@ -701,7 +743,19 @@ func (p *UsehealthManager) ReadRow(rows *sql.Rows) *Usehealth {
     } else {
 
         item.InitExtra()
-        
+        _order.InitExtra()
+        item.AddExtra("order",  _order)
+_health.InitExtra()
+        item.AddExtra("health",  _health)
+_user.InitExtra()
+        item.AddExtra("user",  _user)
+_rocker.InitExtra()
+        item.AddExtra("rocker",  _rocker)
+_term.InitExtra()
+        item.AddExtra("term",  _term)
+_discount.InitExtra()
+        item.AddExtra("discount",  _discount)
+
         return &item
     }
 }
@@ -711,9 +765,15 @@ func (p *UsehealthManager) ReadRows(rows *sql.Rows) []Usehealth {
 
     for rows.Next() {
         var item Usehealth
+        var _order Order
+        var _health Health
+        var _user User
+        var _rocker Rocker
+        var _term Term
+        var _discount Discount
         
-    
-        err := rows.Scan(&item.Id, &item.Order, &item.Health, &item.User, &item.Rocker, &item.Term, &item.Discount, &item.Startday, &item.Endday, &item.Date)
+
+        err := rows.Scan(&item.Id, &item.Order, &item.Health, &item.User, &item.Rocker, &item.Term, &item.Discount, &item.Startday, &item.Endday, &item.Date, &_order.Id, &_order.Membership, &_order.Date, &_health.Id, &_health.Category, &_health.Term, &_health.Name, &_health.Count, &_health.Cost, &_health.Discount, &_health.Costdiscount, &_health.Content, &_health.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Email, &_user.Name, &_user.Tel, &_user.Address, &_user.Image, &_user.Sex, &_user.Birth, &_user.Type, &_user.Connectid, &_user.Level, &_user.Role, &_user.Use, &_user.Logindate, &_user.Lastchangepasswddate, &_user.Date, &_rocker.Id, &_rocker.Group, &_rocker.Name, &_rocker.Available, &_rocker.Date, &_term.Id, &_term.Gym, &_term.Daytype, &_term.Name, &_term.Term, &_term.Date, &_discount.Id, &_discount.Name, &_discount.Discount, &_discount.Date)
         if err != nil {
            if p.Log {
              log.Error().Str("error", err.Error()).Msg("SQL")
@@ -746,9 +806,21 @@ func (p *UsehealthManager) ReadRows(rows *sql.Rows) []Usehealth {
             item.Date = strings.ReplaceAll(strings.ReplaceAll(item.Date, "T", " "), "Z", "")
         }
 		
-        
-        item.InitExtra()        
-        
+
+        item.InitExtra()
+        _order.InitExtra()
+        item.AddExtra("order",  _order)
+_health.InitExtra()
+        item.AddExtra("health",  _health)
+_user.InitExtra()
+        item.AddExtra("user",  _user)
+_rocker.InitExtra()
+        item.AddExtra("rocker",  _rocker)
+_term.InitExtra()
+        item.AddExtra("term",  _term)
+_discount.InitExtra()
+        item.AddExtra("discount",  _discount)
+
         items = append(items, item)
     }
 
@@ -765,6 +837,18 @@ func (p *UsehealthManager) Get(id int64) *Usehealth {
     query.WriteString(p.GetQuery())
     query.WriteString(" and uh_id = ?")
 
+    
+    query.WriteString(" and uh_order = o_id")
+    
+    query.WriteString(" and uh_health = h_id")
+    
+    query.WriteString(" and uh_user = u_id")
+    
+    query.WriteString(" and uh_rocker = r_id")
+    
+    query.WriteString(" and uh_term = t_id")
+    
+    query.WriteString(" and uh_discount = d_id")
     
     
     rows, err := p.Query(query.String(), id)

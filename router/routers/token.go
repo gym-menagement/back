@@ -17,6 +17,32 @@ import (
 // SetupTokenRoutes sets up routes for token domain
 func SetupTokenRoutes(group fiber.Router) {
 
+	group.Post("/token", func(c *fiber.Ctx) error {
+			item_ := &models.Token{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.TokenController
+		controller.Init(c)
+		controller.Insert(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Post("/token/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Token{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.TokenController
+		controller.Init(c)
+		controller.Insertbatch(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
 	group.Put("/token", func(c *fiber.Ctx) error {
 			item_ := &models.Token{}
 			err := c.BodyParser(item_)
@@ -80,32 +106,6 @@ func SetupTokenRoutes(group fiber.Router) {
 		var controller rest.TokenController
 		controller.Init(c)
 		controller.Count()
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Post("/token", func(c *fiber.Ctx) error {
-			item_ := &models.Token{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.TokenController
-		controller.Init(c)
-		controller.Insert(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Post("/token/batch", func(c *fiber.Ctx) error {
-			item_ := &[]models.Token{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.TokenController
-		controller.Init(c)
-		controller.Insertbatch(item_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

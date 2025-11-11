@@ -28,13 +28,12 @@ type Type int
 const (
     _ Type  = iota
 
-    TypeNumberType
-    TypeStringType
-    TypeSelectType
-    TypeWeekType
+    TypeString
+    TypeNumber
+    TypeBoolean
 )
 
-var Types = []string{ "", "숫자", "문자", "선택", "요일" }
+var Types = []string{ "", "문자열", "숫자", "참거짓" }
 
 
 

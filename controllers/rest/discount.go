@@ -36,7 +36,7 @@ func (c *DiscountController) Index(page int, pagesize int) {
     
     _name := c.Get("name")
     if _name != "" {
-        args = append(args, models.Where{Column:"name", Value:_name, Compare:"="})
+        args = append(args, models.Where{Column:"name", Value:_name, Compare:"like"})
         
     }
     _discount := c.Geti("discount")
@@ -108,7 +108,7 @@ func (c *DiscountController) Count() {
     
     _name := c.Get("name")
     if _name != "" {
-        args = append(args, models.Where{Column:"name", Value:_name, Compare:"="})
+        args = append(args, models.Where{Column:"name", Value:_name, Compare:"like"})
         
         
     }

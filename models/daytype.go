@@ -114,7 +114,7 @@ func (p *DaytypeManager) GetQuery() string {
 
     var ret strings.Builder
 
-    ret.WriteString("select dt_id, dt_gym, dt_name, dt_date from daytype_tb")
+    ret.WriteString("select dt_id, dt_gym, dt_name, dt_date, g_id, g_name, g_date from daytype_tb, gym_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -128,6 +128,8 @@ func (p *DaytypeManager) GetQuery() string {
     }
 
     ret.WriteString(" where 1=1 ")
+    
+    ret.WriteString("and dt_gym = g_id ")
     
 
     return ret.String()
@@ -155,6 +157,8 @@ func (p *DaytypeManager) GetQuerySelect() string {
 
     ret.WriteString(" where 1=1 ")
     
+    ret.WriteString("and dt_gym = g_id ")
+    
 
     return ret.String()
 }
@@ -176,6 +180,8 @@ func (p *DaytypeManager) GetQueryGroup(name string) string {
     }
 
     ret.WriteString(" where 1=1 ")
+    
+    ret.WriteString("and dt_gym = g_id ")
     
 
     return ret.String()
@@ -517,10 +523,11 @@ func (p *DaytypeManager) ReadRow(rows *sql.Rows) *Daytype {
     var item Daytype
     var err error
 
+    var _gym Gym
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Gym, &item.Name, &item.Date)
+        err = rows.Scan(&item.Id, &item.Gym, &item.Name, &item.Date, &_gym.Id, &_gym.Name, &_gym.Date)
         
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" || item.Date == "9999-01-01 00:00:00" {
             item.Date = ""
@@ -543,7 +550,9 @@ func (p *DaytypeManager) ReadRow(rows *sql.Rows) *Daytype {
     } else {
 
         item.InitExtra()
-        
+        _gym.InitExtra()
+        item.AddExtra("gym",  _gym)
+
         return &item
     }
 }
@@ -553,9 +562,10 @@ func (p *DaytypeManager) ReadRows(rows *sql.Rows) []Daytype {
 
     for rows.Next() {
         var item Daytype
+        var _gym Gym
         
-    
-        err := rows.Scan(&item.Id, &item.Gym, &item.Name, &item.Date)
+
+        err := rows.Scan(&item.Id, &item.Gym, &item.Name, &item.Date, &_gym.Id, &_gym.Name, &_gym.Date)
         if err != nil {
            if p.Log {
              log.Error().Str("error", err.Error()).Msg("SQL")
@@ -572,9 +582,11 @@ func (p *DaytypeManager) ReadRows(rows *sql.Rows) []Daytype {
             item.Date = strings.ReplaceAll(strings.ReplaceAll(item.Date, "T", " "), "Z", "")
         }
 		
-        
-        item.InitExtra()        
-        
+
+        item.InitExtra()
+        _gym.InitExtra()
+        item.AddExtra("gym",  _gym)
+
         items = append(items, item)
     }
 
@@ -591,6 +603,8 @@ func (p *DaytypeManager) Get(id int64) *Daytype {
     query.WriteString(p.GetQuery())
     query.WriteString(" and dt_id = ?")
 
+    
+    query.WriteString(" and dt_gym = g_id")
     
     
     rows, err := p.Query(query.String(), id)

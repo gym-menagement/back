@@ -29,6 +29,17 @@ const (
 
 var Types = []string{ "", "로그인", "크롤링" }
 
+type Result int
+
+const (
+    _ Result  = iota
+
+    ResultSuccess
+    ResultFail
+)
+
+var Results = []string{ "", "성공", "실패" }
+
 
 
 func GetType(value Type) string {
@@ -55,6 +66,35 @@ func ConvertType(value []int) []Type {
 
      for item := range value {
          items = append(items, Type(item))
+     }
+     
+     return items
+}
+
+func GetResult(value Result) string {
+    i := int(value)
+    if i <= 0 || i >= len(Results) {
+        return ""
+    }
+     
+    return Results[i]
+}
+
+func FindResult(value string) Result {
+    for i := 1; i < len(Results); i++ {
+        if Results[i] == value {
+            return Result(i)
+        }
+    }
+     
+    return 0
+}
+
+func ConvertResult(value []int) []Result {
+     items := make([]Result, 0)
+
+     for item := range value {
+         items = append(items, Result(item))
      }
      
      return items

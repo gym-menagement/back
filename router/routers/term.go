@@ -17,6 +17,45 @@ import (
 // SetupTermRoutes sets up routes for term domain
 func SetupTermRoutes(group fiber.Router) {
 
+	group.Post("/term", func(c *fiber.Ctx) error {
+			item_ := &models.Term{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.TermController
+		controller.Init(c)
+		controller.Insert(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Post("/term/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Term{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.TermController
+		controller.Init(c)
+		controller.Insertbatch(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Put("/term", func(c *fiber.Ctx) error {
+			item_ := &models.Term{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.TermController
+		controller.Init(c)
+		controller.Update(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
 	group.Delete("/term", func(c *fiber.Ctx) error {
 			item_ := &models.Term{}
 			err := c.BodyParser(item_)
@@ -67,45 +106,6 @@ func SetupTermRoutes(group fiber.Router) {
 		var controller rest.TermController
 		controller.Init(c)
 		controller.Count()
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Post("/term", func(c *fiber.Ctx) error {
-			item_ := &models.Term{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.TermController
-		controller.Init(c)
-		controller.Insert(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Post("/term/batch", func(c *fiber.Ctx) error {
-			item_ := &[]models.Term{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.TermController
-		controller.Init(c)
-		controller.Insertbatch(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Put("/term", func(c *fiber.Ctx) error {
-			item_ := &models.Term{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.TermController
-		controller.Init(c)
-		controller.Update(item_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

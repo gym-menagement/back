@@ -44,7 +44,7 @@ func (c *TermController) Index(page int, pagesize int) {
     }
     _name := c.Get("name")
     if _name != "" {
-        args = append(args, models.Where{Column:"name", Value:_name, Compare:"="})
+        args = append(args, models.Where{Column:"name", Value:_name, Compare:"like"})
         
     }
     _term := c.Geti("term")
@@ -124,7 +124,7 @@ func (c *TermController) Count() {
     }
     _name := c.Get("name")
     if _name != "" {
-        args = append(args, models.Where{Column:"name", Value:_name, Compare:"="})
+        args = append(args, models.Where{Column:"name", Value:_name, Compare:"like"})
         
         
     }

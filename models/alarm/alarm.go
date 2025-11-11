@@ -26,12 +26,12 @@ const (
     _ Type  = iota
 
     TypeNotice
-    TypeAlarm
-    TypeComment
-    TypeMatch
+    TypeWarning
+    TypeError
+    TypeInfo
 )
 
-var Types = []string{ "", "공지", "알람", "게시판", "경기결과" }
+var Types = []string{ "", "공지", "경고", "에러", "정보" }
 
 type Status int
 
@@ -40,9 +40,10 @@ const (
 
     StatusSuccess
     StatusFail
+    StatusPending
 )
 
-var Statuss = []string{ "", "성공", "실패" }
+var Statuss = []string{ "", "성공", "실패", "대기" }
 
 
 

@@ -114,7 +114,7 @@ func (p *RockergroupManager) GetQuery() string {
 
     var ret strings.Builder
 
-    ret.WriteString("select rg_id, rg_gym, rg_name, rg_date from rockergroup_tb")
+    ret.WriteString("select rg_id, rg_gym, rg_name, rg_date, g_id, g_name, g_date from rockergroup_tb, gym_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -128,6 +128,8 @@ func (p *RockergroupManager) GetQuery() string {
     }
 
     ret.WriteString(" where 1=1 ")
+    
+    ret.WriteString("and rg_gym = g_id ")
     
 
     return ret.String()
@@ -155,6 +157,8 @@ func (p *RockergroupManager) GetQuerySelect() string {
 
     ret.WriteString(" where 1=1 ")
     
+    ret.WriteString("and rg_gym = g_id ")
+    
 
     return ret.String()
 }
@@ -176,6 +180,8 @@ func (p *RockergroupManager) GetQueryGroup(name string) string {
     }
 
     ret.WriteString(" where 1=1 ")
+    
+    ret.WriteString("and rg_gym = g_id ")
     
 
     return ret.String()
@@ -517,10 +523,11 @@ func (p *RockergroupManager) ReadRow(rows *sql.Rows) *Rockergroup {
     var item Rockergroup
     var err error
 
+    var _gym Gym
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Gym, &item.Name, &item.Date)
+        err = rows.Scan(&item.Id, &item.Gym, &item.Name, &item.Date, &_gym.Id, &_gym.Name, &_gym.Date)
         
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" || item.Date == "9999-01-01 00:00:00" {
             item.Date = ""
@@ -543,7 +550,9 @@ func (p *RockergroupManager) ReadRow(rows *sql.Rows) *Rockergroup {
     } else {
 
         item.InitExtra()
-        
+        _gym.InitExtra()
+        item.AddExtra("gym",  _gym)
+
         return &item
     }
 }
@@ -553,9 +562,10 @@ func (p *RockergroupManager) ReadRows(rows *sql.Rows) []Rockergroup {
 
     for rows.Next() {
         var item Rockergroup
+        var _gym Gym
         
-    
-        err := rows.Scan(&item.Id, &item.Gym, &item.Name, &item.Date)
+
+        err := rows.Scan(&item.Id, &item.Gym, &item.Name, &item.Date, &_gym.Id, &_gym.Name, &_gym.Date)
         if err != nil {
            if p.Log {
              log.Error().Str("error", err.Error()).Msg("SQL")
@@ -572,9 +582,11 @@ func (p *RockergroupManager) ReadRows(rows *sql.Rows) []Rockergroup {
             item.Date = strings.ReplaceAll(strings.ReplaceAll(item.Date, "T", " "), "Z", "")
         }
 		
-        
-        item.InitExtra()        
-        
+
+        item.InitExtra()
+        _gym.InitExtra()
+        item.AddExtra("gym",  _gym)
+
         items = append(items, item)
     }
 
@@ -591,6 +603,8 @@ func (p *RockergroupManager) Get(id int64) *Rockergroup {
     query.WriteString(p.GetQuery())
     query.WriteString(" and rg_id = ?")
 
+    
+    query.WriteString(" and rg_gym = g_id")
     
     
     rows, err := p.Query(query.String(), id)

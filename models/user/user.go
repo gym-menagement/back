@@ -43,7 +43,7 @@ const (
     LevelRootadmin
 )
 
-var Levels = []string{ "", "일반", "팀장", "관리자", "승인관리자", "전체관리자" }
+var Levels = []string{ "", "일반회원", "트레이너/직원", "헬스장관리자", "플랫폼관리자", "최고관리자" }
 
 type Use int
 
@@ -75,15 +75,25 @@ type Role int
 const (
     _ Role  = iota
 
-    RoleSupervisor
-    RoleCoach
-    RoleParent
-    RolePlayer
-    RoleUse
-    RoleNormal
+    RoleMember
+    RoleTrainer
+    RoleStaff
+    RoleGym_admin
+    RolePlatform_admin
 )
 
-var Roles = []string{ "", "감독", "코치", "학부모", "현역선수", "동호회", "일반인" }
+var Roles = []string{ "", "회원", "트레이너", "직원", "헬스장관리자", "플랫폼관리자" }
+
+type Sex int
+
+const (
+    _ Sex  = iota
+
+    Sex0
+    Sex1
+)
+
+var Sexs = []string{ "", "남성", "여성" }
 
 
 
@@ -198,6 +208,35 @@ func ConvertRole(value []int) []Role {
 
      for item := range value {
          items = append(items, Role(item))
+     }
+     
+     return items
+}
+
+func GetSex(value Sex) string {
+    i := int(value)
+    if i <= 0 || i >= len(Sexs) {
+        return ""
+    }
+     
+    return Sexs[i]
+}
+
+func FindSex(value string) Sex {
+    for i := 1; i < len(Sexs); i++ {
+        if Sexs[i] == value {
+            return Sex(i)
+        }
+    }
+     
+    return 0
+}
+
+func ConvertSex(value []int) []Sex {
+     items := make([]Sex, 0)
+
+     for item := range value {
+         items = append(items, Sex(item))
      }
      
      return items

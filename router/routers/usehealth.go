@@ -17,32 +17,6 @@ import (
 // SetupUsehealthRoutes sets up routes for usehealth domain
 func SetupUsehealthRoutes(group fiber.Router) {
 
-	group.Delete("/usehealth", func(c *fiber.Ctx) error {
-			item_ := &models.Usehealth{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.UsehealthController
-		controller.Init(c)
-		controller.Delete(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Delete("/usehealth/batch", func(c *fiber.Ctx) error {
-			item_ := &[]models.Usehealth{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.UsehealthController
-		controller.Init(c)
-		controller.Deletebatch(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
 	group.Get("/usehealth/:id", func(c *fiber.Ctx) error {
 			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 		var controller rest.UsehealthController
@@ -106,6 +80,32 @@ func SetupUsehealthRoutes(group fiber.Router) {
 		var controller rest.UsehealthController
 		controller.Init(c)
 		controller.Update(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Delete("/usehealth", func(c *fiber.Ctx) error {
+			item_ := &models.Usehealth{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.UsehealthController
+		controller.Init(c)
+		controller.Delete(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Delete("/usehealth/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Usehealth{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.UsehealthController
+		controller.Init(c)
+		controller.Deletebatch(item_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

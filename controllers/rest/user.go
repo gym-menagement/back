@@ -478,3 +478,37 @@ func (c *UserController) FindByLevel(level user.Level) []models.User {
     
 }
 
+
+func (c *UserController) FindByEmail(email string) []models.User {
+    
+    conn := c.NewConnection()
+
+	manager := models.NewUserManager(conn)
+    
+    item := manager.FindByEmail(email)
+    
+    
+    c.Set("items", item)
+    
+    
+    return item
+    
+}
+
+
+func (c *UserController) FindByTel(tel string) []models.User {
+    
+    conn := c.NewConnection()
+
+	manager := models.NewUserManager(conn)
+    
+    item := manager.FindByTel(tel)
+    
+    
+    c.Set("items", item)
+    
+    
+    return item
+    
+}
+

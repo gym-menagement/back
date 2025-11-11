@@ -554,7 +554,7 @@ func (p *DiscountManager) ReadRows(rows *sql.Rows) []Discount {
     for rows.Next() {
         var item Discount
         
-    
+
         err := rows.Scan(&item.Id, &item.Name, &item.Discount, &item.Date)
         if err != nil {
            if p.Log {
@@ -572,8 +572,8 @@ func (p *DiscountManager) ReadRows(rows *sql.Rows) []Discount {
             item.Date = strings.ReplaceAll(strings.ReplaceAll(item.Date, "T", " "), "Z", "")
         }
 		
-        
-        item.InitExtra()        
+
+        item.InitExtra()
         
         items = append(items, item)
     }

@@ -117,7 +117,7 @@ func (p *AlarmManager) GetQuery() string {
 
     var ret strings.Builder
 
-    ret.WriteString("select al_id, al_title, al_content, al_type, al_status, al_user, al_date from alarm_tb")
+    ret.WriteString("select al_id, al_title, al_content, al_type, al_status, al_user, al_date, u_id, u_loginid, u_passwd, u_email, u_name, u_tel, u_address, u_image, u_sex, u_birth, u_type, u_connectid, u_level, u_role, u_use, u_logindate, u_lastchangepasswddate, u_date from alarm_tb, user_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -131,6 +131,8 @@ func (p *AlarmManager) GetQuery() string {
     }
 
     ret.WriteString(" where 1=1 ")
+    
+    ret.WriteString("and al_user = u_id ")
     
 
     return ret.String()
@@ -158,6 +160,8 @@ func (p *AlarmManager) GetQuerySelect() string {
 
     ret.WriteString(" where 1=1 ")
     
+    ret.WriteString("and al_user = u_id ")
+    
 
     return ret.String()
 }
@@ -179,6 +183,8 @@ func (p *AlarmManager) GetQueryGroup(name string) string {
     }
 
     ret.WriteString(" where 1=1 ")
+    
+    ret.WriteString("and al_user = u_id ")
     
 
     return ret.String()
@@ -582,10 +588,11 @@ func (p *AlarmManager) ReadRow(rows *sql.Rows) *Alarm {
     var item Alarm
     var err error
 
+    var _user User
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Title, &item.Content, &item.Type, &item.Status, &item.User, &item.Date)
+        err = rows.Scan(&item.Id, &item.Title, &item.Content, &item.Type, &item.Status, &item.User, &item.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Email, &_user.Name, &_user.Tel, &_user.Address, &_user.Image, &_user.Sex, &_user.Birth, &_user.Type, &_user.Connectid, &_user.Level, &_user.Role, &_user.Use, &_user.Logindate, &_user.Lastchangepasswddate, &_user.Date)
         
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" || item.Date == "9999-01-01 00:00:00" {
             item.Date = ""
@@ -608,7 +615,9 @@ func (p *AlarmManager) ReadRow(rows *sql.Rows) *Alarm {
     } else {
 
         item.InitExtra()
-        
+        _user.InitExtra()
+        item.AddExtra("user",  _user)
+
         return &item
     }
 }
@@ -618,9 +627,10 @@ func (p *AlarmManager) ReadRows(rows *sql.Rows) []Alarm {
 
     for rows.Next() {
         var item Alarm
+        var _user User
         
-    
-        err := rows.Scan(&item.Id, &item.Title, &item.Content, &item.Type, &item.Status, &item.User, &item.Date)
+
+        err := rows.Scan(&item.Id, &item.Title, &item.Content, &item.Type, &item.Status, &item.User, &item.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Email, &_user.Name, &_user.Tel, &_user.Address, &_user.Image, &_user.Sex, &_user.Birth, &_user.Type, &_user.Connectid, &_user.Level, &_user.Role, &_user.Use, &_user.Logindate, &_user.Lastchangepasswddate, &_user.Date)
         if err != nil {
            if p.Log {
              log.Error().Str("error", err.Error()).Msg("SQL")
@@ -637,9 +647,11 @@ func (p *AlarmManager) ReadRows(rows *sql.Rows) []Alarm {
             item.Date = strings.ReplaceAll(strings.ReplaceAll(item.Date, "T", " "), "Z", "")
         }
 		
-        
-        item.InitExtra()        
-        
+
+        item.InitExtra()
+        _user.InitExtra()
+        item.AddExtra("user",  _user)
+
         items = append(items, item)
     }
 
@@ -656,6 +668,8 @@ func (p *AlarmManager) Get(id int64) *Alarm {
     query.WriteString(p.GetQuery())
     query.WriteString(" and al_id = ?")
 
+    
+    query.WriteString(" and al_user = u_id")
     
     
     rows, err := p.Query(query.String(), id)

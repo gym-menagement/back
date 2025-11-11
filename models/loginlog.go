@@ -585,7 +585,7 @@ func (p *LoginlogManager) ReadRows(rows *sql.Rows) []Loginlog {
         var item Loginlog
         var _user User
         
-    
+
         err := rows.Scan(&item.Id, &item.Ip, &item.Ipvalue, &item.User, &item.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Email, &_user.Name, &_user.Tel, &_user.Address, &_user.Image, &_user.Sex, &_user.Birth, &_user.Type, &_user.Connectid, &_user.Level, &_user.Role, &_user.Use, &_user.Logindate, &_user.Lastchangepasswddate, &_user.Date)
         if err != nil {
            if p.Log {
@@ -603,8 +603,8 @@ func (p *LoginlogManager) ReadRows(rows *sql.Rows) []Loginlog {
             item.Date = strings.ReplaceAll(strings.ReplaceAll(item.Date, "T", " "), "Z", "")
         }
 		
-        
-        item.InitExtra()        
+
+        item.InitExtra()
         _user.InitExtra()
         item.AddExtra("user",  _user)
 

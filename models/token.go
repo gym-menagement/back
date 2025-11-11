@@ -20,7 +20,7 @@ type Token struct {
     Id                int64 `json:"id"`         
     User                int64 `json:"user"`         
     Token                string `json:"token"`         
-    Status                int `json:"status"`         
+    Status                token.Status `json:"status"`         
     Date                string `json:"date"` 
     
     Extra                    map[string]interface{} `json:"extra"`
@@ -115,7 +115,7 @@ func (p *TokenManager) GetQuery() string {
 
     var ret strings.Builder
 
-    ret.WriteString("select to_id, to_user, to_token, to_status, to_date from token_tb")
+    ret.WriteString("select to_id, to_user, to_token, to_status, to_date, u_id, u_loginid, u_passwd, u_email, u_name, u_tel, u_address, u_image, u_sex, u_birth, u_type, u_connectid, u_level, u_role, u_use, u_logindate, u_lastchangepasswddate, u_date from token_tb, user_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -129,6 +129,8 @@ func (p *TokenManager) GetQuery() string {
     }
 
     ret.WriteString(" where 1=1 ")
+    
+    ret.WriteString("and to_user = u_id ")
     
 
     return ret.String()
@@ -156,6 +158,8 @@ func (p *TokenManager) GetQuerySelect() string {
 
     ret.WriteString(" where 1=1 ")
     
+    ret.WriteString("and to_user = u_id ")
+    
 
     return ret.String()
 }
@@ -177,6 +181,8 @@ func (p *TokenManager) GetQueryGroup(name string) string {
     }
 
     ret.WriteString(" where 1=1 ")
+    
+    ret.WriteString("and to_user = u_id ")
     
 
     return ret.String()
@@ -474,7 +480,7 @@ func (p *TokenManager) UpdateToken(value string, id int64) error {
     return err
 }
 
-func (p *TokenManager) UpdateStatus(value int, id int64) error {
+func (p *TokenManager) UpdateStatus(value token.Status, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
@@ -530,6 +536,7 @@ func (p *TokenManager) GetIdentity() int64 {
 
 func (p *Token) InitExtra() {
     p.Extra = map[string]interface{}{
+            "status":     token.GetStatus(p.Status),
 
     }
 }
@@ -538,10 +545,11 @@ func (p *TokenManager) ReadRow(rows *sql.Rows) *Token {
     var item Token
     var err error
 
+    var _user User
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.User, &item.Token, &item.Status, &item.Date)
+        err = rows.Scan(&item.Id, &item.User, &item.Token, &item.Status, &item.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Email, &_user.Name, &_user.Tel, &_user.Address, &_user.Image, &_user.Sex, &_user.Birth, &_user.Type, &_user.Connectid, &_user.Level, &_user.Role, &_user.Use, &_user.Logindate, &_user.Lastchangepasswddate, &_user.Date)
         
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" || item.Date == "9999-01-01 00:00:00" {
             item.Date = ""
@@ -564,7 +572,9 @@ func (p *TokenManager) ReadRow(rows *sql.Rows) *Token {
     } else {
 
         item.InitExtra()
-        
+        _user.InitExtra()
+        item.AddExtra("user",  _user)
+
         return &item
     }
 }
@@ -574,9 +584,10 @@ func (p *TokenManager) ReadRows(rows *sql.Rows) []Token {
 
     for rows.Next() {
         var item Token
+        var _user User
         
-    
-        err := rows.Scan(&item.Id, &item.User, &item.Token, &item.Status, &item.Date)
+
+        err := rows.Scan(&item.Id, &item.User, &item.Token, &item.Status, &item.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Email, &_user.Name, &_user.Tel, &_user.Address, &_user.Image, &_user.Sex, &_user.Birth, &_user.Type, &_user.Connectid, &_user.Level, &_user.Role, &_user.Use, &_user.Logindate, &_user.Lastchangepasswddate, &_user.Date)
         if err != nil {
            if p.Log {
              log.Error().Str("error", err.Error()).Msg("SQL")
@@ -593,9 +604,11 @@ func (p *TokenManager) ReadRows(rows *sql.Rows) []Token {
             item.Date = strings.ReplaceAll(strings.ReplaceAll(item.Date, "T", " "), "Z", "")
         }
 		
-        
-        item.InitExtra()        
-        
+
+        item.InitExtra()
+        _user.InitExtra()
+        item.AddExtra("user",  _user)
+
         items = append(items, item)
     }
 
@@ -612,6 +625,8 @@ func (p *TokenManager) Get(id int64) *Token {
     query.WriteString(p.GetQuery())
     query.WriteString(" and to_id = ?")
 
+    
+    query.WriteString(" and to_user = u_id")
     
     
     rows, err := p.Query(query.String(), id)

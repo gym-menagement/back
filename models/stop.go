@@ -116,7 +116,7 @@ func (p *StopManager) GetQuery() string {
 
     var ret strings.Builder
 
-    ret.WriteString("select s_id, s_usehelth, s_startday, s_endday, s_count, s_date from stop_tb")
+    ret.WriteString("select s_id, s_usehelth, s_startday, s_endday, s_count, s_date, uh_id, uh_order, uh_health, uh_user, uh_rocker, uh_term, uh_discount, uh_startday, uh_endday, uh_date from stop_tb, usehealth_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -130,6 +130,8 @@ func (p *StopManager) GetQuery() string {
     }
 
     ret.WriteString(" where 1=1 ")
+    
+    ret.WriteString("and s_usehelth = uh_id ")
     
 
     return ret.String()
@@ -157,6 +159,8 @@ func (p *StopManager) GetQuerySelect() string {
 
     ret.WriteString(" where 1=1 ")
     
+    ret.WriteString("and s_usehelth = uh_id ")
+    
 
     return ret.String()
 }
@@ -178,6 +182,8 @@ func (p *StopManager) GetQueryGroup(name string) string {
     }
 
     ret.WriteString(" where 1=1 ")
+    
+    ret.WriteString("and s_usehelth = uh_id ")
     
 
     return ret.String()
@@ -575,10 +581,11 @@ func (p *StopManager) ReadRow(rows *sql.Rows) *Stop {
     var item Stop
     var err error
 
+    var _usehealth Usehealth
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Usehelth, &item.Startday, &item.Endday, &item.Count, &item.Date)
+        err = rows.Scan(&item.Id, &item.Usehelth, &item.Startday, &item.Endday, &item.Count, &item.Date, &_usehealth.Id, &_usehealth.Order, &_usehealth.Health, &_usehealth.User, &_usehealth.Rocker, &_usehealth.Term, &_usehealth.Discount, &_usehealth.Startday, &_usehealth.Endday, &_usehealth.Date)
         
         if item.Startday == "0000-00-00 00:00:00" || item.Startday == "1000-01-01 00:00:00" || item.Startday == "9999-01-01 00:00:00" {
             item.Startday = ""
@@ -617,7 +624,9 @@ func (p *StopManager) ReadRow(rows *sql.Rows) *Stop {
     } else {
 
         item.InitExtra()
-        
+        _usehealth.InitExtra()
+        item.AddExtra("usehealth",  _usehealth)
+
         return &item
     }
 }
@@ -627,9 +636,10 @@ func (p *StopManager) ReadRows(rows *sql.Rows) []Stop {
 
     for rows.Next() {
         var item Stop
+        var _usehealth Usehealth
         
-    
-        err := rows.Scan(&item.Id, &item.Usehelth, &item.Startday, &item.Endday, &item.Count, &item.Date)
+
+        err := rows.Scan(&item.Id, &item.Usehelth, &item.Startday, &item.Endday, &item.Count, &item.Date, &_usehealth.Id, &_usehealth.Order, &_usehealth.Health, &_usehealth.User, &_usehealth.Rocker, &_usehealth.Term, &_usehealth.Discount, &_usehealth.Startday, &_usehealth.Endday, &_usehealth.Date)
         if err != nil {
            if p.Log {
              log.Error().Str("error", err.Error()).Msg("SQL")
@@ -662,9 +672,11 @@ func (p *StopManager) ReadRows(rows *sql.Rows) []Stop {
             item.Date = strings.ReplaceAll(strings.ReplaceAll(item.Date, "T", " "), "Z", "")
         }
 		
-        
-        item.InitExtra()        
-        
+
+        item.InitExtra()
+        _usehealth.InitExtra()
+        item.AddExtra("usehealth",  _usehealth)
+
         items = append(items, item)
     }
 
@@ -681,6 +693,8 @@ func (p *StopManager) Get(id int64) *Stop {
     query.WriteString(p.GetQuery())
     query.WriteString(" and s_id = ?")
 
+    
+    query.WriteString(" and s_usehelth = uh_id")
     
     
     rows, err := p.Query(query.String(), id)

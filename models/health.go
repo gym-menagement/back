@@ -120,7 +120,7 @@ func (p *HealthManager) GetQuery() string {
 
     var ret strings.Builder
 
-    ret.WriteString("select h_id, h_category, h_term, h_name, h_count, h_cost, h_discount, h_costdiscount, h_content, h_date from health_tb")
+    ret.WriteString("select h_id, h_category, h_term, h_name, h_count, h_cost, h_discount, h_costdiscount, h_content, h_date, hc_id, hc_gym, hc_name, hc_date, t_id, t_gym, t_daytype, t_name, t_term, t_date, d_id, d_name, d_discount, d_date from health_tb, healthcategory_tb, term_tb, discount_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -134,6 +134,12 @@ func (p *HealthManager) GetQuery() string {
     }
 
     ret.WriteString(" where 1=1 ")
+    
+    ret.WriteString("and h_category = hc_id ")
+    
+    ret.WriteString("and h_term = t_id ")
+    
+    ret.WriteString("and h_discount = d_id ")
     
 
     return ret.String()
@@ -161,6 +167,12 @@ func (p *HealthManager) GetQuerySelect() string {
 
     ret.WriteString(" where 1=1 ")
     
+    ret.WriteString("and h_category = hc_id ")
+    
+    ret.WriteString("and h_term = t_id ")
+    
+    ret.WriteString("and h_discount = d_id ")
+    
 
     return ret.String()
 }
@@ -182,6 +194,12 @@ func (p *HealthManager) GetQueryGroup(name string) string {
     }
 
     ret.WriteString(" where 1=1 ")
+    
+    ret.WriteString("and h_category = hc_id ")
+    
+    ret.WriteString("and h_term = t_id ")
+    
+    ret.WriteString("and h_discount = d_id ")
     
 
     return ret.String()
@@ -643,10 +661,13 @@ func (p *HealthManager) ReadRow(rows *sql.Rows) *Health {
     var item Health
     var err error
 
+    var _healthcategory Healthcategory
+    var _term Term
+    var _discount Discount
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Category, &item.Term, &item.Name, &item.Count, &item.Cost, &item.Discount, &item.Costdiscount, &item.Content, &item.Date)
+        err = rows.Scan(&item.Id, &item.Category, &item.Term, &item.Name, &item.Count, &item.Cost, &item.Discount, &item.Costdiscount, &item.Content, &item.Date, &_healthcategory.Id, &_healthcategory.Gym, &_healthcategory.Name, &_healthcategory.Date, &_term.Id, &_term.Gym, &_term.Daytype, &_term.Name, &_term.Term, &_term.Date, &_discount.Id, &_discount.Name, &_discount.Discount, &_discount.Date)
         
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" || item.Date == "9999-01-01 00:00:00" {
             item.Date = ""
@@ -669,7 +690,13 @@ func (p *HealthManager) ReadRow(rows *sql.Rows) *Health {
     } else {
 
         item.InitExtra()
-        
+        _healthcategory.InitExtra()
+        item.AddExtra("healthcategory",  _healthcategory)
+_term.InitExtra()
+        item.AddExtra("term",  _term)
+_discount.InitExtra()
+        item.AddExtra("discount",  _discount)
+
         return &item
     }
 }
@@ -679,9 +706,12 @@ func (p *HealthManager) ReadRows(rows *sql.Rows) []Health {
 
     for rows.Next() {
         var item Health
+        var _healthcategory Healthcategory
+        var _term Term
+        var _discount Discount
         
-    
-        err := rows.Scan(&item.Id, &item.Category, &item.Term, &item.Name, &item.Count, &item.Cost, &item.Discount, &item.Costdiscount, &item.Content, &item.Date)
+
+        err := rows.Scan(&item.Id, &item.Category, &item.Term, &item.Name, &item.Count, &item.Cost, &item.Discount, &item.Costdiscount, &item.Content, &item.Date, &_healthcategory.Id, &_healthcategory.Gym, &_healthcategory.Name, &_healthcategory.Date, &_term.Id, &_term.Gym, &_term.Daytype, &_term.Name, &_term.Term, &_term.Date, &_discount.Id, &_discount.Name, &_discount.Discount, &_discount.Date)
         if err != nil {
            if p.Log {
              log.Error().Str("error", err.Error()).Msg("SQL")
@@ -698,9 +728,15 @@ func (p *HealthManager) ReadRows(rows *sql.Rows) []Health {
             item.Date = strings.ReplaceAll(strings.ReplaceAll(item.Date, "T", " "), "Z", "")
         }
 		
-        
-        item.InitExtra()        
-        
+
+        item.InitExtra()
+        _healthcategory.InitExtra()
+        item.AddExtra("healthcategory",  _healthcategory)
+_term.InitExtra()
+        item.AddExtra("term",  _term)
+_discount.InitExtra()
+        item.AddExtra("discount",  _discount)
+
         items = append(items, item)
     }
 
@@ -717,6 +753,12 @@ func (p *HealthManager) Get(id int64) *Health {
     query.WriteString(p.GetQuery())
     query.WriteString(" and h_id = ?")
 
+    
+    query.WriteString(" and h_category = hc_id")
+    
+    query.WriteString(" and h_term = t_id")
+    
+    query.WriteString(" and h_discount = d_id")
     
     
     rows, err := p.Query(query.String(), id)

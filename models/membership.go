@@ -21,7 +21,7 @@ type Membership struct {
     Gym                int64 `json:"gym"`         
     User                int64 `json:"user"`         
     Name                string `json:"name"`         
-    Sex                int `json:"sex"`         
+    Sex                membership.Sex `json:"sex"`         
     Birth                string `json:"birth"`         
     Phonenum                string `json:"phonenum"`         
     Address                string `json:"address"`         
@@ -120,7 +120,7 @@ func (p *MembershipManager) GetQuery() string {
 
     var ret strings.Builder
 
-    ret.WriteString("select m_id, m_gym, m_user, m_name, m_sex, m_birth, m_phonenum, m_address, m_image, m_date from membership_tb")
+    ret.WriteString("select m_id, m_gym, m_user, m_name, m_sex, m_birth, m_phonenum, m_address, m_image, m_date, g_id, g_name, g_date, u_id, u_loginid, u_passwd, u_email, u_name, u_tel, u_address, u_image, u_sex, u_birth, u_type, u_connectid, u_level, u_role, u_use, u_logindate, u_lastchangepasswddate, u_date from membership_tb, gym_tb, user_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -134,6 +134,10 @@ func (p *MembershipManager) GetQuery() string {
     }
 
     ret.WriteString(" where 1=1 ")
+    
+    ret.WriteString("and m_gym = g_id ")
+    
+    ret.WriteString("and m_user = u_id ")
     
 
     return ret.String()
@@ -161,6 +165,10 @@ func (p *MembershipManager) GetQuerySelect() string {
 
     ret.WriteString(" where 1=1 ")
     
+    ret.WriteString("and m_gym = g_id ")
+    
+    ret.WriteString("and m_user = u_id ")
+    
 
     return ret.String()
 }
@@ -182,6 +190,10 @@ func (p *MembershipManager) GetQueryGroup(name string) string {
     }
 
     ret.WriteString(" where 1=1 ")
+    
+    ret.WriteString("and m_gym = g_id ")
+    
+    ret.WriteString("and m_user = u_id ")
     
 
     return ret.String()
@@ -519,7 +531,7 @@ func (p *MembershipManager) UpdateName(value string, id int64) error {
     return err
 }
 
-func (p *MembershipManager) UpdateSex(value int, id int64) error {
+func (p *MembershipManager) UpdateSex(value membership.Sex, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
@@ -643,6 +655,7 @@ func (p *MembershipManager) GetIdentity() int64 {
 
 func (p *Membership) InitExtra() {
     p.Extra = map[string]interface{}{
+            "sex":     membership.GetSex(p.Sex),
 
     }
 }
@@ -651,10 +664,12 @@ func (p *MembershipManager) ReadRow(rows *sql.Rows) *Membership {
     var item Membership
     var err error
 
+    var _gym Gym
+    var _user User
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Gym, &item.User, &item.Name, &item.Sex, &item.Birth, &item.Phonenum, &item.Address, &item.Image, &item.Date)
+        err = rows.Scan(&item.Id, &item.Gym, &item.User, &item.Name, &item.Sex, &item.Birth, &item.Phonenum, &item.Address, &item.Image, &item.Date, &_gym.Id, &_gym.Name, &_gym.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Email, &_user.Name, &_user.Tel, &_user.Address, &_user.Image, &_user.Sex, &_user.Birth, &_user.Type, &_user.Connectid, &_user.Level, &_user.Role, &_user.Use, &_user.Logindate, &_user.Lastchangepasswddate, &_user.Date)
         
         if item.Birth == "0000-00-00 00:00:00" || item.Birth == "1000-01-01 00:00:00" || item.Birth == "9999-01-01 00:00:00" {
             item.Birth = ""
@@ -685,7 +700,11 @@ func (p *MembershipManager) ReadRow(rows *sql.Rows) *Membership {
     } else {
 
         item.InitExtra()
-        
+        _gym.InitExtra()
+        item.AddExtra("gym",  _gym)
+_user.InitExtra()
+        item.AddExtra("user",  _user)
+
         return &item
     }
 }
@@ -695,9 +714,11 @@ func (p *MembershipManager) ReadRows(rows *sql.Rows) []Membership {
 
     for rows.Next() {
         var item Membership
+        var _gym Gym
+        var _user User
         
-    
-        err := rows.Scan(&item.Id, &item.Gym, &item.User, &item.Name, &item.Sex, &item.Birth, &item.Phonenum, &item.Address, &item.Image, &item.Date)
+
+        err := rows.Scan(&item.Id, &item.Gym, &item.User, &item.Name, &item.Sex, &item.Birth, &item.Phonenum, &item.Address, &item.Image, &item.Date, &_gym.Id, &_gym.Name, &_gym.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Email, &_user.Name, &_user.Tel, &_user.Address, &_user.Image, &_user.Sex, &_user.Birth, &_user.Type, &_user.Connectid, &_user.Level, &_user.Role, &_user.Use, &_user.Logindate, &_user.Lastchangepasswddate, &_user.Date)
         if err != nil {
            if p.Log {
              log.Error().Str("error", err.Error()).Msg("SQL")
@@ -722,9 +743,13 @@ func (p *MembershipManager) ReadRows(rows *sql.Rows) []Membership {
             item.Date = strings.ReplaceAll(strings.ReplaceAll(item.Date, "T", " "), "Z", "")
         }
 		
-        
-        item.InitExtra()        
-        
+
+        item.InitExtra()
+        _gym.InitExtra()
+        item.AddExtra("gym",  _gym)
+_user.InitExtra()
+        item.AddExtra("user",  _user)
+
         items = append(items, item)
     }
 
@@ -741,6 +766,10 @@ func (p *MembershipManager) Get(id int64) *Membership {
     query.WriteString(p.GetQuery())
     query.WriteString(" and m_id = ?")
 
+    
+    query.WriteString(" and m_gym = g_id")
+    
+    query.WriteString(" and m_user = u_id")
     
     
     rows, err := p.Query(query.String(), id)

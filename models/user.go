@@ -25,7 +25,7 @@ type User struct {
     Tel                string `json:"tel"`         
     Address                string `json:"address"`         
     Image                string `json:"image"`         
-    Sex                int `json:"sex"`         
+    Sex                user.Sex `json:"sex"`         
     Birth                string `json:"birth"`         
     Type                user.Type `json:"type"`         
     Connectid                string `json:"connectid"`         
@@ -48,7 +48,7 @@ type UserUpdate struct {
     Tel                string `json:"tel"`         
     Address                string `json:"address"`         
     Image                string `json:"image"`         
-    Sex                int `json:"sex"`         
+    Sex                user.Sex `json:"sex"`         
     Birth                string `json:"birth"`         
     Type                user.Type `json:"type"`         
     Connectid                string `json:"connectid"`         
@@ -682,7 +682,7 @@ func (p *UserManager) UpdateImage(value string, id int64) error {
     return err
 }
 
-func (p *UserManager) UpdateSex(value int, id int64) error {
+func (p *UserManager) UpdateSex(value user.Sex, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
@@ -878,6 +878,7 @@ func (p *User) InitExtra() {
             "use":     user.GetUse(p.Use),
             "type":     user.GetType(p.Type),
             "role":     user.GetRole(p.Role),
+            "sex":     user.GetSex(p.Sex),
 
     }
 }
@@ -947,7 +948,7 @@ func (p *UserManager) ReadRows(rows *sql.Rows) []User {
     for rows.Next() {
         var item User
         
-    
+
         err := rows.Scan(&item.Id, &item.Loginid, &item.Passwd, &item.Email, &item.Name, &item.Tel, &item.Address, &item.Image, &item.Sex, &item.Birth, &item.Type, &item.Connectid, &item.Level, &item.Role, &item.Use, &item.Logindate, &item.Lastchangepasswddate, &item.Date)
         if err != nil {
            if p.Log {
@@ -989,8 +990,8 @@ func (p *UserManager) ReadRows(rows *sql.Rows) []User {
             item.Date = strings.ReplaceAll(strings.ReplaceAll(item.Date, "T", " "), "Z", "")
         }
 		
-        
-        item.InitExtra()        
+
+        item.InitExtra()
         
         items = append(items, item)
     }
@@ -1292,6 +1293,28 @@ func (p *UserManager) FindByLevel(level user.Level, args ...interface{}) []User 
 
     if level != 0 { 
         rets = append(rets, Where{Column:"level", Value:level, Compare:"="})
+     }
+    
+    return p.Find(rets)
+}
+
+func (p *UserManager) FindByEmail(email string, args ...interface{}) []User {
+    rets := make([]interface{}, 0)
+    rets = append(rets, args...)
+
+    if email != "" { 
+        rets = append(rets, Where{Column:"email", Value:email, Compare:"="})
+     }
+    
+    return p.Find(rets)
+}
+
+func (p *UserManager) FindByTel(tel string, args ...interface{}) []User {
+    rets := make([]interface{}, 0)
+    rets = append(rets, args...)
+
+    if tel != "" { 
+        rets = append(rets, Where{Column:"tel", Value:tel, Compare:"="})
      }
     
     return p.Find(rets)

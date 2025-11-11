@@ -17,41 +17,6 @@ import (
 // SetupDaytypeRoutes sets up routes for daytype domain
 func SetupDaytypeRoutes(group fiber.Router) {
 
-	group.Post("/daytype/count", func(c *fiber.Ctx) error {
-
-		var controller rest.DaytypeController
-		controller.Init(c)
-		controller.Count()
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Post("/daytype", func(c *fiber.Ctx) error {
-			item_ := &models.Daytype{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.DaytypeController
-		controller.Init(c)
-		controller.Insert(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Post("/daytype/batch", func(c *fiber.Ctx) error {
-			item_ := &[]models.Daytype{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.DaytypeController
-		controller.Init(c)
-		controller.Insertbatch(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
 	group.Put("/daytype", func(c *fiber.Ctx) error {
 			item_ := &models.Daytype{}
 			err := c.BodyParser(item_)
@@ -106,6 +71,41 @@ func SetupDaytypeRoutes(group fiber.Router) {
 		var controller rest.DaytypeController
 		controller.Init(c)
 		controller.Index(page_, pagesize_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Post("/daytype/count", func(c *fiber.Ctx) error {
+
+		var controller rest.DaytypeController
+		controller.Init(c)
+		controller.Count()
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Post("/daytype", func(c *fiber.Ctx) error {
+			item_ := &models.Daytype{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.DaytypeController
+		controller.Init(c)
+		controller.Insert(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Post("/daytype/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Daytype{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.DaytypeController
+		controller.Init(c)
+		controller.Insertbatch(item_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

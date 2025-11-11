@@ -17,6 +17,38 @@ import (
 // SetupPaymenttypeRoutes sets up routes for paymenttype domain
 func SetupPaymenttypeRoutes(group fiber.Router) {
 
+	group.Get("/paymenttype", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+		var controller rest.PaymenttypeController
+		controller.Init(c)
+		controller.Index(page_, pagesize_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Post("/paymenttype/count", func(c *fiber.Ctx) error {
+
+		var controller rest.PaymenttypeController
+		controller.Init(c)
+		controller.Count()
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Post("/paymenttype", func(c *fiber.Ctx) error {
+			item_ := &models.Paymenttype{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.PaymenttypeController
+		controller.Init(c)
+		controller.Insert(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
 	group.Post("/paymenttype/batch", func(c *fiber.Ctx) error {
 			item_ := &[]models.Paymenttype{}
 			err := c.BodyParser(item_)
@@ -74,38 +106,6 @@ func SetupPaymenttypeRoutes(group fiber.Router) {
 		var controller rest.PaymenttypeController
 		controller.Init(c)
 		controller.Read(id_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Get("/paymenttype", func(c *fiber.Ctx) error {
-			page_, _ := strconv.Atoi(c.Query("page"))
-			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
-		var controller rest.PaymenttypeController
-		controller.Init(c)
-		controller.Index(page_, pagesize_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Post("/paymenttype/count", func(c *fiber.Ctx) error {
-
-		var controller rest.PaymenttypeController
-		controller.Init(c)
-		controller.Count()
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Post("/paymenttype", func(c *fiber.Ctx) error {
-			item_ := &models.Paymenttype{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.PaymenttypeController
-		controller.Init(c)
-		controller.Insert(item_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

@@ -40,7 +40,7 @@ func (c *RockergroupController) Index(page int, pagesize int) {
     }
     _name := c.Get("name")
     if _name != "" {
-        args = append(args, models.Where{Column:"name", Value:_name, Compare:"="})
+        args = append(args, models.Where{Column:"name", Value:_name, Compare:"like"})
         
     }
     _startdate := c.Get("startdate")
@@ -112,7 +112,7 @@ func (c *RockergroupController) Count() {
     }
     _name := c.Get("name")
     if _name != "" {
-        args = append(args, models.Where{Column:"name", Value:_name, Compare:"="})
+        args = append(args, models.Where{Column:"name", Value:_name, Compare:"like"})
         
         
     }

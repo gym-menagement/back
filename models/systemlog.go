@@ -20,7 +20,7 @@ type Systemlog struct {
     Id                int64 `json:"id"`         
     Type                systemlog.Type `json:"type"`         
     Content                string `json:"content"`         
-    Result                int `json:"result"`         
+    Result                systemlog.Result `json:"result"`         
     Date                string `json:"date"` 
     
     Extra                    map[string]interface{} `json:"extra"`
@@ -474,7 +474,7 @@ func (p *SystemlogManager) UpdateContent(value string, id int64) error {
     return err
 }
 
-func (p *SystemlogManager) UpdateResult(value int, id int64) error {
+func (p *SystemlogManager) UpdateResult(value systemlog.Result, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
@@ -531,6 +531,7 @@ func (p *SystemlogManager) GetIdentity() int64 {
 func (p *Systemlog) InitExtra() {
     p.Extra = map[string]interface{}{
             "type":     systemlog.GetType(p.Type),
+            "result":     systemlog.GetResult(p.Result),
 
     }
 }
@@ -576,7 +577,7 @@ func (p *SystemlogManager) ReadRows(rows *sql.Rows) []Systemlog {
     for rows.Next() {
         var item Systemlog
         
-    
+
         err := rows.Scan(&item.Id, &item.Type, &item.Content, &item.Result, &item.Date)
         if err != nil {
            if p.Log {
@@ -594,8 +595,8 @@ func (p *SystemlogManager) ReadRows(rows *sql.Rows) []Systemlog {
             item.Date = strings.ReplaceAll(strings.ReplaceAll(item.Date, "T", " "), "Z", "")
         }
 		
-        
-        item.InitExtra()        
+
+        item.InitExtra()
         
         items = append(items, item)
     }

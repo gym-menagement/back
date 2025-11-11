@@ -620,7 +620,7 @@ func (p *IpblockManager) ReadRows(rows *sql.Rows) []Ipblock {
     for rows.Next() {
         var item Ipblock
         
-    
+
         err := rows.Scan(&item.Id, &item.Address, &item.Type, &item.Policy, &item.Use, &item.Order, &item.Date)
         if err != nil {
            if p.Log {
@@ -638,8 +638,8 @@ func (p *IpblockManager) ReadRows(rows *sql.Rows) []Ipblock {
             item.Date = strings.ReplaceAll(strings.ReplaceAll(item.Date, "T", " "), "Z", "")
         }
 		
-        
-        item.InitExtra()        
+
+        item.InitExtra()
         
         items = append(items, item)
     }

@@ -116,7 +116,7 @@ func (p *TermManager) GetQuery() string {
 
     var ret strings.Builder
 
-    ret.WriteString("select t_id, t_gym, t_daytype, t_name, t_term, t_date from term_tb")
+    ret.WriteString("select t_id, t_gym, t_daytype, t_name, t_term, t_date, g_id, g_name, g_date, dt_id, dt_gym, dt_name, dt_date from term_tb, gym_tb, daytype_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -130,6 +130,10 @@ func (p *TermManager) GetQuery() string {
     }
 
     ret.WriteString(" where 1=1 ")
+    
+    ret.WriteString("and t_gym = g_id ")
+    
+    ret.WriteString("and t_daytype = dt_id ")
     
 
     return ret.String()
@@ -157,6 +161,10 @@ func (p *TermManager) GetQuerySelect() string {
 
     ret.WriteString(" where 1=1 ")
     
+    ret.WriteString("and t_gym = g_id ")
+    
+    ret.WriteString("and t_daytype = dt_id ")
+    
 
     return ret.String()
 }
@@ -178,6 +186,10 @@ func (p *TermManager) GetQueryGroup(name string) string {
     }
 
     ret.WriteString(" where 1=1 ")
+    
+    ret.WriteString("and t_gym = g_id ")
+    
+    ret.WriteString("and t_daytype = dt_id ")
     
 
     return ret.String()
@@ -559,10 +571,12 @@ func (p *TermManager) ReadRow(rows *sql.Rows) *Term {
     var item Term
     var err error
 
+    var _gym Gym
+    var _daytype Daytype
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Gym, &item.Daytype, &item.Name, &item.Term, &item.Date)
+        err = rows.Scan(&item.Id, &item.Gym, &item.Daytype, &item.Name, &item.Term, &item.Date, &_gym.Id, &_gym.Name, &_gym.Date, &_daytype.Id, &_daytype.Gym, &_daytype.Name, &_daytype.Date)
         
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" || item.Date == "9999-01-01 00:00:00" {
             item.Date = ""
@@ -585,7 +599,11 @@ func (p *TermManager) ReadRow(rows *sql.Rows) *Term {
     } else {
 
         item.InitExtra()
-        
+        _gym.InitExtra()
+        item.AddExtra("gym",  _gym)
+_daytype.InitExtra()
+        item.AddExtra("daytype",  _daytype)
+
         return &item
     }
 }
@@ -595,9 +613,11 @@ func (p *TermManager) ReadRows(rows *sql.Rows) []Term {
 
     for rows.Next() {
         var item Term
+        var _gym Gym
+        var _daytype Daytype
         
-    
-        err := rows.Scan(&item.Id, &item.Gym, &item.Daytype, &item.Name, &item.Term, &item.Date)
+
+        err := rows.Scan(&item.Id, &item.Gym, &item.Daytype, &item.Name, &item.Term, &item.Date, &_gym.Id, &_gym.Name, &_gym.Date, &_daytype.Id, &_daytype.Gym, &_daytype.Name, &_daytype.Date)
         if err != nil {
            if p.Log {
              log.Error().Str("error", err.Error()).Msg("SQL")
@@ -614,9 +634,13 @@ func (p *TermManager) ReadRows(rows *sql.Rows) []Term {
             item.Date = strings.ReplaceAll(strings.ReplaceAll(item.Date, "T", " "), "Z", "")
         }
 		
-        
-        item.InitExtra()        
-        
+
+        item.InitExtra()
+        _gym.InitExtra()
+        item.AddExtra("gym",  _gym)
+_daytype.InitExtra()
+        item.AddExtra("daytype",  _daytype)
+
         items = append(items, item)
     }
 
@@ -633,6 +657,10 @@ func (p *TermManager) Get(id int64) *Term {
     query.WriteString(p.GetQuery())
     query.WriteString(" and t_id = ?")
 
+    
+    query.WriteString(" and t_gym = g_id")
+    
+    query.WriteString(" and t_daytype = dt_id")
     
     
     rows, err := p.Query(query.String(), id)

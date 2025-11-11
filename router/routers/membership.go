@@ -17,6 +17,19 @@ import (
 // SetupMembershipRoutes sets up routes for membership domain
 func SetupMembershipRoutes(group fiber.Router) {
 
+	group.Delete("/membership/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Membership{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.MembershipController
+		controller.Init(c)
+		controller.Deletebatch(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
 	group.Get("/membership/:id", func(c *fiber.Ctx) error {
 			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 		var controller rest.MembershipController
@@ -93,19 +106,6 @@ func SetupMembershipRoutes(group fiber.Router) {
 		var controller rest.MembershipController
 		controller.Init(c)
 		controller.Delete(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Delete("/membership/batch", func(c *fiber.Ctx) error {
-			item_ := &[]models.Membership{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.MembershipController
-		controller.Init(c)
-		controller.Deletebatch(item_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

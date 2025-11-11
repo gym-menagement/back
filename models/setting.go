@@ -681,7 +681,7 @@ func (p *SettingManager) ReadRows(rows *sql.Rows) []Setting {
     for rows.Next() {
         var item Setting
         
-    
+
         err := rows.Scan(&item.Id, &item.Category, &item.Name, &item.Key, &item.Value, &item.Remark, &item.Type, &item.Data, &item.Order, &item.Date)
         if err != nil {
            if p.Log {
@@ -699,8 +699,8 @@ func (p *SettingManager) ReadRows(rows *sql.Rows) []Setting {
             item.Date = strings.ReplaceAll(strings.ReplaceAll(item.Date, "T", " "), "Z", "")
         }
 		
-        
-        item.InitExtra()        
+
+        item.InitExtra()
         
         items = append(items, item)
     }
