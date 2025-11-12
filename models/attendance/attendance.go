@@ -33,8 +33,8 @@ type Type int
 const (
     _ Type  = iota
 
-    Type0
-    Type1
+    TypeEntry
+    TypeExit
 )
 
 var Types = []string{ "", "입장", "퇴장" }
@@ -44,9 +44,9 @@ type Method int
 const (
     _ Method  = iota
 
-    Method0
-    Method1
-    Method2
+    MethodQr_code
+    MethodManual
+    MethodCard
 )
 
 var Methods = []string{ "", "QR코드", "수동", "카드" }
@@ -56,9 +56,9 @@ type Status int
 const (
     _ Status  = iota
 
-    Status0
-    Status1
-    Status2
+    StatusNormal
+    StatusLate
+    StatusUnauthorized
 )
 
 var Statuss = []string{ "", "정상", "지각", "무단입장" }

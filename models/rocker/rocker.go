@@ -23,8 +23,8 @@ type Available int
 const (
     _ Available  = iota
 
-    Available0
-    Available1
+    AvailableIn_use
+    AvailableAvailable
 )
 
 var Availables = []string{ "", "사용중", "사용가능" }

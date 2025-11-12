@@ -17,32 +17,6 @@ import (
 // SetupPtreservationRoutes sets up routes for ptreservation domain
 func SetupPtreservationRoutes(group fiber.Router) {
 
-	group.Post("/ptreservation", func(c *fiber.Ctx) error {
-			item_ := &models.Ptreservation{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.PtreservationController
-		controller.Init(c)
-		controller.Insert(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Post("/ptreservation/batch", func(c *fiber.Ctx) error {
-			item_ := &[]models.Ptreservation{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.PtreservationController
-		controller.Init(c)
-		controller.Insertbatch(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
 	group.Put("/ptreservation", func(c *fiber.Ctx) error {
 			item_ := &models.Ptreservation{}
 			err := c.BodyParser(item_)
@@ -106,6 +80,32 @@ func SetupPtreservationRoutes(group fiber.Router) {
 		var controller rest.PtreservationController
 		controller.Init(c)
 		controller.Count()
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Post("/ptreservation", func(c *fiber.Ctx) error {
+			item_ := &models.Ptreservation{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.PtreservationController
+		controller.Init(c)
+		controller.Insert(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Post("/ptreservation/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Ptreservation{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.PtreservationController
+		controller.Init(c)
+		controller.Insertbatch(item_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

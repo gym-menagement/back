@@ -31,9 +31,9 @@ type Status int
 const (
     _ Status  = iota
 
-    Status0
-    Status1
-    Status2
+    StatusTerminated
+    StatusIn_use
+    StatusOverdue
 )
 
 var Statuss = []string{ "", "종료", "사용중", "연체" }

@@ -27,8 +27,8 @@ type Status int
 const (
     _ Status  = iota
 
-    Status0
-    Status1
+    StatusTerminated
+    StatusIn_progress
 )
 
 var Statuss = []string{ "", "종료", "진행중" }

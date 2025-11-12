@@ -17,45 +17,6 @@ import (
 // SetupGymRoutes sets up routes for gym domain
 func SetupGymRoutes(group fiber.Router) {
 
-	group.Post("/gym", func(c *fiber.Ctx) error {
-			item_ := &models.Gym{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.GymController
-		controller.Init(c)
-		controller.Insert(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Post("/gym/batch", func(c *fiber.Ctx) error {
-			item_ := &[]models.Gym{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.GymController
-		controller.Init(c)
-		controller.Insertbatch(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Put("/gym", func(c *fiber.Ctx) error {
-			item_ := &models.Gym{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.GymController
-		controller.Init(c)
-		controller.Update(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
 	group.Delete("/gym", func(c *fiber.Ctx) error {
 			item_ := &models.Gym{}
 			err := c.BodyParser(item_)
@@ -106,6 +67,45 @@ func SetupGymRoutes(group fiber.Router) {
 		var controller rest.GymController
 		controller.Init(c)
 		controller.Count()
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Post("/gym", func(c *fiber.Ctx) error {
+			item_ := &models.Gym{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.GymController
+		controller.Init(c)
+		controller.Insert(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Post("/gym/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Gym{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.GymController
+		controller.Init(c)
+		controller.Insertbatch(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Put("/gym", func(c *fiber.Ctx) error {
+			item_ := &models.Gym{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.GymController
+		controller.Init(c)
+		controller.Update(item_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

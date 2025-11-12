@@ -32,10 +32,10 @@ type Status int
 const (
     _ Status  = iota
 
-    Status0
-    Status1
-    Status2
-    Status3
+    StatusReserved
+    StatusCompleted
+    StatusCancelled
+    StatusNo_show
 )
 
 var Statuss = []string{ "", "예약", "완료", "취소", "노쇼" }

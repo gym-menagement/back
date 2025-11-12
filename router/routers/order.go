@@ -17,6 +17,25 @@ import (
 // SetupOrderRoutes sets up routes for order domain
 func SetupOrderRoutes(group fiber.Router) {
 
+	group.Get("/order/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+		var controller rest.OrderController
+		controller.Init(c)
+		controller.Read(id_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Get("/order", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+		var controller rest.OrderController
+		controller.Init(c)
+		controller.Index(page_, pagesize_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
 	group.Post("/order/count", func(c *fiber.Ctx) error {
 
 		var controller rest.OrderController
@@ -87,25 +106,6 @@ func SetupOrderRoutes(group fiber.Router) {
 		var controller rest.OrderController
 		controller.Init(c)
 		controller.Deletebatch(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Get("/order/:id", func(c *fiber.Ctx) error {
-			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
-		var controller rest.OrderController
-		controller.Init(c)
-		controller.Read(id_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Get("/order", func(c *fiber.Ctx) error {
-			page_, _ := strconv.Atoi(c.Query("page"))
-			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
-		var controller rest.OrderController
-		controller.Init(c)
-		controller.Index(page_, pagesize_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

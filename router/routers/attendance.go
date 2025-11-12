@@ -17,6 +17,32 @@ import (
 // SetupAttendanceRoutes sets up routes for attendance domain
 func SetupAttendanceRoutes(group fiber.Router) {
 
+	group.Put("/attendance", func(c *fiber.Ctx) error {
+			item_ := &models.Attendance{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.AttendanceController
+		controller.Init(c)
+		controller.Update(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Delete("/attendance", func(c *fiber.Ctx) error {
+			item_ := &models.Attendance{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.AttendanceController
+		controller.Init(c)
+		controller.Delete(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
 	group.Delete("/attendance/batch", func(c *fiber.Ctx) error {
 			item_ := &[]models.Attendance{}
 			err := c.BodyParser(item_)
@@ -80,32 +106,6 @@ func SetupAttendanceRoutes(group fiber.Router) {
 		var controller rest.AttendanceController
 		controller.Init(c)
 		controller.Insertbatch(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Put("/attendance", func(c *fiber.Ctx) error {
-			item_ := &models.Attendance{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.AttendanceController
-		controller.Init(c)
-		controller.Update(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Delete("/attendance", func(c *fiber.Ctx) error {
-			item_ := &models.Attendance{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.AttendanceController
-		controller.Init(c)
-		controller.Delete(item_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

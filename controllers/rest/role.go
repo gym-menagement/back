@@ -38,9 +38,9 @@ func (c *RoleController) Index(page int, pagesize int) {
     if _gym != 0 {
         args = append(args, models.Where{Column:"gym", Value:_gym, Compare:"="})    
     }
-    _role := c.Geti("role")
-    if _role != 0 {
-        args = append(args, models.Where{Column:"role", Value:_role, Compare:"="})    
+    _roleid := c.Geti("roleid")
+    if _roleid != 0 {
+        args = append(args, models.Where{Column:"roleid", Value:_roleid, Compare:"="})    
     }
     _name := c.Get("name")
     if _name != "" {
@@ -114,9 +114,9 @@ func (c *RoleController) Count() {
     if _gym != 0 {
         args = append(args, models.Where{Column:"gym", Value:_gym, Compare:"="})    
     }
-    _role := c.Geti("role")
-    if _role != 0 {
-        args = append(args, models.Where{Column:"role", Value:_role, Compare:"="})    
+    _roleid := c.Geti("roleid")
+    if _roleid != 0 {
+        args = append(args, models.Where{Column:"roleid", Value:_roleid, Compare:"="})    
     }
     _name := c.Get("name")
     if _name != "" {

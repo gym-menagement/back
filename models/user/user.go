@@ -89,8 +89,8 @@ type Sex int
 const (
     _ Sex  = iota
 
-    Sex0
-    Sex1
+    SexMale
+    SexFemale
 )
 
 var Sexs = []string{ "", "남성", "여성" }

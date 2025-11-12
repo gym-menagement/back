@@ -17,6 +17,15 @@ import (
 // SetupRockerusageRoutes sets up routes for rockerusage domain
 func SetupRockerusageRoutes(group fiber.Router) {
 
+	group.Get("/rockerusage/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+		var controller rest.RockerusageController
+		controller.Init(c)
+		controller.Read(id_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
 	group.Get("/rockerusage", func(c *fiber.Ctx) error {
 			page_, _ := strconv.Atoi(c.Query("page"))
 			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
@@ -97,15 +106,6 @@ func SetupRockerusageRoutes(group fiber.Router) {
 		var controller rest.RockerusageController
 		controller.Init(c)
 		controller.Deletebatch(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Get("/rockerusage/:id", func(c *fiber.Ctx) error {
-			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
-		var controller rest.RockerusageController
-		controller.Init(c)
-		controller.Read(id_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

@@ -29,8 +29,8 @@ type Forceupdate int
 const (
     _ Forceupdate  = iota
 
-    Forceupdate0
-    Forceupdate1
+    ForceupdateNo
+    ForceupdateYes
 )
 
 var Forceupdates = []string{ "", "아니오", "예" }
@@ -40,8 +40,8 @@ type Status int
 const (
     _ Status  = iota
 
-    Status0
-    Status1
+    StatusInactive
+    StatusActive
 )
 
 var Statuss = []string{ "", "비활성", "활성" }

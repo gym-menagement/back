@@ -28,8 +28,8 @@ type Isactive int
 const (
     _ Isactive  = iota
 
-    Isactive0
-    Isactive1
+    IsactiveInactive
+    IsactiveActive
 )
 
 var Isactives = []string{ "", "비활성", "활성" }

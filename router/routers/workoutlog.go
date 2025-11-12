@@ -17,6 +17,32 @@ import (
 // SetupWorkoutlogRoutes sets up routes for workoutlog domain
 func SetupWorkoutlogRoutes(group fiber.Router) {
 
+	group.Delete("/workoutlog", func(c *fiber.Ctx) error {
+			item_ := &models.Workoutlog{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.WorkoutlogController
+		controller.Init(c)
+		controller.Delete(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Delete("/workoutlog/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Workoutlog{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.WorkoutlogController
+		controller.Init(c)
+		controller.Deletebatch(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
 	group.Get("/workoutlog/:id", func(c *fiber.Ctx) error {
 			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 		var controller rest.WorkoutlogController
@@ -80,32 +106,6 @@ func SetupWorkoutlogRoutes(group fiber.Router) {
 		var controller rest.WorkoutlogController
 		controller.Init(c)
 		controller.Update(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Delete("/workoutlog", func(c *fiber.Ctx) error {
-			item_ := &models.Workoutlog{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.WorkoutlogController
-		controller.Init(c)
-		controller.Delete(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Delete("/workoutlog/batch", func(c *fiber.Ctx) error {
-			item_ := &[]models.Workoutlog{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.WorkoutlogController
-		controller.Init(c)
-		controller.Deletebatch(item_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

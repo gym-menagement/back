@@ -17,6 +17,28 @@ import (
 // SetupInquiryRoutes sets up routes for inquiry domain
 func SetupInquiryRoutes(group fiber.Router) {
 
+	group.Post("/inquiry/count", func(c *fiber.Ctx) error {
+
+		var controller rest.InquiryController
+		controller.Init(c)
+		controller.Count()
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Post("/inquiry", func(c *fiber.Ctx) error {
+			item_ := &models.Inquiry{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.InquiryController
+		controller.Init(c)
+		controller.Insert(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
 	group.Post("/inquiry/batch", func(c *fiber.Ctx) error {
 			item_ := &[]models.Inquiry{}
 			err := c.BodyParser(item_)
@@ -84,28 +106,6 @@ func SetupInquiryRoutes(group fiber.Router) {
 		var controller rest.InquiryController
 		controller.Init(c)
 		controller.Index(page_, pagesize_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Post("/inquiry/count", func(c *fiber.Ctx) error {
-
-		var controller rest.InquiryController
-		controller.Init(c)
-		controller.Count()
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Post("/inquiry", func(c *fiber.Ctx) error {
-			item_ := &models.Inquiry{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.InquiryController
-		controller.Init(c)
-		controller.Insert(item_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

@@ -34,8 +34,8 @@ type Type int
 const (
     _ Type  = iota
 
-    Type0
-    Type1
+    TypePeriod_based
+    TypeCount_based
 )
 
 var Types = []string{ "", "기간제", "횟수제" }
@@ -45,10 +45,10 @@ type Status int
 const (
     _ Status  = iota
 
-    Status0
-    Status1
-    Status2
-    Status3
+    StatusIn_use
+    StatusPaused
+    StatusExpired
+    StatusRefunded
 )
 
 var Statuss = []string{ "", "사용중", "일시정지", "만료", "환불" }

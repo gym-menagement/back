@@ -19,7 +19,7 @@ type Role struct {
             
     Id                int64 `json:"id"`         
     Gym                int64 `json:"gym"`         
-    Role                role.Role `json:"role"`         
+    Roleid                int `json:"roleid"`         
     Name                string `json:"name"`         
     Date                string `json:"date"` 
     
@@ -115,7 +115,7 @@ func (p *RoleManager) GetQuery() string {
 
     var ret strings.Builder
 
-    ret.WriteString("select r_id, r_gym, r_role, r_name, r_date, g_id, g_name, g_date from role_tb, gym_tb")
+    ret.WriteString("select r_id, r_gym, r_roleid, r_name, r_date, g_id, g_name, g_date from role_tb, gym_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -226,11 +226,11 @@ func (p *RoleManager) Insert(item *Role) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into role_tb (r_id, r_gym, r_role, r_name, r_date) values (?, ?, ?, ?, ?)"
-        res, err = p.Exec(query, item.Id, item.Gym, item.Role, item.Name, item.Date)
+        query = "insert into role_tb (r_id, r_gym, r_roleid, r_name, r_date) values (?, ?, ?, ?, ?)"
+        res, err = p.Exec(query, item.Id, item.Gym, item.Roleid, item.Name, item.Date)
     } else {
-        query = "insert into role_tb (r_gym, r_role, r_name, r_date) values (?, ?, ?, ?)"
-        res, err = p.Exec(query, item.Gym, item.Role, item.Name, item.Date)
+        query = "insert into role_tb (r_gym, r_roleid, r_name, r_date) values (?, ?, ?, ?)"
+        res, err = p.Exec(query, item.Gym, item.Roleid, item.Name, item.Date)
     }
     
     if err == nil {
@@ -381,8 +381,8 @@ func (p *RoleManager) Update(item *Role) error {
     }
 	
 
-	query := "update role_tb set r_gym = ?, r_role = ?, r_name = ?, r_date = ? where r_id = ?"
-	_, err := p.Exec(query, item.Gym, item.Role, item.Name, item.Date, item.Id)
+	query := "update role_tb set r_gym = ?, r_roleid = ?, r_name = ?, r_date = ? where r_id = ?"
+	_, err := p.Exec(query, item.Gym, item.Roleid, item.Name, item.Date, item.Id)
 
     if err != nil {
         if p.Log {
@@ -414,8 +414,8 @@ func (p *RoleManager) UpdateWhere(columns []role.Params, args []interface{}) err
         } else if v.Column == role.ColumnGym {
         initQuery.WriteString("r_gym = ?")
         initParams = append(initParams, v.Value)
-        } else if v.Column == role.ColumnRole {
-        initQuery.WriteString("r_role = ?")
+        } else if v.Column == role.ColumnRoleid {
+        initQuery.WriteString("r_roleid = ?")
         initParams = append(initParams, v.Value)
         } else if v.Column == role.ColumnName {
         initQuery.WriteString("r_name = ?")
@@ -463,12 +463,12 @@ func (p *RoleManager) UpdateGym(value int64, id int64) error {
     return err
 }
 
-func (p *RoleManager) UpdateRole(value role.Role, id int64) error {
+func (p *RoleManager) UpdateRoleid(value int, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
 
-	query := "update role_tb set r_role = ? where r_id = ?"
+	query := "update role_tb set r_roleid = ? where r_id = ?"
 	_, err := p.Exec(query, value, id)
 
     if err != nil {
@@ -536,7 +536,6 @@ func (p *RoleManager) GetIdentity() int64 {
 
 func (p *Role) InitExtra() {
     p.Extra = map[string]interface{}{
-            "role":     role.GetRole(p.Role),
 
     }
 }
@@ -549,7 +548,7 @@ func (p *RoleManager) ReadRow(rows *sql.Rows) *Role {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Gym, &item.Role, &item.Name, &item.Date, &_gym.Id, &_gym.Name, &_gym.Date)
+        err = rows.Scan(&item.Id, &item.Gym, &item.Roleid, &item.Name, &item.Date, &_gym.Id, &_gym.Name, &_gym.Date)
         
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" || item.Date == "9999-01-01 00:00:00" {
             item.Date = ""
@@ -587,7 +586,7 @@ func (p *RoleManager) ReadRows(rows *sql.Rows) []Role {
         var _gym Gym
         
 
-        err := rows.Scan(&item.Id, &item.Gym, &item.Role, &item.Name, &item.Date, &_gym.Id, &_gym.Name, &_gym.Date)
+        err := rows.Scan(&item.Id, &item.Gym, &item.Roleid, &item.Name, &item.Date, &_gym.Id, &_gym.Name, &_gym.Date)
         if err != nil {
            if p.Log {
              log.Error().Str("error", err.Error()).Msg("SQL")

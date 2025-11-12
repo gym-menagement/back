@@ -34,9 +34,9 @@ type Type int
 const (
     _ Type  = iota
 
-    Type0
-    Type1
-    Type2
+    TypeGeneral
+    TypeImportant
+    TypeEvent
 )
 
 var Types = []string{ "", "일반", "중요", "이벤트" }
@@ -46,8 +46,8 @@ type Ispopup int
 const (
     _ Ispopup  = iota
 
-    Ispopup0
-    Ispopup1
+    IspopupNo
+    IspopupYes
 )
 
 var Ispopups = []string{ "", "아니오", "예" }
@@ -57,8 +57,8 @@ type Ispush int
 const (
     _ Ispush  = iota
 
-    Ispush0
-    Ispush1
+    IspushNo
+    IspushYes
 )
 
 var Ispushs = []string{ "", "아니오", "예" }
@@ -68,9 +68,9 @@ type Target int
 const (
     _ Target  = iota
 
-    Target0
-    Target1
-    Target2
+    TargetAll
+    TargetMembers_only
+    TargetSpecific_members
 )
 
 var Targets = []string{ "", "전체", "회원만", "특정회원" }
@@ -80,8 +80,8 @@ type Status int
 const (
     _ Status  = iota
 
-    Status0
-    Status1
+    StatusPrivate
+    StatusPublic
 )
 
 var Statuss = []string{ "", "비공개", "공개" }

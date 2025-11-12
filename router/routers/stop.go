@@ -17,6 +17,51 @@ import (
 // SetupStopRoutes sets up routes for stop domain
 func SetupStopRoutes(group fiber.Router) {
 
+	group.Get("/stop", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+		var controller rest.StopController
+		controller.Init(c)
+		controller.Index(page_, pagesize_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Post("/stop/count", func(c *fiber.Ctx) error {
+
+		var controller rest.StopController
+		controller.Init(c)
+		controller.Count()
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Post("/stop", func(c *fiber.Ctx) error {
+			item_ := &models.Stop{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.StopController
+		controller.Init(c)
+		controller.Insert(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Post("/stop/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Stop{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.StopController
+		controller.Init(c)
+		controller.Insertbatch(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
 	group.Put("/stop", func(c *fiber.Ctx) error {
 			item_ := &models.Stop{}
 			err := c.BodyParser(item_)
@@ -61,51 +106,6 @@ func SetupStopRoutes(group fiber.Router) {
 		var controller rest.StopController
 		controller.Init(c)
 		controller.Read(id_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Get("/stop", func(c *fiber.Ctx) error {
-			page_, _ := strconv.Atoi(c.Query("page"))
-			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
-		var controller rest.StopController
-		controller.Init(c)
-		controller.Index(page_, pagesize_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Post("/stop/count", func(c *fiber.Ctx) error {
-
-		var controller rest.StopController
-		controller.Init(c)
-		controller.Count()
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Post("/stop", func(c *fiber.Ctx) error {
-			item_ := &models.Stop{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.StopController
-		controller.Init(c)
-		controller.Insert(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Post("/stop/batch", func(c *fiber.Ctx) error {
-			item_ := &[]models.Stop{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.StopController
-		controller.Init(c)
-		controller.Insertbatch(item_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

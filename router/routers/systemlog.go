@@ -17,28 +17,6 @@ import (
 // SetupSystemlogRoutes sets up routes for systemlog domain
 func SetupSystemlogRoutes(group fiber.Router) {
 
-	group.Post("/systemlog/count", func(c *fiber.Ctx) error {
-
-		var controller rest.SystemlogController
-		controller.Init(c)
-		controller.Count()
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Post("/systemlog", func(c *fiber.Ctx) error {
-			item_ := &models.Systemlog{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.SystemlogController
-		controller.Init(c)
-		controller.Insert(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
 	group.Post("/systemlog/batch", func(c *fiber.Ctx) error {
 			item_ := &[]models.Systemlog{}
 			err := c.BodyParser(item_)
@@ -106,6 +84,28 @@ func SetupSystemlogRoutes(group fiber.Router) {
 		var controller rest.SystemlogController
 		controller.Init(c)
 		controller.Index(page_, pagesize_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Post("/systemlog/count", func(c *fiber.Ctx) error {
+
+		var controller rest.SystemlogController
+		controller.Init(c)
+		controller.Count()
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Post("/systemlog", func(c *fiber.Ctx) error {
+			item_ := &models.Systemlog{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.SystemlogController
+		controller.Init(c)
+		controller.Insert(item_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

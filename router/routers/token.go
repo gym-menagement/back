@@ -17,6 +17,34 @@ import (
 // SetupTokenRoutes sets up routes for token domain
 func SetupTokenRoutes(group fiber.Router) {
 
+	group.Get("/token/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+		var controller rest.TokenController
+		controller.Init(c)
+		controller.Read(id_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Get("/token", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+		var controller rest.TokenController
+		controller.Init(c)
+		controller.Index(page_, pagesize_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Post("/token/count", func(c *fiber.Ctx) error {
+
+		var controller rest.TokenController
+		controller.Init(c)
+		controller.Count()
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
 	group.Post("/token", func(c *fiber.Ctx) error {
 			item_ := &models.Token{}
 			err := c.BodyParser(item_)
@@ -78,34 +106,6 @@ func SetupTokenRoutes(group fiber.Router) {
 		var controller rest.TokenController
 		controller.Init(c)
 		controller.Deletebatch(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Get("/token/:id", func(c *fiber.Ctx) error {
-			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
-		var controller rest.TokenController
-		controller.Init(c)
-		controller.Read(id_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Get("/token", func(c *fiber.Ctx) error {
-			page_, _ := strconv.Atoi(c.Query("page"))
-			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
-		var controller rest.TokenController
-		controller.Init(c)
-		controller.Index(page_, pagesize_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Post("/token/count", func(c *fiber.Ctx) error {
-
-		var controller rest.TokenController
-		controller.Init(c)
-		controller.Count()
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

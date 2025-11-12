@@ -30,11 +30,11 @@ type Type int
 const (
     _ Type  = iota
 
-    Type0
-    Type1
-    Type2
-    Type3
-    Type4
+    TypeGeneral
+    TypeMembership
+    TypeRefund
+    TypeFacility
+    TypeOther
 )
 
 var Types = []string{ "", "일반", "회원권", "환불", "시설", "기타" }
@@ -44,8 +44,8 @@ type Status int
 const (
     _ Status  = iota
 
-    Status0
-    Status1
+    StatusWaiting
+    StatusAnswered
 )
 
 var Statuss = []string{ "", "대기", "답변완료" }

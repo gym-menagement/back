@@ -17,6 +17,19 @@ import (
 // SetupNoticeRoutes sets up routes for notice domain
 func SetupNoticeRoutes(group fiber.Router) {
 
+	group.Delete("/notice/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Notice{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.NoticeController
+		controller.Init(c)
+		controller.Deletebatch(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
 	group.Get("/notice/:id", func(c *fiber.Ctx) error {
 			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 		var controller rest.NoticeController
@@ -93,19 +106,6 @@ func SetupNoticeRoutes(group fiber.Router) {
 		var controller rest.NoticeController
 		controller.Init(c)
 		controller.Delete(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Delete("/notice/batch", func(c *fiber.Ctx) error {
-			item_ := &[]models.Notice{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.NoticeController
-		controller.Init(c)
-		controller.Deletebatch(item_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})
