@@ -1,0 +1,844 @@
+{
+  "buildtool": "1.4",
+  "database": "gym",
+  "server": "140.82.12.99",
+  "user": "gym",
+  "password": "gymdb",
+  "auth": "jwt",
+  "authTimeout": "not",
+  "adminLevel": "3",
+  "language": "kotlin",
+  "goModelFilePath": "../gym/gymspring/",
+  "dartModelFilePath": "../../gym/gym/lib/model/",
+  "kotlinModelFilePath": "../../gym/android/app/src/main/kotlin/com/gowoobro/gymspring/",
+  "ReactModelFilePath": "../../gym/front/src/",
+  "table": [
+    {
+      "name": "user",
+      "map": [
+        {
+          "name": "level",
+          "data": [
+            "",
+            "normal:일반회원",
+            "manager:트레이너/직원",
+            "admin:헬스장관리자",
+            "superadmin:플랫폼관리자",
+            "rootadmin:최고관리자"
+          ]
+        },
+        {
+          "name": "use",
+          "data": ["", "use:사용", "notuse:사용안함"]
+        },
+        {
+          "name": "type",
+          "data": [
+            "",
+            "normal:일반",
+            "kakao:카카오",
+            "naver:네이버",
+            "google:구글",
+            "apple:애플"
+          ]
+        },
+        {
+          "name": "role",
+          "data": [
+            "",
+            "member:회원",
+            "trainer:트레이너",
+            "staff:직원",
+            "gym_admin:헬스장관리자",
+            "platform_admin:플랫폼관리자"
+          ]
+        },
+        {
+          "name": "sex",
+          "data": ["", "male:남성", "female:여성"]
+        }
+      ],
+      "method": [
+        "GetByLoginid",
+        "GetByConnectid",
+        "CountByLoginid",
+        "UpdateLogindateById",
+        "FindByLevel",
+        "FindByEmail",
+        "FindByTel"
+      ]
+    },
+    {
+      "name": "alarm",
+      "map": [
+        {
+          "name": "type",
+          "data": ["", "notice:공지", "warning:경고", "error:에러", "info:정보"]
+        },
+        {
+          "name": "status",
+          "data": ["", "success:성공", "fail:실패", "pending:대기"]
+        }
+      ],
+      "join": [
+        {
+          "name": "user",
+          "column": "user"
+        }
+      ]
+    },
+    {
+      "name": "ipblock",
+      "map": [
+        {
+          "name": "type",
+          "data": ["", "admin:관리자 접근", "normal:일반 접근"]
+        },
+        {
+          "name": "policy",
+          "data": ["", "grant:허용", "deny:거부"]
+        },
+        {
+          "name": "use",
+          "data": ["", "use:사용", "notuse:사용안함"]
+        }
+      ],
+      "compare": [
+        {
+          "name": "address",
+          "type": "like"
+        }
+      ]
+    },
+    {
+      "name": "loginlog",
+      "join": [
+        {
+          "name": "user",
+          "column": "user"
+        }
+      ]
+    },
+    {
+      "name": "setting",
+      "map": [
+        {
+          "name": "type",
+          "data": ["", "string:문자열", "number:숫자", "boolean:참거짓"]
+        }
+      ],
+      "compare": [
+        {
+          "name": "category",
+          "type": "like"
+        },
+        {
+          "name": "key",
+          "type": "like"
+        }
+      ]
+    },
+    {
+      "name": "systemlog",
+      "map": [
+        {
+          "name": "type",
+          "data": ["", "login:로그인", "crawling:크롤링"]
+        },
+        {
+          "name": "result",
+          "data": ["", "success:성공", "fail:실패"]
+        }
+      ],
+      "compare": [
+        {
+          "name": "content",
+          "type": "like"
+        }
+      ]
+    },
+    {
+      "name": "gym",
+      "compare": [
+        {
+          "name": "name",
+          "type": "like"
+        }
+      ]
+    },
+    {
+      "name": "daytype",
+      "join": [
+        {
+          "name": "gym",
+          "column": "gym"
+        }
+      ],
+      "compare": [
+        {
+          "name": "name",
+          "type": "like"
+        }
+      ]
+    },
+    {
+      "name": "discount",
+      "compare": [
+        {
+          "name": "name",
+          "type": "like"
+        }
+      ]
+    },
+    {
+      "name": "healthcategory",
+      "join": [
+        {
+          "name": "gym",
+          "column": "gym"
+        }
+      ],
+      "compare": [
+        {
+          "name": "name",
+          "type": "like"
+        }
+      ]
+    },
+    {
+      "name": "term",
+      "join": [
+        {
+          "name": "gym",
+          "column": "gym"
+        },
+        {
+          "name": "daytype",
+          "column": "daytype"
+        }
+      ],
+      "compare": [
+        {
+          "name": "name",
+          "type": "like"
+        }
+      ]
+    },
+    {
+      "name": "health",
+      "join": [
+        {
+          "name": "healthcategory",
+          "column": "category"
+        },
+        {
+          "name": "term",
+          "column": "term"
+        },
+        {
+          "name": "discount",
+          "column": "discount"
+        },
+        {
+          "name": "gym",
+          "column": "gym"
+        }
+      ],
+      "compare": [
+        {
+          "name": "name",
+          "type": "like"
+        },
+        {
+          "name": "content",
+          "type": "like"
+        }
+      ]
+    },
+    {
+      "name": "membership",
+      "join": [
+        {
+          "name": "gym",
+          "column": "gym"
+        },
+        {
+          "name": "user",
+          "column": "user"
+        }
+      ],
+      "map": [
+        {
+          "name": "sex",
+          "data": ["", "male:남성", "female:여성"]
+        }
+      ],
+      "compare": [
+        {
+          "name": "name",
+          "type": "like"
+        },
+        {
+          "name": "phonenum",
+          "type": "like"
+        }
+      ]
+    },
+    {
+      "name": "order",
+      "join": [
+        {
+          "name": "membership",
+          "column": "membership"
+        }
+      ]
+    },
+    {
+      "name": "payment",
+      "join": [
+        {
+          "name": "gym",
+          "column": "gym"
+        },
+        {
+          "name": "order",
+          "column": "order"
+        },
+        {
+          "name": "membership",
+          "column": "membership"
+        }
+      ]
+    },
+    {
+      "name": "paymenttype",
+      "join": [
+        {
+          "name": "gym",
+          "column": "gym"
+        }
+      ],
+      "compare": [
+        {
+          "name": "name",
+          "type": "like"
+        }
+      ]
+    },
+    {
+      "name": "paymentform",
+      "join": [
+        {
+          "name": "gym",
+          "column": "gym"
+        },
+        {
+          "name": "payment",
+          "column": "payment"
+        },
+        {
+          "name": "paymenttype",
+          "column": "type"
+        }
+      ]
+    },
+    {
+      "name": "rockergroup",
+      "join": [
+        {
+          "name": "gym",
+          "column": "gym"
+        }
+      ],
+      "compare": [
+        {
+          "name": "name",
+          "type": "like"
+        }
+      ]
+    },
+    {
+      "name": "rocker",
+      "join": [
+        {
+          "name": "rockergroup",
+          "column": "group"
+        }
+      ],
+      "map": [
+        {
+          "name": "available",
+          "data": ["", "in_use:사용중", "available:사용가능"]
+        }
+      ],
+      "compare": [
+        {
+          "name": "name",
+          "type": "like"
+        }
+      ]
+    },
+    {
+      "name": "usehealth",
+      "join": [
+        {
+          "name": "order",
+          "column": "order"
+        },
+        {
+          "name": "health",
+          "column": "health"
+        },
+        {
+          "name": "user",
+          "column": "user"
+        },
+        {
+          "name": "rocker",
+          "column": "rocker"
+        },
+        {
+          "name": "term",
+          "column": "term"
+        },
+        {
+          "name": "discount",
+          "column": "discount"
+        },
+        {
+          "name": "gym",
+          "column": "gym"
+        }
+      ]
+    },
+    {
+      "name": "stop",
+      "join": [
+        {
+          "name": "usehealth",
+          "column": "usehelth"
+        }
+      ]
+    },
+    {
+      "name": "role",
+      "join": [
+        {
+          "name": "gym",
+          "column": "gym"
+        }
+      ],
+      "compare": [
+        {
+          "name": "name",
+          "type": "like"
+        }
+      ]
+    },
+    {
+      "name": "token",
+      "join": [
+        {
+          "name": "user",
+          "column": "user"
+        }
+      ],
+      "map": [
+        {
+          "name": "status",
+          "data": ["", "active:활성", "expired:만료", "revoked:폐기"]
+        }
+      ]
+    },
+    {
+      "name": "attendance",
+      "join": [
+        {
+          "name": "user",
+          "column": "user"
+        },
+        {
+          "name": "membership",
+          "column": "membership"
+        },
+        {
+          "name": "gym",
+          "column": "gym"
+        }
+      ],
+      "map": [
+        {
+          "name": "type",
+          "data": ["", "entry:입장", "exit:퇴장"]
+        },
+        {
+          "name": "method",
+          "data": ["", "qr_code:QR코드", "manual:수동", "card:카드"]
+        },
+        {
+          "name": "status",
+          "data": ["", "normal:정상", "late:지각", "unauthorized:무단입장"]
+        }
+      ],
+      "compare": [
+        {
+          "name": "note",
+          "type": "like"
+        }
+      ]
+    },
+    {
+      "name": "memberqr",
+      "join": [
+        {
+          "name": "user",
+          "column": "user"
+        }
+      ],
+      "map": [
+        {
+          "name": "isactive",
+          "data": ["", "inactive:비활성", "active:활성"]
+        }
+      ],
+      "compare": [
+        {
+          "name": "code",
+          "type": "like"
+        }
+      ]
+    },
+    {
+      "name": "workoutlog",
+      "join": [
+        {
+          "name": "user",
+          "column": "user"
+        },
+        {
+          "name": "attendance",
+          "column": "attendance"
+        },
+        {
+          "name": "health",
+          "column": "health"
+        }
+      ],
+      "compare": [
+        {
+          "name": "exercisename",
+          "type": "like"
+        },
+        {
+          "name": "note",
+          "type": "like"
+        }
+      ]
+    },
+    {
+      "name": "membershipusage",
+      "join": [
+        {
+          "name": "membership",
+          "column": "membership"
+        },
+        {
+          "name": "user",
+          "column": "user"
+        }
+      ],
+      "map": [
+        {
+          "name": "type",
+          "data": ["", "period_based:기간제", "count_based:횟수제"]
+        },
+        {
+          "name": "status",
+          "data": [
+            "",
+            "in_use:사용중",
+            "paused:일시정지",
+            "expired:만료",
+            "refunded:환불"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "notice",
+      "join": [
+        {
+          "name": "gym",
+          "column": "gym"
+        },
+        {
+          "name": "user",
+          "column": "createdby"
+        }
+      ],
+      "map": [
+        {
+          "name": "type",
+          "data": ["", "general:일반", "important:중요", "event:이벤트"]
+        },
+        {
+          "name": "ispopup",
+          "data": ["", "no:아니오", "yes:예"]
+        },
+        {
+          "name": "ispush",
+          "data": ["", "no:아니오", "yes:예"]
+        },
+        {
+          "name": "target",
+          "data": [
+            "",
+            "all:전체",
+            "members_only:회원만",
+            "specific_members:특정회원"
+          ]
+        },
+        {
+          "name": "status",
+          "data": ["", "private:비공개", "public:공개"]
+        }
+      ],
+      "compare": [
+        {
+          "name": "title",
+          "type": "like"
+        },
+        {
+          "name": "content",
+          "type": "like"
+        }
+      ]
+    },
+    {
+      "name": "trainermember",
+      "join": [
+        {
+          "name": "user",
+          "column": "trainer",
+          "alias": "trainerUser"
+        },
+        {
+          "name": "user",
+          "column": "member",
+          "alias": "memberUser"
+        },
+        {
+          "name": "gym",
+          "column": "gym"
+        }
+      ],
+      "map": [
+        {
+          "name": "status",
+          "data": ["", "terminated:종료", "in_progress:진행중"]
+        }
+      ],
+      "compare": [
+        {
+          "name": "note",
+          "type": "like"
+        }
+      ]
+    },
+    {
+      "name": "ptreservation",
+      "join": [
+        {
+          "name": "user",
+          "column": "trainer",
+          "alias": "trainerUser"
+        },
+        {
+          "name": "user",
+          "column": "member",
+          "alias": "memberUser"
+        },
+        {
+          "name": "gym",
+          "column": "gym"
+        }
+      ],
+      "map": [
+        {
+          "name": "status",
+          "data": [
+            "",
+            "reserved:예약",
+            "completed:완료",
+            "cancelled:취소",
+            "no_show:노쇼"
+          ]
+        }
+      ],
+      "compare": [
+        {
+          "name": "note",
+          "type": "like"
+        },
+        {
+          "name": "cancelreason",
+          "type": "like"
+        }
+      ]
+    },
+    {
+      "name": "memberbody",
+      "join": [
+        {
+          "name": "user",
+          "column": "user",
+          "alias": "memberUser"
+        },
+        {
+          "name": "user",
+          "column": "measuredby",
+          "alias": "measuredbyUser"
+        }
+      ],
+      "compare": [
+        {
+          "name": "note",
+          "type": "like"
+        }
+      ]
+    },
+    {
+      "name": "inquiry",
+      "join": [
+        {
+          "name": "user",
+          "column": "user",
+          "alias": "inquirerUser"
+        },
+        {
+          "name": "gym",
+          "column": "gym"
+        },
+        {
+          "name": "user",
+          "column": "answeredby",
+          "alias": "answeredbyUser"
+        }
+      ],
+      "map": [
+        {
+          "name": "type",
+          "data": [
+            "",
+            "general:일반",
+            "membership:회원권",
+            "refund:환불",
+            "facility:시설",
+            "other:기타"
+          ]
+        },
+        {
+          "name": "status",
+          "data": ["", "waiting:대기", "answered:답변완료"]
+        }
+      ],
+      "compare": [
+        {
+          "name": "title",
+          "type": "like"
+        },
+        {
+          "name": "content",
+          "type": "like"
+        },
+        {
+          "name": "answer",
+          "type": "like"
+        }
+      ]
+    },
+    {
+      "name": "rockerusage",
+      "join": [
+        {
+          "name": "rocker",
+          "column": "rocker"
+        },
+        {
+          "name": "user",
+          "column": "user",
+          "alias": "memberUser"
+        },
+        {
+          "name": "membership",
+          "column": "membership"
+        },
+        {
+          "name": "user",
+          "column": "assignedby",
+          "alias": "assignedbyUser"
+        }
+      ],
+      "map": [
+        {
+          "name": "status",
+          "data": ["", "terminated:종료", "in_use:사용중", "overdue:연체"]
+        }
+      ],
+      "compare": [
+        {
+          "name": "note",
+          "type": "like"
+        }
+      ]
+    },
+    {
+      "name": "pushtoken",
+      "join": [
+        {
+          "name": "user",
+          "column": "user"
+        }
+      ],
+      "map": [
+        {
+          "name": "isactive",
+          "data": ["", "inactive:비활성", "active:활성"]
+        }
+      ],
+      "compare": [
+        {
+          "name": "devicetype",
+          "type": "like"
+        },
+        {
+          "name": "deviceid",
+          "type": "like"
+        }
+      ]
+    },
+    {
+      "name": "appversion",
+      "map": [
+        {
+          "name": "forceupdate",
+          "data": ["", "no:아니오", "yes:예"]
+        },
+        {
+          "name": "status",
+          "data": ["", "inactive:비활성", "active:활성"]
+        }
+      ],
+      "compare": [
+        {
+          "name": "platform",
+          "type": "like"
+        },
+        {
+          "name": "version",
+          "type": "like"
+        }
+      ]
+    }
+  ]
+}
