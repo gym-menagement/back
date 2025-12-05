@@ -254,41 +254,9 @@ CREATE TABLE `paymenttype_tb` (
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='결제 타입 테이블';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `rocker_tb`
---
 
-DROP TABLE IF EXISTS `rocker_tb`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `rocker_tb` (
-  `r_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '락커 ID',
-  `r_gym` bigint(20) NOT NULL DEFAULT 0 COMMENT '헬스장 ID (gym_tb 참조)',
-  `r_group` bigint(20) NOT NULL DEFAULT 0 COMMENT '락커 그룹 ID (rockergroup_tb 참조)',
-  `r_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '락커 번호/이름',
-  `r_available` int(11) NOT NULL DEFAULT 0 COMMENT '사용 가능 여부 (IN_USE:사용중, AVAILABLE:사용가능)',
-  `r_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '등록일',
-  PRIMARY KEY (`r_id`),
-  INDEX idx_gym (r_gym),
-  INDEX idx_group (r_group)
-) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='락커 테이블';
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `rockergroup_tb`
---
 
-DROP TABLE IF EXISTS `rockergroup_tb`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `rockergroup_tb` (
-  `rg_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '락커 그룹 ID',
-  `rg_gym` bigint(20) NOT NULL DEFAULT 0 COMMENT '헬스장 ID (gym_tb 참조)',
-  `rg_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '락커 그룹명 (남자락커실/여자락커실 등)',
-  `rg_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '등록일',
-  PRIMARY KEY (`rg_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='락커 그룹 테이블';
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `role_tb`
@@ -412,7 +380,7 @@ CREATE TABLE `usehealth_tb` (
   `uh_health` bigint(20) NOT NULL DEFAULT 0 COMMENT '운동권 ID (health_tb 참조)',
   `uh_membership` bigint(20) NOT NULL DEFAULT 0 COMMENT '회원 ID (membership_tb 참조)',
   `uh_user` bigint(20) NOT NULL DEFAULT 0 COMMENT '사용자 ID (user_tb 참조) - DEPRECATED: uh_membership 사용 권장',
-  `uh_rocker` bigint(20) NOT NULL DEFAULT 0 COMMENT '락커 ID (rocker_tb 참조)',
+
   `uh_term` bigint(20) NOT NULL DEFAULT 0 COMMENT '기간 ID (term_tb 참조)',
   `uh_discount` bigint(20) NOT NULL DEFAULT 0 COMMENT '할인 ID (discount_tb 참조)',
   `uh_startday` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '시작일',
@@ -694,31 +662,7 @@ CREATE TABLE IF NOT EXISTS inquiry_tb (
     INDEX idx_createddate (iq_createddate)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='문의/상담 테이블';
 
--- 10. 락커 사용 내역 테이블 (rockerusage_tb)
--- 락커 배정 및 사용 내역
-CREATE TABLE IF NOT EXISTS rockerusage_tb (
-    ru_id BIGINT(20) NOT NULL AUTO_INCREMENT COMMENT '사용내역 ID',
-    ru_gym BIGINT(20) NOT NULL DEFAULT 0 COMMENT '헬스장 ID (gym_tb 참조)',
-    ru_rocker BIGINT(20) NOT NULL DEFAULT 0 COMMENT '락커 ID',
-    ru_user BIGINT(20) NOT NULL DEFAULT 0 COMMENT '회원 ID',
-    ru_usehealth BIGINT(20) NOT NULL DEFAULT 0 COMMENT '운동권 사용 ID (usehealth_tb 참조)',
-    ru_startdate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '시작일',
-    ru_enddate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '종료일',
-    ru_status INT(11) NOT NULL DEFAULT 1 COMMENT '상태 (TERMINATED:종료, IN_USE:사용중, OVERDUE:연체)',
-    ru_deposit DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '보증금',
-    ru_monthlyfee DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '월 이용료',
-    ru_note TEXT NOT NULL COMMENT '비고',
-    ru_assignedby BIGINT(20) NOT NULL DEFAULT 0 COMMENT '배정자 ID',
-    ru_assigneddate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '배정일',
-    ru_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '등록일',
-    PRIMARY KEY (ru_id),
-    INDEX idx_gym (ru_gym),
-    INDEX idx_rocker (ru_rocker),
-    INDEX idx_user (ru_user),
-    INDEX idx_usehealth (ru_usehealth),
-    INDEX idx_status (ru_status),
-    INDEX idx_enddate (ru_enddate)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='락커 사용 내역 테이블';
+
 
 -- 11. 푸시 알림 토큰 테이블 (pushtoken_tb)
 -- 모바일 앱 푸시 알림용 디바이스 토큰

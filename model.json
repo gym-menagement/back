@@ -341,46 +341,6 @@
       ]
     },
     {
-      "name": "rockergroup",
-      "join": [
-        {
-          "name": "gym",
-          "column": "gym"
-        }
-      ],
-      "compare": [
-        {
-          "name": "name",
-          "type": "like"
-        }
-      ]
-    },
-    {
-      "name": "rocker",
-      "join": [
-        {
-          "name": "gym",
-          "column": "gym"
-        },
-        {
-          "name": "rockergroup",
-          "column": "group"
-        }
-      ],
-      "map": [
-        {
-          "name": "available",
-          "data": ["", "in_use:사용중", "available:사용가능"]
-        }
-      ],
-      "compare": [
-        {
-          "name": "name",
-          "type": "like"
-        }
-      ]
-    },
-    {
       "name": "usehealth",
       "join": [
         {
@@ -398,10 +358,6 @@
         {
           "name": "user",
           "column": "user"
-        },
-        {
-          "name": "rocker",
-          "column": "rocker"
         },
         {
           "name": "term",
@@ -800,45 +756,6 @@
         },
         {
           "name": "answer",
-          "type": "like"
-        }
-      ]
-    },
-    {
-      "name": "rockerusage",
-      "join": [
-        {
-          "name": "gym",
-          "column": "gym"
-        },
-        {
-          "name": "rocker",
-          "column": "rocker"
-        },
-        {
-          "name": "user",
-          "column": "user",
-          "alias": "memberUser"
-        },
-        {
-          "name": "usehealth",
-          "column": "usehealth"
-        },
-        {
-          "name": "user",
-          "column": "assignedby",
-          "alias": "assignedbyUser"
-        }
-      ],
-      "map": [
-        {
-          "name": "status",
-          "data": ["", "terminated:종료", "in_use:사용중", "overdue:연체"]
-        }
-      ],
-      "compare": [
-        {
-          "name": "note",
           "type": "like"
         }
       ]
