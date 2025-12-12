@@ -6,7 +6,9 @@ const (
     _ Column = iota
     
     ColumnId
-    ColumnMembership
+    ColumnUser
+    ColumnGym
+    ColumnHealth
     ColumnDate
 )
 

@@ -42,13 +42,13 @@ func (c *UsehealthController) Index(page int, pagesize int) {
     if _health != 0 {
         args = append(args, models.Where{Column:"health", Value:_health, Compare:"="})    
     }
+    _membership := c.Geti64("membership")
+    if _membership != 0 {
+        args = append(args, models.Where{Column:"membership", Value:_membership, Compare:"="})    
+    }
     _user := c.Geti64("user")
     if _user != 0 {
         args = append(args, models.Where{Column:"user", Value:_user, Compare:"="})    
-    }
-    _rocker := c.Geti64("rocker")
-    if _rocker != 0 {
-        args = append(args, models.Where{Column:"rocker", Value:_rocker, Compare:"="})    
     }
     _term := c.Geti64("term")
     if _term != 0 {
@@ -81,6 +81,42 @@ func (c *UsehealthController) Index(page int, pagesize int) {
         args = append(args, models.Where{Column:"endday", Value:_startendday, Compare:">="})
     } else if  _endendday != "" {          
         args = append(args, models.Where{Column:"endday", Value:_endendday, Compare:"<="})            
+    }
+    _gym := c.Geti64("gym")
+    if _gym != 0 {
+        args = append(args, models.Where{Column:"gym", Value:_gym, Compare:"="})    
+    }
+    _status := c.Geti("status")
+    if _status != 0 {
+        args = append(args, models.Where{Column:"status", Value:_status, Compare:"="})    
+    }
+    _totalcount := c.Geti("totalcount")
+    if _totalcount != 0 {
+        args = append(args, models.Where{Column:"totalcount", Value:_totalcount, Compare:"="})    
+    }
+    _usedcount := c.Geti("usedcount")
+    if _usedcount != 0 {
+        args = append(args, models.Where{Column:"usedcount", Value:_usedcount, Compare:"="})    
+    }
+    _remainingcount := c.Geti("remainingcount")
+    if _remainingcount != 0 {
+        args = append(args, models.Where{Column:"remainingcount", Value:_remainingcount, Compare:"="})    
+    }
+    _qrcode := c.Get("qrcode")
+    if _qrcode != "" {
+        args = append(args, models.Where{Column:"qrcode", Value:_qrcode, Compare:"like"})
+    }
+    _startlastuseddate := c.Get("startlastuseddate")
+    _endlastuseddate := c.Get("endlastuseddate")
+    if _startlastuseddate != "" && _endlastuseddate != "" {        
+        var v [2]string
+        v[0] = _startlastuseddate
+        v[1] = _endlastuseddate  
+        args = append(args, models.Where{Column:"lastuseddate", Value:v, Compare:"between"})    
+    } else if  _startlastuseddate != "" {          
+        args = append(args, models.Where{Column:"lastuseddate", Value:_startlastuseddate, Compare:">="})
+    } else if  _endlastuseddate != "" {          
+        args = append(args, models.Where{Column:"lastuseddate", Value:_endlastuseddate, Compare:"<="})            
     }
     _startdate := c.Get("startdate")
     _enddate := c.Get("enddate")
@@ -153,13 +189,13 @@ func (c *UsehealthController) Count() {
     if _health != 0 {
         args = append(args, models.Where{Column:"health", Value:_health, Compare:"="})    
     }
+    _membership := c.Geti64("membership")
+    if _membership != 0 {
+        args = append(args, models.Where{Column:"membership", Value:_membership, Compare:"="})    
+    }
     _user := c.Geti64("user")
     if _user != 0 {
         args = append(args, models.Where{Column:"user", Value:_user, Compare:"="})    
-    }
-    _rocker := c.Geti64("rocker")
-    if _rocker != 0 {
-        args = append(args, models.Where{Column:"rocker", Value:_rocker, Compare:"="})    
     }
     _term := c.Geti64("term")
     if _term != 0 {
@@ -194,6 +230,44 @@ func (c *UsehealthController) Count() {
         args = append(args, models.Where{Column:"endday", Value:_startendday, Compare:">="})
     } else if  _endendday != "" {          
         args = append(args, models.Where{Column:"endday", Value:_endendday, Compare:"<="})            
+    }
+    _gym := c.Geti64("gym")
+    if _gym != 0 {
+        args = append(args, models.Where{Column:"gym", Value:_gym, Compare:"="})    
+    }
+    _status := c.Geti("status")
+    if _status != 0 {
+        args = append(args, models.Where{Column:"status", Value:_status, Compare:"="})    
+    }
+    _totalcount := c.Geti("totalcount")
+    if _totalcount != 0 {
+        args = append(args, models.Where{Column:"totalcount", Value:_totalcount, Compare:"="})    
+    }
+    _usedcount := c.Geti("usedcount")
+    if _usedcount != 0 {
+        args = append(args, models.Where{Column:"usedcount", Value:_usedcount, Compare:"="})    
+    }
+    _remainingcount := c.Geti("remainingcount")
+    if _remainingcount != 0 {
+        args = append(args, models.Where{Column:"remainingcount", Value:_remainingcount, Compare:"="})    
+    }
+    _qrcode := c.Get("qrcode")
+    if _qrcode != "" {
+        args = append(args, models.Where{Column:"qrcode", Value:_qrcode, Compare:"like"})
+        
+    }
+    _startlastuseddate := c.Get("startlastuseddate")
+    _endlastuseddate := c.Get("endlastuseddate")
+
+    if _startlastuseddate != "" && _endlastuseddate != "" {        
+        var v [2]string
+        v[0] = _startlastuseddate
+        v[1] = _endlastuseddate  
+        args = append(args, models.Where{Column:"lastuseddate", Value:v, Compare:"between"})    
+    } else if  _startlastuseddate != "" {          
+        args = append(args, models.Where{Column:"lastuseddate", Value:_startlastuseddate, Compare:">="})
+    } else if  _endlastuseddate != "" {          
+        args = append(args, models.Where{Column:"lastuseddate", Value:_endlastuseddate, Compare:"<="})            
     }
     _startdate := c.Get("startdate")
     _enddate := c.Get("enddate")

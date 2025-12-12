@@ -114,7 +114,7 @@ func (p *PaymenttypeManager) GetQuery() string {
 
     var ret strings.Builder
 
-    ret.WriteString("select pt_id, pt_gym, pt_name, pt_date, g_id, g_name, g_date from paymenttype_tb, gym_tb")
+    ret.WriteString("select pt_id, pt_gym, pt_name, pt_date, g_id, g_name, g_address, g_tel, g_user, g_date from paymenttype_tb, gym_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -527,7 +527,7 @@ func (p *PaymenttypeManager) ReadRow(rows *sql.Rows) *Paymenttype {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Gym, &item.Name, &item.Date, &_gym.Id, &_gym.Name, &_gym.Date)
+        err = rows.Scan(&item.Id, &item.Gym, &item.Name, &item.Date, &_gym.Id, &_gym.Name, &_gym.Address, &_gym.Tel, &_gym.User, &_gym.Date)
         
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" || item.Date == "9999-01-01 00:00:00" {
             item.Date = ""
@@ -565,7 +565,7 @@ func (p *PaymenttypeManager) ReadRows(rows *sql.Rows) []Paymenttype {
         var _gym Gym
         
 
-        err := rows.Scan(&item.Id, &item.Gym, &item.Name, &item.Date, &_gym.Id, &_gym.Name, &_gym.Date)
+        err := rows.Scan(&item.Id, &item.Gym, &item.Name, &item.Date, &_gym.Id, &_gym.Name, &_gym.Address, &_gym.Tel, &_gym.User, &_gym.Date)
         if err != nil {
            if p.Log {
              log.Error().Str("error", err.Error()).Msg("SQL")

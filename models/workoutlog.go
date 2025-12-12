@@ -18,6 +18,7 @@ import (
 type Workoutlog struct {
             
     Id                int64 `json:"id"`         
+    Gym                int64 `json:"gym"`         
     User                int64 `json:"user"`         
     Attendance                int64 `json:"attendance"`         
     Health                int64 `json:"health"`         
@@ -122,7 +123,7 @@ func (p *WorkoutlogManager) GetQuery() string {
 
     var ret strings.Builder
 
-    ret.WriteString("select wl_id, wl_user, wl_attendance, wl_health, wl_exercisename, wl_sets, wl_reps, wl_weight, wl_duration, wl_calories, wl_note, wl_date, u_id, u_loginid, u_passwd, u_email, u_name, u_tel, u_address, u_image, u_sex, u_birth, u_type, u_connectid, u_level, u_role, u_use, u_logindate, u_lastchangepasswddate, u_date, at_id, at_user, at_membership, at_gym, at_type, at_method, at_checkintime, at_checkouttime, at_duration, at_status, at_note, at_ip, at_device, at_createdby, at_date, h_id, h_category, h_term, h_name, h_count, h_cost, h_discount, h_costdiscount, h_content, h_date from workoutlog_tb, user_tb, attendance_tb, health_tb")
+    ret.WriteString("select wl_id, wl_gym, wl_user, wl_attendance, wl_health, wl_exercisename, wl_sets, wl_reps, wl_weight, wl_duration, wl_calories, wl_note, wl_date, g_id, g_name, g_address, g_tel, g_user, g_date, u_id, u_loginid, u_passwd, u_email, u_name, u_tel, u_address, u_image, u_sex, u_birth, u_type, u_connectid, u_level, u_role, u_use, u_logindate, u_lastchangepasswddate, u_date, at_id, at_user, at_usehealth, at_gym, at_type, at_method, at_checkintime, at_checkouttime, at_duration, at_status, at_note, at_ip, at_device, at_createdby, at_date, h_id, h_category, h_term, h_name, h_count, h_cost, h_discount, h_costdiscount, h_content, h_gym, h_date from workoutlog_tb, gym_tb, user_tb, attendance_tb, health_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -136,6 +137,8 @@ func (p *WorkoutlogManager) GetQuery() string {
     }
 
     ret.WriteString(" where 1=1 ")
+    
+    ret.WriteString("and wl_gym = g_id ")
     
     ret.WriteString("and wl_user = u_id ")
     
@@ -169,6 +172,8 @@ func (p *WorkoutlogManager) GetQuerySelect() string {
 
     ret.WriteString(" where 1=1 ")
     
+    ret.WriteString("and wl_gym = g_id ")
+    
     ret.WriteString("and wl_user = u_id ")
     
     ret.WriteString("and wl_attendance = at_id ")
@@ -196,6 +201,8 @@ func (p *WorkoutlogManager) GetQueryGroup(name string) string {
     }
 
     ret.WriteString(" where 1=1 ")
+    
+    ret.WriteString("and wl_gym = g_id ")
     
     ret.WriteString("and wl_user = u_id ")
     
@@ -245,11 +252,11 @@ func (p *WorkoutlogManager) Insert(item *Workoutlog) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into workoutlog_tb (wl_id, wl_user, wl_attendance, wl_health, wl_exercisename, wl_sets, wl_reps, wl_weight, wl_duration, wl_calories, wl_note, wl_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query, item.Id, item.User, item.Attendance, item.Health, item.Exercisename, item.Sets, item.Reps, item.Weight, item.Duration, item.Calories, item.Note, item.Date)
+        query = "insert into workoutlog_tb (wl_id, wl_gym, wl_user, wl_attendance, wl_health, wl_exercisename, wl_sets, wl_reps, wl_weight, wl_duration, wl_calories, wl_note, wl_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query, item.Id, item.Gym, item.User, item.Attendance, item.Health, item.Exercisename, item.Sets, item.Reps, item.Weight, item.Duration, item.Calories, item.Note, item.Date)
     } else {
-        query = "insert into workoutlog_tb (wl_user, wl_attendance, wl_health, wl_exercisename, wl_sets, wl_reps, wl_weight, wl_duration, wl_calories, wl_note, wl_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query, item.User, item.Attendance, item.Health, item.Exercisename, item.Sets, item.Reps, item.Weight, item.Duration, item.Calories, item.Note, item.Date)
+        query = "insert into workoutlog_tb (wl_gym, wl_user, wl_attendance, wl_health, wl_exercisename, wl_sets, wl_reps, wl_weight, wl_duration, wl_calories, wl_note, wl_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query, item.Gym, item.User, item.Attendance, item.Health, item.Exercisename, item.Sets, item.Reps, item.Weight, item.Duration, item.Calories, item.Note, item.Date)
     }
     
     if err == nil {
@@ -400,8 +407,8 @@ func (p *WorkoutlogManager) Update(item *Workoutlog) error {
     }
 	
 
-	query := "update workoutlog_tb set wl_user = ?, wl_attendance = ?, wl_health = ?, wl_exercisename = ?, wl_sets = ?, wl_reps = ?, wl_weight = ?, wl_duration = ?, wl_calories = ?, wl_note = ?, wl_date = ? where wl_id = ?"
-	_, err := p.Exec(query, item.User, item.Attendance, item.Health, item.Exercisename, item.Sets, item.Reps, item.Weight, item.Duration, item.Calories, item.Note, item.Date, item.Id)
+	query := "update workoutlog_tb set wl_gym = ?, wl_user = ?, wl_attendance = ?, wl_health = ?, wl_exercisename = ?, wl_sets = ?, wl_reps = ?, wl_weight = ?, wl_duration = ?, wl_calories = ?, wl_note = ?, wl_date = ? where wl_id = ?"
+	_, err := p.Exec(query, item.Gym, item.User, item.Attendance, item.Health, item.Exercisename, item.Sets, item.Reps, item.Weight, item.Duration, item.Calories, item.Note, item.Date, item.Id)
 
     if err != nil {
         if p.Log {
@@ -429,6 +436,9 @@ func (p *WorkoutlogManager) UpdateWhere(columns []workoutlog.Params, args []inte
 
         if v.Column == workoutlog.ColumnId {
         initQuery.WriteString("wl_id = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == workoutlog.ColumnGym {
+        initQuery.WriteString("wl_gym = ?")
         initParams = append(initParams, v.Value)
         } else if v.Column == workoutlog.ColumnUser {
         initQuery.WriteString("wl_user = ?")
@@ -485,6 +495,23 @@ func (p *WorkoutlogManager) UpdateWhere(columns []workoutlog.Params, args []inte
 
 /*
 
+
+func (p *WorkoutlogManager) UpdateGym(value int64, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update workoutlog_tb set wl_gym = ? where wl_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
 
 func (p *WorkoutlogManager) UpdateUser(value int64, id int64) error {
     if !p.Conn.IsConnect() {
@@ -703,13 +730,14 @@ func (p *WorkoutlogManager) ReadRow(rows *sql.Rows) *Workoutlog {
     var item Workoutlog
     var err error
 
+    var _gym Gym
     var _user User
     var _attendance Attendance
     var _health Health
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.User, &item.Attendance, &item.Health, &item.Exercisename, &item.Sets, &item.Reps, &item.Weight, &item.Duration, &item.Calories, &item.Note, &item.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Email, &_user.Name, &_user.Tel, &_user.Address, &_user.Image, &_user.Sex, &_user.Birth, &_user.Type, &_user.Connectid, &_user.Level, &_user.Role, &_user.Use, &_user.Logindate, &_user.Lastchangepasswddate, &_user.Date, &_attendance.Id, &_attendance.User, &_attendance.Membership, &_attendance.Gym, &_attendance.Type, &_attendance.Method, &_attendance.Checkintime, &_attendance.Checkouttime, &_attendance.Duration, &_attendance.Status, &_attendance.Note, &_attendance.Ip, &_attendance.Device, &_attendance.Createdby, &_attendance.Date, &_health.Id, &_health.Category, &_health.Term, &_health.Name, &_health.Count, &_health.Cost, &_health.Discount, &_health.Costdiscount, &_health.Content, &_health.Date)
+        err = rows.Scan(&item.Id, &item.Gym, &item.User, &item.Attendance, &item.Health, &item.Exercisename, &item.Sets, &item.Reps, &item.Weight, &item.Duration, &item.Calories, &item.Note, &item.Date, &_gym.Id, &_gym.Name, &_gym.Address, &_gym.Tel, &_gym.User, &_gym.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Email, &_user.Name, &_user.Tel, &_user.Address, &_user.Image, &_user.Sex, &_user.Birth, &_user.Type, &_user.Connectid, &_user.Level, &_user.Role, &_user.Use, &_user.Logindate, &_user.Lastchangepasswddate, &_user.Date, &_attendance.Id, &_attendance.User, &_attendance.Usehealth, &_attendance.Gym, &_attendance.Type, &_attendance.Method, &_attendance.Checkintime, &_attendance.Checkouttime, &_attendance.Duration, &_attendance.Status, &_attendance.Note, &_attendance.Ip, &_attendance.Device, &_attendance.Createdby, &_attendance.Date, &_health.Id, &_health.Category, &_health.Term, &_health.Name, &_health.Count, &_health.Cost, &_health.Discount, &_health.Costdiscount, &_health.Content, &_health.Gym, &_health.Date)
         
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" || item.Date == "9999-01-01 00:00:00" {
             item.Date = ""
@@ -732,7 +760,9 @@ func (p *WorkoutlogManager) ReadRow(rows *sql.Rows) *Workoutlog {
     } else {
 
         item.InitExtra()
-        _user.InitExtra()
+        _gym.InitExtra()
+        item.AddExtra("gym",  _gym)
+_user.InitExtra()
         item.AddExtra("user",  _user)
 _attendance.InitExtra()
         item.AddExtra("attendance",  _attendance)
@@ -748,12 +778,13 @@ func (p *WorkoutlogManager) ReadRows(rows *sql.Rows) []Workoutlog {
 
     for rows.Next() {
         var item Workoutlog
+        var _gym Gym
         var _user User
         var _attendance Attendance
         var _health Health
         
 
-        err := rows.Scan(&item.Id, &item.User, &item.Attendance, &item.Health, &item.Exercisename, &item.Sets, &item.Reps, &item.Weight, &item.Duration, &item.Calories, &item.Note, &item.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Email, &_user.Name, &_user.Tel, &_user.Address, &_user.Image, &_user.Sex, &_user.Birth, &_user.Type, &_user.Connectid, &_user.Level, &_user.Role, &_user.Use, &_user.Logindate, &_user.Lastchangepasswddate, &_user.Date, &_attendance.Id, &_attendance.User, &_attendance.Membership, &_attendance.Gym, &_attendance.Type, &_attendance.Method, &_attendance.Checkintime, &_attendance.Checkouttime, &_attendance.Duration, &_attendance.Status, &_attendance.Note, &_attendance.Ip, &_attendance.Device, &_attendance.Createdby, &_attendance.Date, &_health.Id, &_health.Category, &_health.Term, &_health.Name, &_health.Count, &_health.Cost, &_health.Discount, &_health.Costdiscount, &_health.Content, &_health.Date)
+        err := rows.Scan(&item.Id, &item.Gym, &item.User, &item.Attendance, &item.Health, &item.Exercisename, &item.Sets, &item.Reps, &item.Weight, &item.Duration, &item.Calories, &item.Note, &item.Date, &_gym.Id, &_gym.Name, &_gym.Address, &_gym.Tel, &_gym.User, &_gym.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Email, &_user.Name, &_user.Tel, &_user.Address, &_user.Image, &_user.Sex, &_user.Birth, &_user.Type, &_user.Connectid, &_user.Level, &_user.Role, &_user.Use, &_user.Logindate, &_user.Lastchangepasswddate, &_user.Date, &_attendance.Id, &_attendance.User, &_attendance.Usehealth, &_attendance.Gym, &_attendance.Type, &_attendance.Method, &_attendance.Checkintime, &_attendance.Checkouttime, &_attendance.Duration, &_attendance.Status, &_attendance.Note, &_attendance.Ip, &_attendance.Device, &_attendance.Createdby, &_attendance.Date, &_health.Id, &_health.Category, &_health.Term, &_health.Name, &_health.Count, &_health.Cost, &_health.Discount, &_health.Costdiscount, &_health.Content, &_health.Gym, &_health.Date)
         if err != nil {
            if p.Log {
              log.Error().Str("error", err.Error()).Msg("SQL")
@@ -772,7 +803,9 @@ func (p *WorkoutlogManager) ReadRows(rows *sql.Rows) []Workoutlog {
 		
 
         item.InitExtra()
-        _user.InitExtra()
+        _gym.InitExtra()
+        item.AddExtra("gym",  _gym)
+_user.InitExtra()
         item.AddExtra("user",  _user)
 _attendance.InitExtra()
         item.AddExtra("attendance",  _attendance)
@@ -795,6 +828,8 @@ func (p *WorkoutlogManager) Get(id int64) *Workoutlog {
     query.WriteString(p.GetQuery())
     query.WriteString(" and wl_id = ?")
 
+    
+    query.WriteString(" and wl_gym = g_id")
     
     query.WriteString(" and wl_user = u_id")
     

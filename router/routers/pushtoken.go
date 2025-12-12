@@ -17,6 +17,41 @@ import (
 // SetupPushtokenRoutes sets up routes for pushtoken domain
 func SetupPushtokenRoutes(group fiber.Router) {
 
+	group.Post("/pushtoken/count", func(c *fiber.Ctx) error {
+
+		var controller rest.PushtokenController
+		controller.Init(c)
+		controller.Count()
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Post("/pushtoken", func(c *fiber.Ctx) error {
+			item_ := &models.Pushtoken{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.PushtokenController
+		controller.Init(c)
+		controller.Insert(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Post("/pushtoken/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Pushtoken{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.PushtokenController
+		controller.Init(c)
+		controller.Insertbatch(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
 	group.Put("/pushtoken", func(c *fiber.Ctx) error {
 			item_ := &models.Pushtoken{}
 			err := c.BodyParser(item_)
@@ -71,41 +106,6 @@ func SetupPushtokenRoutes(group fiber.Router) {
 		var controller rest.PushtokenController
 		controller.Init(c)
 		controller.Index(page_, pagesize_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Post("/pushtoken/count", func(c *fiber.Ctx) error {
-
-		var controller rest.PushtokenController
-		controller.Init(c)
-		controller.Count()
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Post("/pushtoken", func(c *fiber.Ctx) error {
-			item_ := &models.Pushtoken{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.PushtokenController
-		controller.Init(c)
-		controller.Insert(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Post("/pushtoken/batch", func(c *fiber.Ctx) error {
-			item_ := &[]models.Pushtoken{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.PushtokenController
-		controller.Init(c)
-		controller.Insertbatch(item_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

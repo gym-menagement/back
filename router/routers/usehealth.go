@@ -17,6 +17,16 @@ import (
 // SetupUsehealthRoutes sets up routes for usehealth domain
 func SetupUsehealthRoutes(group fiber.Router) {
 
+	group.Get("/usehealth", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+		var controller rest.UsehealthController
+		controller.Init(c)
+		controller.Index(page_, pagesize_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
 	group.Post("/usehealth/count", func(c *fiber.Ctx) error {
 
 		var controller rest.UsehealthController
@@ -96,16 +106,6 @@ func SetupUsehealthRoutes(group fiber.Router) {
 		var controller rest.UsehealthController
 		controller.Init(c)
 		controller.Read(id_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Get("/usehealth", func(c *fiber.Ctx) error {
-			page_, _ := strconv.Atoi(c.Query("page"))
-			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
-		var controller rest.UsehealthController
-		controller.Init(c)
-		controller.Index(page_, pagesize_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

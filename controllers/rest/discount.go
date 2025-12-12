@@ -34,6 +34,10 @@ func (c *DiscountController) Index(page int, pagesize int) {
 
     var args []interface{}
     
+    _gym := c.Geti64("gym")
+    if _gym != 0 {
+        args = append(args, models.Where{Column:"gym", Value:_gym, Compare:"="})    
+    }
     _name := c.Get("name")
     if _name != "" {
         args = append(args, models.Where{Column:"name", Value:_name, Compare:"like"})
@@ -106,6 +110,10 @@ func (c *DiscountController) Count() {
 
     var args []interface{}
     
+    _gym := c.Geti64("gym")
+    if _gym != 0 {
+        args = append(args, models.Where{Column:"gym", Value:_gym, Compare:"="})    
+    }
     _name := c.Get("name")
     if _name != "" {
         args = append(args, models.Where{Column:"name", Value:_name, Compare:"like"})

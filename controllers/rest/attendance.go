@@ -38,9 +38,9 @@ func (c *AttendanceController) Index(page int, pagesize int) {
     if _user != 0 {
         args = append(args, models.Where{Column:"user", Value:_user, Compare:"="})    
     }
-    _membership := c.Geti64("membership")
-    if _membership != 0 {
-        args = append(args, models.Where{Column:"membership", Value:_membership, Compare:"="})    
+    _usehealth := c.Geti64("usehealth")
+    if _usehealth != 0 {
+        args = append(args, models.Where{Column:"usehealth", Value:_usehealth, Compare:"="})    
     }
     _gym := c.Geti64("gym")
     if _gym != 0 {
@@ -169,9 +169,9 @@ func (c *AttendanceController) Count() {
     if _user != 0 {
         args = append(args, models.Where{Column:"user", Value:_user, Compare:"="})    
     }
-    _membership := c.Geti64("membership")
-    if _membership != 0 {
-        args = append(args, models.Where{Column:"membership", Value:_membership, Compare:"="})    
+    _usehealth := c.Geti64("usehealth")
+    if _usehealth != 0 {
+        args = append(args, models.Where{Column:"usehealth", Value:_usehealth, Compare:"="})    
     }
     _gym := c.Geti64("gym")
     if _gym != 0 {

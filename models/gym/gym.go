@@ -7,6 +7,9 @@ const (
     
     ColumnId
     ColumnName
+    ColumnAddress
+    ColumnTel
+    ColumnUser
     ColumnDate
 )
 

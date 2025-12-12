@@ -17,41 +17,6 @@ import (
 // SetupLoginlogRoutes sets up routes for loginlog domain
 func SetupLoginlogRoutes(group fiber.Router) {
 
-	group.Post("/loginlog/count", func(c *fiber.Ctx) error {
-
-		var controller rest.LoginlogController
-		controller.Init(c)
-		controller.Count()
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Post("/loginlog", func(c *fiber.Ctx) error {
-			item_ := &models.Loginlog{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.LoginlogController
-		controller.Init(c)
-		controller.Insert(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Post("/loginlog/batch", func(c *fiber.Ctx) error {
-			item_ := &[]models.Loginlog{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.LoginlogController
-		controller.Init(c)
-		controller.Insertbatch(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
 	group.Put("/loginlog", func(c *fiber.Ctx) error {
 			item_ := &models.Loginlog{}
 			err := c.BodyParser(item_)
@@ -106,6 +71,41 @@ func SetupLoginlogRoutes(group fiber.Router) {
 		var controller rest.LoginlogController
 		controller.Init(c)
 		controller.Index(page_, pagesize_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Post("/loginlog/count", func(c *fiber.Ctx) error {
+
+		var controller rest.LoginlogController
+		controller.Init(c)
+		controller.Count()
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Post("/loginlog", func(c *fiber.Ctx) error {
+			item_ := &models.Loginlog{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.LoginlogController
+		controller.Init(c)
+		controller.Insert(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Post("/loginlog/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Loginlog{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.LoginlogController
+		controller.Init(c)
+		controller.Insertbatch(item_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

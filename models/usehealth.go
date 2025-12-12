@@ -20,12 +20,19 @@ type Usehealth struct {
     Id                int64 `json:"id"`         
     Order                int64 `json:"order"`         
     Health                int64 `json:"health"`         
+    Membership                int64 `json:"membership"`         
     User                int64 `json:"user"`         
-    Rocker                int64 `json:"rocker"`         
     Term                int64 `json:"term"`         
     Discount                int64 `json:"discount"`         
     Startday                string `json:"startday"`         
     Endday                string `json:"endday"`         
+    Gym                int64 `json:"gym"`         
+    Status                usehealth.Status `json:"status"`         
+    Totalcount                int `json:"totalcount"`         
+    Usedcount                int `json:"usedcount"`         
+    Remainingcount                int `json:"remainingcount"`         
+    Qrcode                string `json:"qrcode"`         
+    Lastuseddate                string `json:"lastuseddate"`         
     Date                string `json:"date"` 
     
     Extra                    map[string]interface{} `json:"extra"`
@@ -120,7 +127,7 @@ func (p *UsehealthManager) GetQuery() string {
 
     var ret strings.Builder
 
-    ret.WriteString("select uh_id, uh_order, uh_health, uh_user, uh_rocker, uh_term, uh_discount, uh_startday, uh_endday, uh_date, o_id, o_membership, o_date, h_id, h_category, h_term, h_name, h_count, h_cost, h_discount, h_costdiscount, h_content, h_date, u_id, u_loginid, u_passwd, u_email, u_name, u_tel, u_address, u_image, u_sex, u_birth, u_type, u_connectid, u_level, u_role, u_use, u_logindate, u_lastchangepasswddate, u_date, r_id, r_group, r_name, r_available, r_date, t_id, t_gym, t_daytype, t_name, t_term, t_date, d_id, d_name, d_discount, d_date from usehealth_tb, order_tb, health_tb, user_tb, rocker_tb, term_tb, discount_tb")
+    ret.WriteString("select uh_id, uh_order, uh_health, uh_membership, uh_user, uh_term, uh_discount, uh_startday, uh_endday, uh_gym, uh_status, uh_totalcount, uh_usedcount, uh_remainingcount, uh_qrcode, uh_lastuseddate, uh_date, o_id, o_user, o_gym, o_health, o_date, h_id, h_category, h_term, h_name, h_count, h_cost, h_discount, h_costdiscount, h_content, h_gym, h_date, m_id, m_user, m_gym, m_date, u_id, u_loginid, u_passwd, u_email, u_name, u_tel, u_address, u_image, u_sex, u_birth, u_type, u_connectid, u_level, u_role, u_use, u_logindate, u_lastchangepasswddate, u_date, t_id, t_gym, t_daytype, t_name, t_term, t_date, d_id, d_gym, d_name, d_discount, d_date, g_id, g_name, g_address, g_tel, g_user, g_date from usehealth_tb, order_tb, health_tb, membership_tb, user_tb, rocker_tb, term_tb, discount_tb, gym_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -139,13 +146,17 @@ func (p *UsehealthManager) GetQuery() string {
     
     ret.WriteString("and uh_health = h_id ")
     
+    ret.WriteString("and uh_membership = m_id ")
+    
     ret.WriteString("and uh_user = u_id ")
     
-    ret.WriteString("and uh_rocker = r_id ")
+    ret.WriteString("and uh_rocker = _id ")
     
     ret.WriteString("and uh_term = t_id ")
     
     ret.WriteString("and uh_discount = d_id ")
+    
+    ret.WriteString("and uh_gym = g_id ")
     
 
     return ret.String()
@@ -177,13 +188,17 @@ func (p *UsehealthManager) GetQuerySelect() string {
     
     ret.WriteString("and uh_health = h_id ")
     
+    ret.WriteString("and uh_membership = m_id ")
+    
     ret.WriteString("and uh_user = u_id ")
     
-    ret.WriteString("and uh_rocker = r_id ")
+    ret.WriteString("and uh_rocker = _id ")
     
     ret.WriteString("and uh_term = t_id ")
     
     ret.WriteString("and uh_discount = d_id ")
+    
+    ret.WriteString("and uh_gym = g_id ")
     
 
     return ret.String()
@@ -211,13 +226,17 @@ func (p *UsehealthManager) GetQueryGroup(name string) string {
     
     ret.WriteString("and uh_health = h_id ")
     
+    ret.WriteString("and uh_membership = m_id ")
+    
     ret.WriteString("and uh_user = u_id ")
     
-    ret.WriteString("and uh_rocker = r_id ")
+    ret.WriteString("and uh_rocker = _id ")
     
     ret.WriteString("and uh_term = t_id ")
     
     ret.WriteString("and uh_discount = d_id ")
+    
+    ret.WriteString("and uh_gym = g_id ")
     
 
     return ret.String()
@@ -260,6 +279,10 @@ func (p *UsehealthManager) Insert(item *Usehealth) error {
        item.Endday = "1000-01-01 00:00:00"
     }
 	
+    if item.Lastuseddate == "" {
+       item.Lastuseddate = "1000-01-01 00:00:00"
+    }
+	
     if item.Date == "" {
        item.Date = "1000-01-01 00:00:00"
     }
@@ -269,11 +292,11 @@ func (p *UsehealthManager) Insert(item *Usehealth) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into usehealth_tb (uh_id, uh_order, uh_health, uh_user, uh_rocker, uh_term, uh_discount, uh_startday, uh_endday, uh_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query, item.Id, item.Order, item.Health, item.User, item.Rocker, item.Term, item.Discount, item.Startday, item.Endday, item.Date)
+        query = "insert into usehealth_tb (uh_id, uh_order, uh_health, uh_membership, uh_user, uh_term, uh_discount, uh_startday, uh_endday, uh_gym, uh_status, uh_totalcount, uh_usedcount, uh_remainingcount, uh_qrcode, uh_lastuseddate, uh_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query, item.Id, item.Order, item.Health, item.Membership, item.User, item.Term, item.Discount, item.Startday, item.Endday, item.Gym, item.Status, item.Totalcount, item.Usedcount, item.Remainingcount, item.Qrcode, item.Lastuseddate, item.Date)
     } else {
-        query = "insert into usehealth_tb (uh_order, uh_health, uh_user, uh_rocker, uh_term, uh_discount, uh_startday, uh_endday, uh_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query, item.Order, item.Health, item.User, item.Rocker, item.Term, item.Discount, item.Startday, item.Endday, item.Date)
+        query = "insert into usehealth_tb (uh_order, uh_health, uh_membership, uh_user, uh_term, uh_discount, uh_startday, uh_endday, uh_gym, uh_status, uh_totalcount, uh_usedcount, uh_remainingcount, uh_qrcode, uh_lastuseddate, uh_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query, item.Order, item.Health, item.Membership, item.User, item.Term, item.Discount, item.Startday, item.Endday, item.Gym, item.Status, item.Totalcount, item.Usedcount, item.Remainingcount, item.Qrcode, item.Lastuseddate, item.Date)
     }
     
     if err == nil {
@@ -427,13 +450,17 @@ func (p *UsehealthManager) Update(item *Usehealth) error {
        item.Endday = "1000-01-01 00:00:00"
     }
 	
+    if item.Lastuseddate == "" {
+       item.Lastuseddate = "1000-01-01 00:00:00"
+    }
+	
     if item.Date == "" {
        item.Date = "1000-01-01 00:00:00"
     }
 	
 
-	query := "update usehealth_tb set uh_order = ?, uh_health = ?, uh_user = ?, uh_rocker = ?, uh_term = ?, uh_discount = ?, uh_startday = ?, uh_endday = ?, uh_date = ? where uh_id = ?"
-	_, err := p.Exec(query, item.Order, item.Health, item.User, item.Rocker, item.Term, item.Discount, item.Startday, item.Endday, item.Date, item.Id)
+	query := "update usehealth_tb set uh_order = ?, uh_health = ?, uh_membership = ?, uh_user = ?, uh_term = ?, uh_discount = ?, uh_startday = ?, uh_endday = ?, uh_gym = ?, uh_status = ?, uh_totalcount = ?, uh_usedcount = ?, uh_remainingcount = ?, uh_qrcode = ?, uh_lastuseddate = ?, uh_date = ? where uh_id = ?"
+	_, err := p.Exec(query, item.Order, item.Health, item.Membership, item.User, item.Term, item.Discount, item.Startday, item.Endday, item.Gym, item.Status, item.Totalcount, item.Usedcount, item.Remainingcount, item.Qrcode, item.Lastuseddate, item.Date, item.Id)
 
     if err != nil {
         if p.Log {
@@ -468,11 +495,11 @@ func (p *UsehealthManager) UpdateWhere(columns []usehealth.Params, args []interf
         } else if v.Column == usehealth.ColumnHealth {
         initQuery.WriteString("uh_health = ?")
         initParams = append(initParams, v.Value)
+        } else if v.Column == usehealth.ColumnMembership {
+        initQuery.WriteString("uh_membership = ?")
+        initParams = append(initParams, v.Value)
         } else if v.Column == usehealth.ColumnUser {
         initQuery.WriteString("uh_user = ?")
-        initParams = append(initParams, v.Value)
-        } else if v.Column == usehealth.ColumnRocker {
-        initQuery.WriteString("uh_rocker = ?")
         initParams = append(initParams, v.Value)
         } else if v.Column == usehealth.ColumnTerm {
         initQuery.WriteString("uh_term = ?")
@@ -485,6 +512,27 @@ func (p *UsehealthManager) UpdateWhere(columns []usehealth.Params, args []interf
         initParams = append(initParams, v.Value)
         } else if v.Column == usehealth.ColumnEndday {
         initQuery.WriteString("uh_endday = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == usehealth.ColumnGym {
+        initQuery.WriteString("uh_gym = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == usehealth.ColumnStatus {
+        initQuery.WriteString("uh_status = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == usehealth.ColumnTotalcount {
+        initQuery.WriteString("uh_totalcount = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == usehealth.ColumnUsedcount {
+        initQuery.WriteString("uh_usedcount = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == usehealth.ColumnRemainingcount {
+        initQuery.WriteString("uh_remainingcount = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == usehealth.ColumnQrcode {
+        initQuery.WriteString("uh_qrcode = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == usehealth.ColumnLastuseddate {
+        initQuery.WriteString("uh_lastuseddate = ?")
         initParams = append(initParams, v.Value)
         } else if v.Column == usehealth.ColumnDate {
         initQuery.WriteString("uh_date = ?")
@@ -546,12 +594,12 @@ func (p *UsehealthManager) UpdateHealth(value int64, id int64) error {
     return err
 }
 
-func (p *UsehealthManager) UpdateUser(value int64, id int64) error {
+func (p *UsehealthManager) UpdateMembership(value int64, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
 
-	query := "update usehealth_tb set uh_user = ? where uh_id = ?"
+	query := "update usehealth_tb set uh_membership = ? where uh_id = ?"
 	_, err := p.Exec(query, value, id)
 
     if err != nil {
@@ -563,12 +611,12 @@ func (p *UsehealthManager) UpdateUser(value int64, id int64) error {
     return err
 }
 
-func (p *UsehealthManager) UpdateRocker(value int64, id int64) error {
+func (p *UsehealthManager) UpdateUser(value int64, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
 
-	query := "update usehealth_tb set uh_rocker = ? where uh_id = ?"
+	query := "update usehealth_tb set uh_user = ? where uh_id = ?"
 	_, err := p.Exec(query, value, id)
 
     if err != nil {
@@ -648,6 +696,125 @@ func (p *UsehealthManager) UpdateEndday(value string, id int64) error {
     return err
 }
 
+func (p *UsehealthManager) UpdateGym(value int64, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update usehealth_tb set uh_gym = ? where uh_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *UsehealthManager) UpdateStatus(value usehealth.Status, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update usehealth_tb set uh_status = ? where uh_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *UsehealthManager) UpdateTotalcount(value int, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update usehealth_tb set uh_totalcount = ? where uh_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *UsehealthManager) UpdateUsedcount(value int, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update usehealth_tb set uh_usedcount = ? where uh_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *UsehealthManager) UpdateRemainingcount(value int, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update usehealth_tb set uh_remainingcount = ? where uh_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *UsehealthManager) UpdateQrcode(value string, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update usehealth_tb set uh_qrcode = ? where uh_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *UsehealthManager) UpdateLastuseddate(value string, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update usehealth_tb set uh_lastuseddate = ? where uh_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
 func (p *UsehealthManager) UpdateDate(value string, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
@@ -687,6 +854,7 @@ func (p *UsehealthManager) GetIdentity() int64 {
 
 func (p *Usehealth) InitExtra() {
     p.Extra = map[string]interface{}{
+            "status":     usehealth.GetStatus(p.Status),
 
     }
 }
@@ -697,14 +865,16 @@ func (p *UsehealthManager) ReadRow(rows *sql.Rows) *Usehealth {
 
     var _order Order
     var _health Health
+    var _membership Membership
     var _user User
     var _rocker Rocker
     var _term Term
     var _discount Discount
+    var _gym Gym
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Order, &item.Health, &item.User, &item.Rocker, &item.Term, &item.Discount, &item.Startday, &item.Endday, &item.Date, &_order.Id, &_order.Membership, &_order.Date, &_health.Id, &_health.Category, &_health.Term, &_health.Name, &_health.Count, &_health.Cost, &_health.Discount, &_health.Costdiscount, &_health.Content, &_health.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Email, &_user.Name, &_user.Tel, &_user.Address, &_user.Image, &_user.Sex, &_user.Birth, &_user.Type, &_user.Connectid, &_user.Level, &_user.Role, &_user.Use, &_user.Logindate, &_user.Lastchangepasswddate, &_user.Date, &_rocker.Id, &_rocker.Group, &_rocker.Name, &_rocker.Available, &_rocker.Date, &_term.Id, &_term.Gym, &_term.Daytype, &_term.Name, &_term.Term, &_term.Date, &_discount.Id, &_discount.Name, &_discount.Discount, &_discount.Date)
+        err = rows.Scan(&item.Id, &item.Order, &item.Health, &item.Membership, &item.User, &item.Term, &item.Discount, &item.Startday, &item.Endday, &item.Gym, &item.Status, &item.Totalcount, &item.Usedcount, &item.Remainingcount, &item.Qrcode, &item.Lastuseddate, &item.Date, &_order.Id, &_order.User, &_order.Gym, &_order.Health, &_order.Date, &_health.Id, &_health.Category, &_health.Term, &_health.Name, &_health.Count, &_health.Cost, &_health.Discount, &_health.Costdiscount, &_health.Content, &_health.Gym, &_health.Date, &_membership.Id, &_membership.User, &_membership.Gym, &_membership.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Email, &_user.Name, &_user.Tel, &_user.Address, &_user.Image, &_user.Sex, &_user.Birth, &_user.Type, &_user.Connectid, &_user.Level, &_user.Role, &_user.Use, &_user.Logindate, &_user.Lastchangepasswddate, &_user.Date, &_term.Id, &_term.Gym, &_term.Daytype, &_term.Name, &_term.Term, &_term.Date, &_discount.Id, &_discount.Gym, &_discount.Name, &_discount.Discount, &_discount.Date, &_gym.Id, &_gym.Name, &_gym.Address, &_gym.Tel, &_gym.User, &_gym.Date)
         
         if item.Startday == "0000-00-00 00:00:00" || item.Startday == "1000-01-01 00:00:00" || item.Startday == "9999-01-01 00:00:00" {
             item.Startday = ""
@@ -720,6 +890,14 @@ func (p *UsehealthManager) ReadRow(rows *sql.Rows) *Usehealth {
 
         if config.Database.Type == config.Postgresql {
             item.Endday = strings.ReplaceAll(strings.ReplaceAll(item.Endday, "T", " "), "Z", "")
+        }
+		
+        if item.Lastuseddate == "0000-00-00 00:00:00" || item.Lastuseddate == "1000-01-01 00:00:00" || item.Lastuseddate == "9999-01-01 00:00:00" {
+            item.Lastuseddate = ""
+        }
+
+        if config.Database.Type == config.Postgresql {
+            item.Lastuseddate = strings.ReplaceAll(strings.ReplaceAll(item.Lastuseddate, "T", " "), "Z", "")
         }
 		
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" || item.Date == "9999-01-01 00:00:00" {
@@ -747,6 +925,8 @@ func (p *UsehealthManager) ReadRow(rows *sql.Rows) *Usehealth {
         item.AddExtra("order",  _order)
 _health.InitExtra()
         item.AddExtra("health",  _health)
+_membership.InitExtra()
+        item.AddExtra("membership",  _membership)
 _user.InitExtra()
         item.AddExtra("user",  _user)
 _rocker.InitExtra()
@@ -755,6 +935,8 @@ _term.InitExtra()
         item.AddExtra("term",  _term)
 _discount.InitExtra()
         item.AddExtra("discount",  _discount)
+_gym.InitExtra()
+        item.AddExtra("gym",  _gym)
 
         return &item
     }
@@ -767,13 +949,15 @@ func (p *UsehealthManager) ReadRows(rows *sql.Rows) []Usehealth {
         var item Usehealth
         var _order Order
         var _health Health
+        var _membership Membership
         var _user User
         var _rocker Rocker
         var _term Term
         var _discount Discount
+        var _gym Gym
         
 
-        err := rows.Scan(&item.Id, &item.Order, &item.Health, &item.User, &item.Rocker, &item.Term, &item.Discount, &item.Startday, &item.Endday, &item.Date, &_order.Id, &_order.Membership, &_order.Date, &_health.Id, &_health.Category, &_health.Term, &_health.Name, &_health.Count, &_health.Cost, &_health.Discount, &_health.Costdiscount, &_health.Content, &_health.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Email, &_user.Name, &_user.Tel, &_user.Address, &_user.Image, &_user.Sex, &_user.Birth, &_user.Type, &_user.Connectid, &_user.Level, &_user.Role, &_user.Use, &_user.Logindate, &_user.Lastchangepasswddate, &_user.Date, &_rocker.Id, &_rocker.Group, &_rocker.Name, &_rocker.Available, &_rocker.Date, &_term.Id, &_term.Gym, &_term.Daytype, &_term.Name, &_term.Term, &_term.Date, &_discount.Id, &_discount.Name, &_discount.Discount, &_discount.Date)
+        err := rows.Scan(&item.Id, &item.Order, &item.Health, &item.Membership, &item.User, &item.Term, &item.Discount, &item.Startday, &item.Endday, &item.Gym, &item.Status, &item.Totalcount, &item.Usedcount, &item.Remainingcount, &item.Qrcode, &item.Lastuseddate, &item.Date, &_order.Id, &_order.User, &_order.Gym, &_order.Health, &_order.Date, &_health.Id, &_health.Category, &_health.Term, &_health.Name, &_health.Count, &_health.Cost, &_health.Discount, &_health.Costdiscount, &_health.Content, &_health.Gym, &_health.Date, &_membership.Id, &_membership.User, &_membership.Gym, &_membership.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Email, &_user.Name, &_user.Tel, &_user.Address, &_user.Image, &_user.Sex, &_user.Birth, &_user.Type, &_user.Connectid, &_user.Level, &_user.Role, &_user.Use, &_user.Logindate, &_user.Lastchangepasswddate, &_user.Date, &_term.Id, &_term.Gym, &_term.Daytype, &_term.Name, &_term.Term, &_term.Date, &_discount.Id, &_discount.Gym, &_discount.Name, &_discount.Discount, &_discount.Date, &_gym.Id, &_gym.Name, &_gym.Address, &_gym.Tel, &_gym.User, &_gym.Date)
         if err != nil {
            if p.Log {
              log.Error().Str("error", err.Error()).Msg("SQL")
@@ -798,6 +982,14 @@ func (p *UsehealthManager) ReadRows(rows *sql.Rows) []Usehealth {
             item.Endday = strings.ReplaceAll(strings.ReplaceAll(item.Endday, "T", " "), "Z", "")
         }
 		
+        if item.Lastuseddate == "0000-00-00 00:00:00" || item.Lastuseddate == "1000-01-01 00:00:00" || item.Lastuseddate == "9999-01-01 00:00:00" {
+            item.Lastuseddate = ""
+        }
+
+        if config.Database.Type == config.Postgresql {
+            item.Lastuseddate = strings.ReplaceAll(strings.ReplaceAll(item.Lastuseddate, "T", " "), "Z", "")
+        }
+		
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" || item.Date == "9999-01-01 00:00:00" {
             item.Date = ""
         }
@@ -812,6 +1004,8 @@ func (p *UsehealthManager) ReadRows(rows *sql.Rows) []Usehealth {
         item.AddExtra("order",  _order)
 _health.InitExtra()
         item.AddExtra("health",  _health)
+_membership.InitExtra()
+        item.AddExtra("membership",  _membership)
 _user.InitExtra()
         item.AddExtra("user",  _user)
 _rocker.InitExtra()
@@ -820,6 +1014,8 @@ _term.InitExtra()
         item.AddExtra("term",  _term)
 _discount.InitExtra()
         item.AddExtra("discount",  _discount)
+_gym.InitExtra()
+        item.AddExtra("gym",  _gym)
 
         items = append(items, item)
     }
@@ -842,13 +1038,17 @@ func (p *UsehealthManager) Get(id int64) *Usehealth {
     
     query.WriteString(" and uh_health = h_id")
     
+    query.WriteString(" and uh_membership = m_id")
+    
     query.WriteString(" and uh_user = u_id")
     
-    query.WriteString(" and uh_rocker = r_id")
+    query.WriteString(" and uh_rocker = _id")
     
     query.WriteString(" and uh_term = t_id")
     
     query.WriteString(" and uh_discount = d_id")
+    
+    query.WriteString(" and uh_gym = g_id")
     
     
     rows, err := p.Query(query.String(), id)

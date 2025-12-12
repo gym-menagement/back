@@ -68,6 +68,10 @@ func (c *HealthController) Index(page int, pagesize int) {
         args = append(args, models.Where{Column:"content", Value:_content, Compare:"like"})
         
     }
+    _gym := c.Geti64("gym")
+    if _gym != 0 {
+        args = append(args, models.Where{Column:"gym", Value:_gym, Compare:"="})    
+    }
     _startdate := c.Get("startdate")
     _enddate := c.Get("enddate")
     if _startdate != "" && _enddate != "" {        
@@ -166,6 +170,10 @@ func (c *HealthController) Count() {
         args = append(args, models.Where{Column:"content", Value:_content, Compare:"like"})
         
         
+    }
+    _gym := c.Geti64("gym")
+    if _gym != 0 {
+        args = append(args, models.Where{Column:"gym", Value:_gym, Compare:"="})    
     }
     _startdate := c.Get("startdate")
     _enddate := c.Get("enddate")

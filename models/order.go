@@ -18,7 +18,9 @@ import (
 type Order struct {
             
     Id                int64 `json:"id"`         
-    Membership                int64 `json:"membership"`         
+    User                int64 `json:"user"`         
+    Gym                int64 `json:"gym"`         
+    Health                int64 `json:"health"`         
     Date                string `json:"date"` 
     
     Extra                    map[string]interface{} `json:"extra"`
@@ -113,7 +115,7 @@ func (p *OrderManager) GetQuery() string {
 
     var ret strings.Builder
 
-    ret.WriteString("select o_id, o_membership, o_date, m_id, m_gym, m_user, m_name, m_sex, m_birth, m_phonenum, m_address, m_image, m_date from order_tb, membership_tb")
+    ret.WriteString("select o_id, o_user, o_gym, o_health, o_date, u_id, u_loginid, u_passwd, u_email, u_name, u_tel, u_address, u_image, u_sex, u_birth, u_type, u_connectid, u_level, u_role, u_use, u_logindate, u_lastchangepasswddate, u_date, g_id, g_name, g_address, g_tel, g_user, g_date, h_id, h_category, h_term, h_name, h_count, h_cost, h_discount, h_costdiscount, h_content, h_gym, h_date from order_tb, user_tb, gym_tb, health_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -128,7 +130,11 @@ func (p *OrderManager) GetQuery() string {
 
     ret.WriteString(" where 1=1 ")
     
-    ret.WriteString("and o_membership = m_id ")
+    ret.WriteString("and o_user = u_id ")
+    
+    ret.WriteString("and o_gym = g_id ")
+    
+    ret.WriteString("and o_health = h_id ")
     
 
     return ret.String()
@@ -156,7 +162,11 @@ func (p *OrderManager) GetQuerySelect() string {
 
     ret.WriteString(" where 1=1 ")
     
-    ret.WriteString("and o_membership = m_id ")
+    ret.WriteString("and o_user = u_id ")
+    
+    ret.WriteString("and o_gym = g_id ")
+    
+    ret.WriteString("and o_health = h_id ")
     
 
     return ret.String()
@@ -180,7 +190,11 @@ func (p *OrderManager) GetQueryGroup(name string) string {
 
     ret.WriteString(" where 1=1 ")
     
-    ret.WriteString("and o_membership = m_id ")
+    ret.WriteString("and o_user = u_id ")
+    
+    ret.WriteString("and o_gym = g_id ")
+    
+    ret.WriteString("and o_health = h_id ")
     
 
     return ret.String()
@@ -224,11 +238,11 @@ func (p *OrderManager) Insert(item *Order) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into order_tb (o_id, o_membership, o_date) values (?, ?, ?)"
-        res, err = p.Exec(query, item.Id, item.Membership, item.Date)
+        query = "insert into order_tb (o_id, o_user, o_gym, o_health, o_date) values (?, ?, ?, ?, ?)"
+        res, err = p.Exec(query, item.Id, item.User, item.Gym, item.Health, item.Date)
     } else {
-        query = "insert into order_tb (o_membership, o_date) values (?, ?)"
-        res, err = p.Exec(query, item.Membership, item.Date)
+        query = "insert into order_tb (o_user, o_gym, o_health, o_date) values (?, ?, ?, ?)"
+        res, err = p.Exec(query, item.User, item.Gym, item.Health, item.Date)
     }
     
     if err == nil {
@@ -379,8 +393,8 @@ func (p *OrderManager) Update(item *Order) error {
     }
 	
 
-	query := "update order_tb set o_membership = ?, o_date = ? where o_id = ?"
-	_, err := p.Exec(query, item.Membership, item.Date, item.Id)
+	query := "update order_tb set o_user = ?, o_gym = ?, o_health = ?, o_date = ? where o_id = ?"
+	_, err := p.Exec(query, item.User, item.Gym, item.Health, item.Date, item.Id)
 
     if err != nil {
         if p.Log {
@@ -409,8 +423,14 @@ func (p *OrderManager) UpdateWhere(columns []order.Params, args []interface{}) e
         if v.Column == order.ColumnId {
         initQuery.WriteString("o_id = ?")
         initParams = append(initParams, v.Value)
-        } else if v.Column == order.ColumnMembership {
-        initQuery.WriteString("o_membership = ?")
+        } else if v.Column == order.ColumnUser {
+        initQuery.WriteString("o_user = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == order.ColumnGym {
+        initQuery.WriteString("o_gym = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == order.ColumnHealth {
+        initQuery.WriteString("o_health = ?")
         initParams = append(initParams, v.Value)
         } else if v.Column == order.ColumnDate {
         initQuery.WriteString("o_date = ?")
@@ -438,12 +458,46 @@ func (p *OrderManager) UpdateWhere(columns []order.Params, args []interface{}) e
 /*
 
 
-func (p *OrderManager) UpdateMembership(value int64, id int64) error {
+func (p *OrderManager) UpdateUser(value int64, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
 
-	query := "update order_tb set o_membership = ? where o_id = ?"
+	query := "update order_tb set o_user = ? where o_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *OrderManager) UpdateGym(value int64, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update order_tb set o_gym = ? where o_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *OrderManager) UpdateHealth(value int64, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update order_tb set o_health = ? where o_id = ?"
 	_, err := p.Exec(query, value, id)
 
     if err != nil {
@@ -502,11 +556,13 @@ func (p *OrderManager) ReadRow(rows *sql.Rows) *Order {
     var item Order
     var err error
 
-    var _membership Membership
+    var _user User
+    var _gym Gym
+    var _health Health
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Membership, &item.Date, &_membership.Id, &_membership.Gym, &_membership.User, &_membership.Name, &_membership.Sex, &_membership.Birth, &_membership.Phonenum, &_membership.Address, &_membership.Image, &_membership.Date)
+        err = rows.Scan(&item.Id, &item.User, &item.Gym, &item.Health, &item.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Email, &_user.Name, &_user.Tel, &_user.Address, &_user.Image, &_user.Sex, &_user.Birth, &_user.Type, &_user.Connectid, &_user.Level, &_user.Role, &_user.Use, &_user.Logindate, &_user.Lastchangepasswddate, &_user.Date, &_gym.Id, &_gym.Name, &_gym.Address, &_gym.Tel, &_gym.User, &_gym.Date, &_health.Id, &_health.Category, &_health.Term, &_health.Name, &_health.Count, &_health.Cost, &_health.Discount, &_health.Costdiscount, &_health.Content, &_health.Gym, &_health.Date)
         
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" || item.Date == "9999-01-01 00:00:00" {
             item.Date = ""
@@ -529,8 +585,12 @@ func (p *OrderManager) ReadRow(rows *sql.Rows) *Order {
     } else {
 
         item.InitExtra()
-        _membership.InitExtra()
-        item.AddExtra("membership",  _membership)
+        _user.InitExtra()
+        item.AddExtra("user",  _user)
+_gym.InitExtra()
+        item.AddExtra("gym",  _gym)
+_health.InitExtra()
+        item.AddExtra("health",  _health)
 
         return &item
     }
@@ -541,10 +601,12 @@ func (p *OrderManager) ReadRows(rows *sql.Rows) []Order {
 
     for rows.Next() {
         var item Order
-        var _membership Membership
+        var _user User
+        var _gym Gym
+        var _health Health
         
 
-        err := rows.Scan(&item.Id, &item.Membership, &item.Date, &_membership.Id, &_membership.Gym, &_membership.User, &_membership.Name, &_membership.Sex, &_membership.Birth, &_membership.Phonenum, &_membership.Address, &_membership.Image, &_membership.Date)
+        err := rows.Scan(&item.Id, &item.User, &item.Gym, &item.Health, &item.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Email, &_user.Name, &_user.Tel, &_user.Address, &_user.Image, &_user.Sex, &_user.Birth, &_user.Type, &_user.Connectid, &_user.Level, &_user.Role, &_user.Use, &_user.Logindate, &_user.Lastchangepasswddate, &_user.Date, &_gym.Id, &_gym.Name, &_gym.Address, &_gym.Tel, &_gym.User, &_gym.Date, &_health.Id, &_health.Category, &_health.Term, &_health.Name, &_health.Count, &_health.Cost, &_health.Discount, &_health.Costdiscount, &_health.Content, &_health.Gym, &_health.Date)
         if err != nil {
            if p.Log {
              log.Error().Str("error", err.Error()).Msg("SQL")
@@ -563,8 +625,12 @@ func (p *OrderManager) ReadRows(rows *sql.Rows) []Order {
 		
 
         item.InitExtra()
-        _membership.InitExtra()
-        item.AddExtra("membership",  _membership)
+        _user.InitExtra()
+        item.AddExtra("user",  _user)
+_gym.InitExtra()
+        item.AddExtra("gym",  _gym)
+_health.InitExtra()
+        item.AddExtra("health",  _health)
 
         items = append(items, item)
     }
@@ -583,7 +649,11 @@ func (p *OrderManager) Get(id int64) *Order {
     query.WriteString(" and o_id = ?")
 
     
-    query.WriteString(" and o_membership = m_id")
+    query.WriteString(" and o_user = u_id")
+    
+    query.WriteString(" and o_gym = g_id")
+    
+    query.WriteString(" and o_health = h_id")
     
     
     rows, err := p.Query(query.String(), id)

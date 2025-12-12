@@ -17,32 +17,6 @@ import (
 // SetupGymRoutes sets up routes for gym domain
 func SetupGymRoutes(group fiber.Router) {
 
-	group.Delete("/gym", func(c *fiber.Ctx) error {
-			item_ := &models.Gym{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.GymController
-		controller.Init(c)
-		controller.Delete(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Delete("/gym/batch", func(c *fiber.Ctx) error {
-			item_ := &[]models.Gym{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.GymController
-		controller.Init(c)
-		controller.Deletebatch(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
 	group.Get("/gym/:id", func(c *fiber.Ctx) error {
 			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 		var controller rest.GymController
@@ -106,6 +80,32 @@ func SetupGymRoutes(group fiber.Router) {
 		var controller rest.GymController
 		controller.Init(c)
 		controller.Update(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Delete("/gym", func(c *fiber.Ctx) error {
+			item_ := &models.Gym{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.GymController
+		controller.Init(c)
+		controller.Delete(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Delete("/gym/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Gym{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.GymController
+		controller.Init(c)
+		controller.Deletebatch(item_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

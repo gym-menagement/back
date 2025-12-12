@@ -26,6 +26,7 @@ type Health struct {
     Discount                int64 `json:"discount"`         
     Costdiscount                int `json:"costdiscount"`         
     Content                string `json:"content"`         
+    Gym                int64 `json:"gym"`         
     Date                string `json:"date"` 
     
     Extra                    map[string]interface{} `json:"extra"`
@@ -120,7 +121,7 @@ func (p *HealthManager) GetQuery() string {
 
     var ret strings.Builder
 
-    ret.WriteString("select h_id, h_category, h_term, h_name, h_count, h_cost, h_discount, h_costdiscount, h_content, h_date, hc_id, hc_gym, hc_name, hc_date, t_id, t_gym, t_daytype, t_name, t_term, t_date, d_id, d_name, d_discount, d_date from health_tb, healthcategory_tb, term_tb, discount_tb")
+    ret.WriteString("select h_id, h_category, h_term, h_name, h_count, h_cost, h_discount, h_costdiscount, h_content, h_gym, h_date, hc_id, hc_gym, hc_name, hc_date, t_id, t_gym, t_daytype, t_name, t_term, t_date, d_id, d_gym, d_name, d_discount, d_date, g_id, g_name, g_address, g_tel, g_user, g_date from health_tb, healthcategory_tb, term_tb, discount_tb, gym_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -140,6 +141,8 @@ func (p *HealthManager) GetQuery() string {
     ret.WriteString("and h_term = t_id ")
     
     ret.WriteString("and h_discount = d_id ")
+    
+    ret.WriteString("and h_gym = g_id ")
     
 
     return ret.String()
@@ -173,6 +176,8 @@ func (p *HealthManager) GetQuerySelect() string {
     
     ret.WriteString("and h_discount = d_id ")
     
+    ret.WriteString("and h_gym = g_id ")
+    
 
     return ret.String()
 }
@@ -200,6 +205,8 @@ func (p *HealthManager) GetQueryGroup(name string) string {
     ret.WriteString("and h_term = t_id ")
     
     ret.WriteString("and h_discount = d_id ")
+    
+    ret.WriteString("and h_gym = g_id ")
     
 
     return ret.String()
@@ -243,11 +250,11 @@ func (p *HealthManager) Insert(item *Health) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into health_tb (h_id, h_category, h_term, h_name, h_count, h_cost, h_discount, h_costdiscount, h_content, h_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query, item.Id, item.Category, item.Term, item.Name, item.Count, item.Cost, item.Discount, item.Costdiscount, item.Content, item.Date)
+        query = "insert into health_tb (h_id, h_category, h_term, h_name, h_count, h_cost, h_discount, h_costdiscount, h_content, h_gym, h_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query, item.Id, item.Category, item.Term, item.Name, item.Count, item.Cost, item.Discount, item.Costdiscount, item.Content, item.Gym, item.Date)
     } else {
-        query = "insert into health_tb (h_category, h_term, h_name, h_count, h_cost, h_discount, h_costdiscount, h_content, h_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query, item.Category, item.Term, item.Name, item.Count, item.Cost, item.Discount, item.Costdiscount, item.Content, item.Date)
+        query = "insert into health_tb (h_category, h_term, h_name, h_count, h_cost, h_discount, h_costdiscount, h_content, h_gym, h_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query, item.Category, item.Term, item.Name, item.Count, item.Cost, item.Discount, item.Costdiscount, item.Content, item.Gym, item.Date)
     }
     
     if err == nil {
@@ -398,8 +405,8 @@ func (p *HealthManager) Update(item *Health) error {
     }
 	
 
-	query := "update health_tb set h_category = ?, h_term = ?, h_name = ?, h_count = ?, h_cost = ?, h_discount = ?, h_costdiscount = ?, h_content = ?, h_date = ? where h_id = ?"
-	_, err := p.Exec(query, item.Category, item.Term, item.Name, item.Count, item.Cost, item.Discount, item.Costdiscount, item.Content, item.Date, item.Id)
+	query := "update health_tb set h_category = ?, h_term = ?, h_name = ?, h_count = ?, h_cost = ?, h_discount = ?, h_costdiscount = ?, h_content = ?, h_gym = ?, h_date = ? where h_id = ?"
+	_, err := p.Exec(query, item.Category, item.Term, item.Name, item.Count, item.Cost, item.Discount, item.Costdiscount, item.Content, item.Gym, item.Date, item.Id)
 
     if err != nil {
         if p.Log {
@@ -451,6 +458,9 @@ func (p *HealthManager) UpdateWhere(columns []health.Params, args []interface{})
         initParams = append(initParams, v.Value)
         } else if v.Column == health.ColumnContent {
         initQuery.WriteString("h_content = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == health.ColumnGym {
+        initQuery.WriteString("h_gym = ?")
         initParams = append(initParams, v.Value)
         } else if v.Column == health.ColumnDate {
         initQuery.WriteString("h_date = ?")
@@ -614,6 +624,23 @@ func (p *HealthManager) UpdateContent(value string, id int64) error {
     return err
 }
 
+func (p *HealthManager) UpdateGym(value int64, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update health_tb set h_gym = ? where h_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
 func (p *HealthManager) UpdateDate(value string, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
@@ -664,10 +691,11 @@ func (p *HealthManager) ReadRow(rows *sql.Rows) *Health {
     var _healthcategory Healthcategory
     var _term Term
     var _discount Discount
+    var _gym Gym
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Category, &item.Term, &item.Name, &item.Count, &item.Cost, &item.Discount, &item.Costdiscount, &item.Content, &item.Date, &_healthcategory.Id, &_healthcategory.Gym, &_healthcategory.Name, &_healthcategory.Date, &_term.Id, &_term.Gym, &_term.Daytype, &_term.Name, &_term.Term, &_term.Date, &_discount.Id, &_discount.Name, &_discount.Discount, &_discount.Date)
+        err = rows.Scan(&item.Id, &item.Category, &item.Term, &item.Name, &item.Count, &item.Cost, &item.Discount, &item.Costdiscount, &item.Content, &item.Gym, &item.Date, &_healthcategory.Id, &_healthcategory.Gym, &_healthcategory.Name, &_healthcategory.Date, &_term.Id, &_term.Gym, &_term.Daytype, &_term.Name, &_term.Term, &_term.Date, &_discount.Id, &_discount.Gym, &_discount.Name, &_discount.Discount, &_discount.Date, &_gym.Id, &_gym.Name, &_gym.Address, &_gym.Tel, &_gym.User, &_gym.Date)
         
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" || item.Date == "9999-01-01 00:00:00" {
             item.Date = ""
@@ -696,6 +724,8 @@ _term.InitExtra()
         item.AddExtra("term",  _term)
 _discount.InitExtra()
         item.AddExtra("discount",  _discount)
+_gym.InitExtra()
+        item.AddExtra("gym",  _gym)
 
         return &item
     }
@@ -709,9 +739,10 @@ func (p *HealthManager) ReadRows(rows *sql.Rows) []Health {
         var _healthcategory Healthcategory
         var _term Term
         var _discount Discount
+        var _gym Gym
         
 
-        err := rows.Scan(&item.Id, &item.Category, &item.Term, &item.Name, &item.Count, &item.Cost, &item.Discount, &item.Costdiscount, &item.Content, &item.Date, &_healthcategory.Id, &_healthcategory.Gym, &_healthcategory.Name, &_healthcategory.Date, &_term.Id, &_term.Gym, &_term.Daytype, &_term.Name, &_term.Term, &_term.Date, &_discount.Id, &_discount.Name, &_discount.Discount, &_discount.Date)
+        err := rows.Scan(&item.Id, &item.Category, &item.Term, &item.Name, &item.Count, &item.Cost, &item.Discount, &item.Costdiscount, &item.Content, &item.Gym, &item.Date, &_healthcategory.Id, &_healthcategory.Gym, &_healthcategory.Name, &_healthcategory.Date, &_term.Id, &_term.Gym, &_term.Daytype, &_term.Name, &_term.Term, &_term.Date, &_discount.Id, &_discount.Gym, &_discount.Name, &_discount.Discount, &_discount.Date, &_gym.Id, &_gym.Name, &_gym.Address, &_gym.Tel, &_gym.User, &_gym.Date)
         if err != nil {
            if p.Log {
              log.Error().Str("error", err.Error()).Msg("SQL")
@@ -736,6 +767,8 @@ _term.InitExtra()
         item.AddExtra("term",  _term)
 _discount.InitExtra()
         item.AddExtra("discount",  _discount)
+_gym.InitExtra()
+        item.AddExtra("gym",  _gym)
 
         items = append(items, item)
     }
@@ -759,6 +792,8 @@ func (p *HealthManager) Get(id int64) *Health {
     query.WriteString(" and h_term = t_id")
     
     query.WriteString(" and h_discount = d_id")
+    
+    query.WriteString(" and h_gym = g_id")
     
     
     rows, err := p.Query(query.String(), id)

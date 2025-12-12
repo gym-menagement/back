@@ -18,7 +18,7 @@ import (
 type Stop struct {
             
     Id                int64 `json:"id"`         
-    Usehelth                int64 `json:"usehelth"`         
+    Usehealth                int64 `json:"usehealth"`         
     Startday                string `json:"startday"`         
     Endday                string `json:"endday"`         
     Count                int `json:"count"`         
@@ -116,7 +116,7 @@ func (p *StopManager) GetQuery() string {
 
     var ret strings.Builder
 
-    ret.WriteString("select s_id, s_usehelth, s_startday, s_endday, s_count, s_date, uh_id, uh_order, uh_health, uh_user, uh_rocker, uh_term, uh_discount, uh_startday, uh_endday, uh_date from stop_tb, usehealth_tb")
+    ret.WriteString("select s_id, s_usehealth, s_startday, s_endday, s_count, s_date, uh_id, uh_order, uh_health, uh_membership, uh_user, uh_term, uh_discount, uh_startday, uh_endday, uh_gym, uh_status, uh_totalcount, uh_usedcount, uh_remainingcount, uh_qrcode, uh_lastuseddate, uh_date from stop_tb, usehealth_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -131,7 +131,7 @@ func (p *StopManager) GetQuery() string {
 
     ret.WriteString(" where 1=1 ")
     
-    ret.WriteString("and s_usehelth = uh_id ")
+    ret.WriteString("and s_usehealth = uh_id ")
     
 
     return ret.String()
@@ -159,7 +159,7 @@ func (p *StopManager) GetQuerySelect() string {
 
     ret.WriteString(" where 1=1 ")
     
-    ret.WriteString("and s_usehelth = uh_id ")
+    ret.WriteString("and s_usehealth = uh_id ")
     
 
     return ret.String()
@@ -183,7 +183,7 @@ func (p *StopManager) GetQueryGroup(name string) string {
 
     ret.WriteString(" where 1=1 ")
     
-    ret.WriteString("and s_usehelth = uh_id ")
+    ret.WriteString("and s_usehealth = uh_id ")
     
 
     return ret.String()
@@ -235,11 +235,11 @@ func (p *StopManager) Insert(item *Stop) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into stop_tb (s_id, s_usehelth, s_startday, s_endday, s_count, s_date) values (?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query, item.Id, item.Usehelth, item.Startday, item.Endday, item.Count, item.Date)
+        query = "insert into stop_tb (s_id, s_usehealth, s_startday, s_endday, s_count, s_date) values (?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query, item.Id, item.Usehealth, item.Startday, item.Endday, item.Count, item.Date)
     } else {
-        query = "insert into stop_tb (s_usehelth, s_startday, s_endday, s_count, s_date) values (?, ?, ?, ?, ?)"
-        res, err = p.Exec(query, item.Usehelth, item.Startday, item.Endday, item.Count, item.Date)
+        query = "insert into stop_tb (s_usehealth, s_startday, s_endday, s_count, s_date) values (?, ?, ?, ?, ?)"
+        res, err = p.Exec(query, item.Usehealth, item.Startday, item.Endday, item.Count, item.Date)
     }
     
     if err == nil {
@@ -398,8 +398,8 @@ func (p *StopManager) Update(item *Stop) error {
     }
 	
 
-	query := "update stop_tb set s_usehelth = ?, s_startday = ?, s_endday = ?, s_count = ?, s_date = ? where s_id = ?"
-	_, err := p.Exec(query, item.Usehelth, item.Startday, item.Endday, item.Count, item.Date, item.Id)
+	query := "update stop_tb set s_usehealth = ?, s_startday = ?, s_endday = ?, s_count = ?, s_date = ? where s_id = ?"
+	_, err := p.Exec(query, item.Usehealth, item.Startday, item.Endday, item.Count, item.Date, item.Id)
 
     if err != nil {
         if p.Log {
@@ -428,8 +428,8 @@ func (p *StopManager) UpdateWhere(columns []stop.Params, args []interface{}) err
         if v.Column == stop.ColumnId {
         initQuery.WriteString("s_id = ?")
         initParams = append(initParams, v.Value)
-        } else if v.Column == stop.ColumnUsehelth {
-        initQuery.WriteString("s_usehelth = ?")
+        } else if v.Column == stop.ColumnUsehealth {
+        initQuery.WriteString("s_usehealth = ?")
         initParams = append(initParams, v.Value)
         } else if v.Column == stop.ColumnStartday {
         initQuery.WriteString("s_startday = ?")
@@ -466,12 +466,12 @@ func (p *StopManager) UpdateWhere(columns []stop.Params, args []interface{}) err
 /*
 
 
-func (p *StopManager) UpdateUsehelth(value int64, id int64) error {
+func (p *StopManager) UpdateUsehealth(value int64, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
 
-	query := "update stop_tb set s_usehelth = ? where s_id = ?"
+	query := "update stop_tb set s_usehealth = ? where s_id = ?"
 	_, err := p.Exec(query, value, id)
 
     if err != nil {
@@ -585,7 +585,7 @@ func (p *StopManager) ReadRow(rows *sql.Rows) *Stop {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Usehelth, &item.Startday, &item.Endday, &item.Count, &item.Date, &_usehealth.Id, &_usehealth.Order, &_usehealth.Health, &_usehealth.User, &_usehealth.Rocker, &_usehealth.Term, &_usehealth.Discount, &_usehealth.Startday, &_usehealth.Endday, &_usehealth.Date)
+        err = rows.Scan(&item.Id, &item.Usehealth, &item.Startday, &item.Endday, &item.Count, &item.Date, &_usehealth.Id, &_usehealth.Order, &_usehealth.Health, &_usehealth.Membership, &_usehealth.User, &_usehealth.Term, &_usehealth.Discount, &_usehealth.Startday, &_usehealth.Endday, &_usehealth.Gym, &_usehealth.Status, &_usehealth.Totalcount, &_usehealth.Usedcount, &_usehealth.Remainingcount, &_usehealth.Qrcode, &_usehealth.Lastuseddate, &_usehealth.Date)
         
         if item.Startday == "0000-00-00 00:00:00" || item.Startday == "1000-01-01 00:00:00" || item.Startday == "9999-01-01 00:00:00" {
             item.Startday = ""
@@ -639,7 +639,7 @@ func (p *StopManager) ReadRows(rows *sql.Rows) []Stop {
         var _usehealth Usehealth
         
 
-        err := rows.Scan(&item.Id, &item.Usehelth, &item.Startday, &item.Endday, &item.Count, &item.Date, &_usehealth.Id, &_usehealth.Order, &_usehealth.Health, &_usehealth.User, &_usehealth.Rocker, &_usehealth.Term, &_usehealth.Discount, &_usehealth.Startday, &_usehealth.Endday, &_usehealth.Date)
+        err := rows.Scan(&item.Id, &item.Usehealth, &item.Startday, &item.Endday, &item.Count, &item.Date, &_usehealth.Id, &_usehealth.Order, &_usehealth.Health, &_usehealth.Membership, &_usehealth.User, &_usehealth.Term, &_usehealth.Discount, &_usehealth.Startday, &_usehealth.Endday, &_usehealth.Gym, &_usehealth.Status, &_usehealth.Totalcount, &_usehealth.Usedcount, &_usehealth.Remainingcount, &_usehealth.Qrcode, &_usehealth.Lastuseddate, &_usehealth.Date)
         if err != nil {
            if p.Log {
              log.Error().Str("error", err.Error()).Msg("SQL")
@@ -694,7 +694,7 @@ func (p *StopManager) Get(id int64) *Stop {
     query.WriteString(" and s_id = ?")
 
     
-    query.WriteString(" and s_usehelth = uh_id")
+    query.WriteString(" and s_usehealth = uh_id")
     
     
     rows, err := p.Query(query.String(), id)

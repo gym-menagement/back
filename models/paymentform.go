@@ -116,7 +116,7 @@ func (p *PaymentformManager) GetQuery() string {
 
     var ret strings.Builder
 
-    ret.WriteString("select pf_id, pf_gym, pf_payment, pf_type, pf_cost, pf_date, g_id, g_name, g_date, p_id, p_gym, p_order, p_membership, p_cost, p_date, pt_id, pt_gym, pt_name, pt_date from paymentform_tb, gym_tb, payment_tb, paymenttype_tb")
+    ret.WriteString("select pf_id, pf_gym, pf_payment, pf_type, pf_cost, pf_date, g_id, g_name, g_address, g_tel, g_user, g_date, p_id, p_gym, p_order, p_user, p_cost, p_date, pt_id, pt_gym, pt_name, pt_date from paymentform_tb, gym_tb, payment_tb, paymenttype_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -583,7 +583,7 @@ func (p *PaymentformManager) ReadRow(rows *sql.Rows) *Paymentform {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Gym, &item.Payment, &item.Type, &item.Cost, &item.Date, &_gym.Id, &_gym.Name, &_gym.Date, &_payment.Id, &_payment.Gym, &_payment.Order, &_payment.Membership, &_payment.Cost, &_payment.Date, &_paymenttype.Id, &_paymenttype.Gym, &_paymenttype.Name, &_paymenttype.Date)
+        err = rows.Scan(&item.Id, &item.Gym, &item.Payment, &item.Type, &item.Cost, &item.Date, &_gym.Id, &_gym.Name, &_gym.Address, &_gym.Tel, &_gym.User, &_gym.Date, &_payment.Id, &_payment.Gym, &_payment.Order, &_payment.User, &_payment.Cost, &_payment.Date, &_paymenttype.Id, &_paymenttype.Gym, &_paymenttype.Name, &_paymenttype.Date)
         
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" || item.Date == "9999-01-01 00:00:00" {
             item.Date = ""
@@ -627,7 +627,7 @@ func (p *PaymentformManager) ReadRows(rows *sql.Rows) []Paymentform {
         var _paymenttype Paymenttype
         
 
-        err := rows.Scan(&item.Id, &item.Gym, &item.Payment, &item.Type, &item.Cost, &item.Date, &_gym.Id, &_gym.Name, &_gym.Date, &_payment.Id, &_payment.Gym, &_payment.Order, &_payment.Membership, &_payment.Cost, &_payment.Date, &_paymenttype.Id, &_paymenttype.Gym, &_paymenttype.Name, &_paymenttype.Date)
+        err := rows.Scan(&item.Id, &item.Gym, &item.Payment, &item.Type, &item.Cost, &item.Date, &_gym.Id, &_gym.Name, &_gym.Address, &_gym.Tel, &_gym.User, &_gym.Date, &_payment.Id, &_payment.Gym, &_payment.Order, &_payment.User, &_payment.Cost, &_payment.Date, &_paymenttype.Id, &_paymenttype.Gym, &_paymenttype.Name, &_paymenttype.Date)
         if err != nil {
            if p.Log {
              log.Error().Str("error", err.Error()).Msg("SQL")

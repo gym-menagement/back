@@ -8,7 +8,7 @@ const (
     ColumnId
     ColumnGym
     ColumnOrder
-    ColumnMembership
+    ColumnUser
     ColumnCost
     ColumnDate
 )

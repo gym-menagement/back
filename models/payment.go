@@ -20,7 +20,7 @@ type Payment struct {
     Id                int64 `json:"id"`         
     Gym                int64 `json:"gym"`         
     Order                int64 `json:"order"`         
-    Membership                int64 `json:"membership"`         
+    User                int64 `json:"user"`         
     Cost                int `json:"cost"`         
     Date                string `json:"date"` 
     
@@ -116,7 +116,7 @@ func (p *PaymentManager) GetQuery() string {
 
     var ret strings.Builder
 
-    ret.WriteString("select p_id, p_gym, p_order, p_membership, p_cost, p_date, g_id, g_name, g_date, o_id, o_membership, o_date, m_id, m_gym, m_user, m_name, m_sex, m_birth, m_phonenum, m_address, m_image, m_date from payment_tb, gym_tb, order_tb, membership_tb")
+    ret.WriteString("select p_id, p_gym, p_order, p_user, p_cost, p_date, g_id, g_name, g_address, g_tel, g_user, g_date, o_id, o_user, o_gym, o_health, o_date, u_id, u_loginid, u_passwd, u_email, u_name, u_tel, u_address, u_image, u_sex, u_birth, u_type, u_connectid, u_level, u_role, u_use, u_logindate, u_lastchangepasswddate, u_date from payment_tb, gym_tb, order_tb, user_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -135,7 +135,7 @@ func (p *PaymentManager) GetQuery() string {
     
     ret.WriteString("and p_order = o_id ")
     
-    ret.WriteString("and p_membership = m_id ")
+    ret.WriteString("and p_user = u_id ")
     
 
     return ret.String()
@@ -167,7 +167,7 @@ func (p *PaymentManager) GetQuerySelect() string {
     
     ret.WriteString("and p_order = o_id ")
     
-    ret.WriteString("and p_membership = m_id ")
+    ret.WriteString("and p_user = u_id ")
     
 
     return ret.String()
@@ -195,7 +195,7 @@ func (p *PaymentManager) GetQueryGroup(name string) string {
     
     ret.WriteString("and p_order = o_id ")
     
-    ret.WriteString("and p_membership = m_id ")
+    ret.WriteString("and p_user = u_id ")
     
 
     return ret.String()
@@ -239,11 +239,11 @@ func (p *PaymentManager) Insert(item *Payment) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into payment_tb (p_id, p_gym, p_order, p_membership, p_cost, p_date) values (?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query, item.Id, item.Gym, item.Order, item.Membership, item.Cost, item.Date)
+        query = "insert into payment_tb (p_id, p_gym, p_order, p_user, p_cost, p_date) values (?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query, item.Id, item.Gym, item.Order, item.User, item.Cost, item.Date)
     } else {
-        query = "insert into payment_tb (p_gym, p_order, p_membership, p_cost, p_date) values (?, ?, ?, ?, ?)"
-        res, err = p.Exec(query, item.Gym, item.Order, item.Membership, item.Cost, item.Date)
+        query = "insert into payment_tb (p_gym, p_order, p_user, p_cost, p_date) values (?, ?, ?, ?, ?)"
+        res, err = p.Exec(query, item.Gym, item.Order, item.User, item.Cost, item.Date)
     }
     
     if err == nil {
@@ -394,8 +394,8 @@ func (p *PaymentManager) Update(item *Payment) error {
     }
 	
 
-	query := "update payment_tb set p_gym = ?, p_order = ?, p_membership = ?, p_cost = ?, p_date = ? where p_id = ?"
-	_, err := p.Exec(query, item.Gym, item.Order, item.Membership, item.Cost, item.Date, item.Id)
+	query := "update payment_tb set p_gym = ?, p_order = ?, p_user = ?, p_cost = ?, p_date = ? where p_id = ?"
+	_, err := p.Exec(query, item.Gym, item.Order, item.User, item.Cost, item.Date, item.Id)
 
     if err != nil {
         if p.Log {
@@ -430,8 +430,8 @@ func (p *PaymentManager) UpdateWhere(columns []payment.Params, args []interface{
         } else if v.Column == payment.ColumnOrder {
         initQuery.WriteString("p_order = ?")
         initParams = append(initParams, v.Value)
-        } else if v.Column == payment.ColumnMembership {
-        initQuery.WriteString("p_membership = ?")
+        } else if v.Column == payment.ColumnUser {
+        initQuery.WriteString("p_user = ?")
         initParams = append(initParams, v.Value)
         } else if v.Column == payment.ColumnCost {
         initQuery.WriteString("p_cost = ?")
@@ -496,12 +496,12 @@ func (p *PaymentManager) UpdateOrder(value int64, id int64) error {
     return err
 }
 
-func (p *PaymentManager) UpdateMembership(value int64, id int64) error {
+func (p *PaymentManager) UpdateUser(value int64, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
 
-	query := "update payment_tb set p_membership = ? where p_id = ?"
+	query := "update payment_tb set p_user = ? where p_id = ?"
 	_, err := p.Exec(query, value, id)
 
     if err != nil {
@@ -579,11 +579,11 @@ func (p *PaymentManager) ReadRow(rows *sql.Rows) *Payment {
 
     var _gym Gym
     var _order Order
-    var _membership Membership
+    var _user User
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Gym, &item.Order, &item.Membership, &item.Cost, &item.Date, &_gym.Id, &_gym.Name, &_gym.Date, &_order.Id, &_order.Membership, &_order.Date, &_membership.Id, &_membership.Gym, &_membership.User, &_membership.Name, &_membership.Sex, &_membership.Birth, &_membership.Phonenum, &_membership.Address, &_membership.Image, &_membership.Date)
+        err = rows.Scan(&item.Id, &item.Gym, &item.Order, &item.User, &item.Cost, &item.Date, &_gym.Id, &_gym.Name, &_gym.Address, &_gym.Tel, &_gym.User, &_gym.Date, &_order.Id, &_order.User, &_order.Gym, &_order.Health, &_order.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Email, &_user.Name, &_user.Tel, &_user.Address, &_user.Image, &_user.Sex, &_user.Birth, &_user.Type, &_user.Connectid, &_user.Level, &_user.Role, &_user.Use, &_user.Logindate, &_user.Lastchangepasswddate, &_user.Date)
         
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" || item.Date == "9999-01-01 00:00:00" {
             item.Date = ""
@@ -610,8 +610,8 @@ func (p *PaymentManager) ReadRow(rows *sql.Rows) *Payment {
         item.AddExtra("gym",  _gym)
 _order.InitExtra()
         item.AddExtra("order",  _order)
-_membership.InitExtra()
-        item.AddExtra("membership",  _membership)
+_user.InitExtra()
+        item.AddExtra("user",  _user)
 
         return &item
     }
@@ -624,10 +624,10 @@ func (p *PaymentManager) ReadRows(rows *sql.Rows) []Payment {
         var item Payment
         var _gym Gym
         var _order Order
-        var _membership Membership
+        var _user User
         
 
-        err := rows.Scan(&item.Id, &item.Gym, &item.Order, &item.Membership, &item.Cost, &item.Date, &_gym.Id, &_gym.Name, &_gym.Date, &_order.Id, &_order.Membership, &_order.Date, &_membership.Id, &_membership.Gym, &_membership.User, &_membership.Name, &_membership.Sex, &_membership.Birth, &_membership.Phonenum, &_membership.Address, &_membership.Image, &_membership.Date)
+        err := rows.Scan(&item.Id, &item.Gym, &item.Order, &item.User, &item.Cost, &item.Date, &_gym.Id, &_gym.Name, &_gym.Address, &_gym.Tel, &_gym.User, &_gym.Date, &_order.Id, &_order.User, &_order.Gym, &_order.Health, &_order.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Email, &_user.Name, &_user.Tel, &_user.Address, &_user.Image, &_user.Sex, &_user.Birth, &_user.Type, &_user.Connectid, &_user.Level, &_user.Role, &_user.Use, &_user.Logindate, &_user.Lastchangepasswddate, &_user.Date)
         if err != nil {
            if p.Log {
              log.Error().Str("error", err.Error()).Msg("SQL")
@@ -650,8 +650,8 @@ func (p *PaymentManager) ReadRows(rows *sql.Rows) []Payment {
         item.AddExtra("gym",  _gym)
 _order.InitExtra()
         item.AddExtra("order",  _order)
-_membership.InitExtra()
-        item.AddExtra("membership",  _membership)
+_user.InitExtra()
+        item.AddExtra("user",  _user)
 
         items = append(items, item)
     }
@@ -674,7 +674,7 @@ func (p *PaymentManager) Get(id int64) *Payment {
     
     query.WriteString(" and p_order = o_id")
     
-    query.WriteString(" and p_membership = m_id")
+    query.WriteString(" and p_user = u_id")
     
     
     rows, err := p.Query(query.String(), id)

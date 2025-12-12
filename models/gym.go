@@ -19,6 +19,9 @@ type Gym struct {
             
     Id                int64 `json:"id"`         
     Name                string `json:"name"`         
+    Address                string `json:"address"`         
+    Tel                string `json:"tel"`         
+    User                int64 `json:"user"`         
     Date                string `json:"date"` 
     
     Extra                    map[string]interface{} `json:"extra"`
@@ -113,7 +116,7 @@ func (p *GymManager) GetQuery() string {
 
     var ret strings.Builder
 
-    ret.WriteString("select g_id, g_name, g_date from gym_tb")
+    ret.WriteString("select g_id, g_name, g_address, g_tel, g_user, g_date from gym_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -218,11 +221,11 @@ func (p *GymManager) Insert(item *Gym) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into gym_tb (g_id, g_name, g_date) values (?, ?, ?)"
-        res, err = p.Exec(query, item.Id, item.Name, item.Date)
+        query = "insert into gym_tb (g_id, g_name, g_address, g_tel, g_user, g_date) values (?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query, item.Id, item.Name, item.Address, item.Tel, item.User, item.Date)
     } else {
-        query = "insert into gym_tb (g_name, g_date) values (?, ?)"
-        res, err = p.Exec(query, item.Name, item.Date)
+        query = "insert into gym_tb (g_name, g_address, g_tel, g_user, g_date) values (?, ?, ?, ?, ?)"
+        res, err = p.Exec(query, item.Name, item.Address, item.Tel, item.User, item.Date)
     }
     
     if err == nil {
@@ -373,8 +376,8 @@ func (p *GymManager) Update(item *Gym) error {
     }
 	
 
-	query := "update gym_tb set g_name = ?, g_date = ? where g_id = ?"
-	_, err := p.Exec(query, item.Name, item.Date, item.Id)
+	query := "update gym_tb set g_name = ?, g_address = ?, g_tel = ?, g_user = ?, g_date = ? where g_id = ?"
+	_, err := p.Exec(query, item.Name, item.Address, item.Tel, item.User, item.Date, item.Id)
 
     if err != nil {
         if p.Log {
@@ -405,6 +408,15 @@ func (p *GymManager) UpdateWhere(columns []gym.Params, args []interface{}) error
         initParams = append(initParams, v.Value)
         } else if v.Column == gym.ColumnName {
         initQuery.WriteString("g_name = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == gym.ColumnAddress {
+        initQuery.WriteString("g_address = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == gym.ColumnTel {
+        initQuery.WriteString("g_tel = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == gym.ColumnUser {
+        initQuery.WriteString("g_user = ?")
         initParams = append(initParams, v.Value)
         } else if v.Column == gym.ColumnDate {
         initQuery.WriteString("g_date = ?")
@@ -438,6 +450,57 @@ func (p *GymManager) UpdateName(value string, id int64) error {
     }
 
 	query := "update gym_tb set g_name = ? where g_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *GymManager) UpdateAddress(value string, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update gym_tb set g_address = ? where g_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *GymManager) UpdateTel(value string, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update gym_tb set g_tel = ? where g_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
+
+func (p *GymManager) UpdateUser(value int64, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update gym_tb set g_user = ? where g_id = ?"
 	_, err := p.Exec(query, value, id)
 
     if err != nil {
@@ -499,7 +562,7 @@ func (p *GymManager) ReadRow(rows *sql.Rows) *Gym {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Name, &item.Date)
+        err = rows.Scan(&item.Id, &item.Name, &item.Address, &item.Tel, &item.User, &item.Date)
         
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" || item.Date == "9999-01-01 00:00:00" {
             item.Date = ""
@@ -534,7 +597,7 @@ func (p *GymManager) ReadRows(rows *sql.Rows) []Gym {
         var item Gym
         
 
-        err := rows.Scan(&item.Id, &item.Name, &item.Date)
+        err := rows.Scan(&item.Id, &item.Name, &item.Address, &item.Tel, &item.User, &item.Date)
         if err != nil {
            if p.Log {
              log.Error().Str("error", err.Error()).Msg("SQL")

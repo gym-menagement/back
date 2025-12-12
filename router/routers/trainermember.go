@@ -17,6 +17,45 @@ import (
 // SetupTrainermemberRoutes sets up routes for trainermember domain
 func SetupTrainermemberRoutes(group fiber.Router) {
 
+	group.Post("/trainermember", func(c *fiber.Ctx) error {
+			item_ := &models.Trainermember{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.TrainermemberController
+		controller.Init(c)
+		controller.Insert(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Post("/trainermember/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Trainermember{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.TrainermemberController
+		controller.Init(c)
+		controller.Insertbatch(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Put("/trainermember", func(c *fiber.Ctx) error {
+			item_ := &models.Trainermember{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.TrainermemberController
+		controller.Init(c)
+		controller.Update(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
 	group.Delete("/trainermember", func(c *fiber.Ctx) error {
 			item_ := &models.Trainermember{}
 			err := c.BodyParser(item_)
@@ -67,45 +106,6 @@ func SetupTrainermemberRoutes(group fiber.Router) {
 		var controller rest.TrainermemberController
 		controller.Init(c)
 		controller.Count()
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Post("/trainermember", func(c *fiber.Ctx) error {
-			item_ := &models.Trainermember{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.TrainermemberController
-		controller.Init(c)
-		controller.Insert(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Post("/trainermember/batch", func(c *fiber.Ctx) error {
-			item_ := &[]models.Trainermember{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.TrainermemberController
-		controller.Init(c)
-		controller.Insertbatch(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Put("/trainermember", func(c *fiber.Ctx) error {
-			item_ := &models.Trainermember{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.TrainermemberController
-		controller.Init(c)
-		controller.Update(item_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

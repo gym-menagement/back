@@ -19,7 +19,7 @@ type Role struct {
             
     Id                int64 `json:"id"`         
     Gym                int64 `json:"gym"`         
-    Roleid                int `json:"roleid"`         
+    Roleid                role.Roleid `json:"roleid"`         
     Name                string `json:"name"`         
     Date                string `json:"date"` 
     
@@ -115,7 +115,7 @@ func (p *RoleManager) GetQuery() string {
 
     var ret strings.Builder
 
-    ret.WriteString("select r_id, r_gym, r_roleid, r_name, r_date, g_id, g_name, g_date from role_tb, gym_tb")
+    ret.WriteString("select r_id, r_gym, r_roleid, r_name, r_date, g_id, g_name, g_address, g_tel, g_user, g_date from role_tb, gym_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -463,7 +463,7 @@ func (p *RoleManager) UpdateGym(value int64, id int64) error {
     return err
 }
 
-func (p *RoleManager) UpdateRoleid(value int, id int64) error {
+func (p *RoleManager) UpdateRoleid(value role.Roleid, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
@@ -536,6 +536,7 @@ func (p *RoleManager) GetIdentity() int64 {
 
 func (p *Role) InitExtra() {
     p.Extra = map[string]interface{}{
+            "roleid":     role.GetRoleid(p.Roleid),
 
     }
 }
@@ -548,7 +549,7 @@ func (p *RoleManager) ReadRow(rows *sql.Rows) *Role {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Gym, &item.Roleid, &item.Name, &item.Date, &_gym.Id, &_gym.Name, &_gym.Date)
+        err = rows.Scan(&item.Id, &item.Gym, &item.Roleid, &item.Name, &item.Date, &_gym.Id, &_gym.Name, &_gym.Address, &_gym.Tel, &_gym.User, &_gym.Date)
         
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" || item.Date == "9999-01-01 00:00:00" {
             item.Date = ""
@@ -586,7 +587,7 @@ func (p *RoleManager) ReadRows(rows *sql.Rows) []Role {
         var _gym Gym
         
 
-        err := rows.Scan(&item.Id, &item.Gym, &item.Roleid, &item.Name, &item.Date, &_gym.Id, &_gym.Name, &_gym.Date)
+        err := rows.Scan(&item.Id, &item.Gym, &item.Roleid, &item.Name, &item.Date, &_gym.Id, &_gym.Name, &_gym.Address, &_gym.Tel, &_gym.User, &_gym.Date)
         if err != nil {
            if p.Log {
              log.Error().Str("error", err.Error()).Msg("SQL")

@@ -116,7 +116,7 @@ func (p *TermManager) GetQuery() string {
 
     var ret strings.Builder
 
-    ret.WriteString("select t_id, t_gym, t_daytype, t_name, t_term, t_date, g_id, g_name, g_date, dt_id, dt_gym, dt_name, dt_date from term_tb, gym_tb, daytype_tb")
+    ret.WriteString("select t_id, t_gym, t_daytype, t_name, t_term, t_date, g_id, g_name, g_address, g_tel, g_user, g_date, dt_id, dt_gym, dt_name, dt_date from term_tb, gym_tb, daytype_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -576,7 +576,7 @@ func (p *TermManager) ReadRow(rows *sql.Rows) *Term {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Gym, &item.Daytype, &item.Name, &item.Term, &item.Date, &_gym.Id, &_gym.Name, &_gym.Date, &_daytype.Id, &_daytype.Gym, &_daytype.Name, &_daytype.Date)
+        err = rows.Scan(&item.Id, &item.Gym, &item.Daytype, &item.Name, &item.Term, &item.Date, &_gym.Id, &_gym.Name, &_gym.Address, &_gym.Tel, &_gym.User, &_gym.Date, &_daytype.Id, &_daytype.Gym, &_daytype.Name, &_daytype.Date)
         
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" || item.Date == "9999-01-01 00:00:00" {
             item.Date = ""
@@ -617,7 +617,7 @@ func (p *TermManager) ReadRows(rows *sql.Rows) []Term {
         var _daytype Daytype
         
 
-        err := rows.Scan(&item.Id, &item.Gym, &item.Daytype, &item.Name, &item.Term, &item.Date, &_gym.Id, &_gym.Name, &_gym.Date, &_daytype.Id, &_daytype.Gym, &_daytype.Name, &_daytype.Date)
+        err := rows.Scan(&item.Id, &item.Gym, &item.Daytype, &item.Name, &item.Term, &item.Date, &_gym.Id, &_gym.Name, &_gym.Address, &_gym.Tel, &_gym.User, &_gym.Date, &_daytype.Id, &_daytype.Gym, &_daytype.Name, &_daytype.Date)
         if err != nil {
            if p.Log {
              log.Error().Str("error", err.Error()).Msg("SQL")

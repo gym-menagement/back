@@ -19,7 +19,7 @@ type Attendance struct {
             
     Id                int64 `json:"id"`         
     User                int64 `json:"user"`         
-    Membership                int64 `json:"membership"`         
+    Usehealth                int64 `json:"usehealth"`         
     Gym                int64 `json:"gym"`         
     Type                attendance.Type `json:"type"`         
     Method                attendance.Method `json:"method"`         
@@ -125,7 +125,7 @@ func (p *AttendanceManager) GetQuery() string {
 
     var ret strings.Builder
 
-    ret.WriteString("select at_id, at_user, at_membership, at_gym, at_type, at_method, at_checkintime, at_checkouttime, at_duration, at_status, at_note, at_ip, at_device, at_createdby, at_date, u_id, u_loginid, u_passwd, u_email, u_name, u_tel, u_address, u_image, u_sex, u_birth, u_type, u_connectid, u_level, u_role, u_use, u_logindate, u_lastchangepasswddate, u_date, m_id, m_gym, m_user, m_name, m_sex, m_birth, m_phonenum, m_address, m_image, m_date, g_id, g_name, g_date from attendance_tb, user_tb, membership_tb, gym_tb")
+    ret.WriteString("select at_id, at_user, at_usehealth, at_gym, at_type, at_method, at_checkintime, at_checkouttime, at_duration, at_status, at_note, at_ip, at_device, at_createdby, at_date, u_id, u_loginid, u_passwd, u_email, u_name, u_tel, u_address, u_image, u_sex, u_birth, u_type, u_connectid, u_level, u_role, u_use, u_logindate, u_lastchangepasswddate, u_date, uh_id, uh_order, uh_health, uh_membership, uh_user, uh_term, uh_discount, uh_startday, uh_endday, uh_gym, uh_status, uh_totalcount, uh_usedcount, uh_remainingcount, uh_qrcode, uh_lastuseddate, uh_date, g_id, g_name, g_address, g_tel, g_user, g_date from attendance_tb, user_tb, usehealth_tb, gym_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -142,7 +142,7 @@ func (p *AttendanceManager) GetQuery() string {
     
     ret.WriteString("and at_user = u_id ")
     
-    ret.WriteString("and at_membership = m_id ")
+    ret.WriteString("and at_usehealth = uh_id ")
     
     ret.WriteString("and at_gym = g_id ")
     
@@ -174,7 +174,7 @@ func (p *AttendanceManager) GetQuerySelect() string {
     
     ret.WriteString("and at_user = u_id ")
     
-    ret.WriteString("and at_membership = m_id ")
+    ret.WriteString("and at_usehealth = uh_id ")
     
     ret.WriteString("and at_gym = g_id ")
     
@@ -202,7 +202,7 @@ func (p *AttendanceManager) GetQueryGroup(name string) string {
     
     ret.WriteString("and at_user = u_id ")
     
-    ret.WriteString("and at_membership = m_id ")
+    ret.WriteString("and at_usehealth = uh_id ")
     
     ret.WriteString("and at_gym = g_id ")
     
@@ -256,11 +256,11 @@ func (p *AttendanceManager) Insert(item *Attendance) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into attendance_tb (at_id, at_user, at_membership, at_gym, at_type, at_method, at_checkintime, at_checkouttime, at_duration, at_status, at_note, at_ip, at_device, at_createdby, at_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query, item.Id, item.User, item.Membership, item.Gym, item.Type, item.Method, item.Checkintime, item.Checkouttime, item.Duration, item.Status, item.Note, item.Ip, item.Device, item.Createdby, item.Date)
+        query = "insert into attendance_tb (at_id, at_user, at_usehealth, at_gym, at_type, at_method, at_checkintime, at_checkouttime, at_duration, at_status, at_note, at_ip, at_device, at_createdby, at_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query, item.Id, item.User, item.Usehealth, item.Gym, item.Type, item.Method, item.Checkintime, item.Checkouttime, item.Duration, item.Status, item.Note, item.Ip, item.Device, item.Createdby, item.Date)
     } else {
-        query = "insert into attendance_tb (at_user, at_membership, at_gym, at_type, at_method, at_checkintime, at_checkouttime, at_duration, at_status, at_note, at_ip, at_device, at_createdby, at_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query, item.User, item.Membership, item.Gym, item.Type, item.Method, item.Checkintime, item.Checkouttime, item.Duration, item.Status, item.Note, item.Ip, item.Device, item.Createdby, item.Date)
+        query = "insert into attendance_tb (at_user, at_usehealth, at_gym, at_type, at_method, at_checkintime, at_checkouttime, at_duration, at_status, at_note, at_ip, at_device, at_createdby, at_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query, item.User, item.Usehealth, item.Gym, item.Type, item.Method, item.Checkintime, item.Checkouttime, item.Duration, item.Status, item.Note, item.Ip, item.Device, item.Createdby, item.Date)
     }
     
     if err == nil {
@@ -419,8 +419,8 @@ func (p *AttendanceManager) Update(item *Attendance) error {
     }
 	
 
-	query := "update attendance_tb set at_user = ?, at_membership = ?, at_gym = ?, at_type = ?, at_method = ?, at_checkintime = ?, at_checkouttime = ?, at_duration = ?, at_status = ?, at_note = ?, at_ip = ?, at_device = ?, at_createdby = ?, at_date = ? where at_id = ?"
-	_, err := p.Exec(query, item.User, item.Membership, item.Gym, item.Type, item.Method, item.Checkintime, item.Checkouttime, item.Duration, item.Status, item.Note, item.Ip, item.Device, item.Createdby, item.Date, item.Id)
+	query := "update attendance_tb set at_user = ?, at_usehealth = ?, at_gym = ?, at_type = ?, at_method = ?, at_checkintime = ?, at_checkouttime = ?, at_duration = ?, at_status = ?, at_note = ?, at_ip = ?, at_device = ?, at_createdby = ?, at_date = ? where at_id = ?"
+	_, err := p.Exec(query, item.User, item.Usehealth, item.Gym, item.Type, item.Method, item.Checkintime, item.Checkouttime, item.Duration, item.Status, item.Note, item.Ip, item.Device, item.Createdby, item.Date, item.Id)
 
     if err != nil {
         if p.Log {
@@ -452,8 +452,8 @@ func (p *AttendanceManager) UpdateWhere(columns []attendance.Params, args []inte
         } else if v.Column == attendance.ColumnUser {
         initQuery.WriteString("at_user = ?")
         initParams = append(initParams, v.Value)
-        } else if v.Column == attendance.ColumnMembership {
-        initQuery.WriteString("at_membership = ?")
+        } else if v.Column == attendance.ColumnUsehealth {
+        initQuery.WriteString("at_usehealth = ?")
         initParams = append(initParams, v.Value)
         } else if v.Column == attendance.ColumnGym {
         initQuery.WriteString("at_gym = ?")
@@ -531,12 +531,12 @@ func (p *AttendanceManager) UpdateUser(value int64, id int64) error {
     return err
 }
 
-func (p *AttendanceManager) UpdateMembership(value int64, id int64) error {
+func (p *AttendanceManager) UpdateUsehealth(value int64, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
 
-	query := "update attendance_tb set at_membership = ? where at_id = ?"
+	query := "update attendance_tb set at_usehealth = ? where at_id = ?"
 	_, err := p.Exec(query, value, id)
 
     if err != nil {
@@ -786,12 +786,12 @@ func (p *AttendanceManager) ReadRow(rows *sql.Rows) *Attendance {
     var err error
 
     var _user User
-    var _membership Membership
+    var _usehealth Usehealth
     var _gym Gym
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.User, &item.Membership, &item.Gym, &item.Type, &item.Method, &item.Checkintime, &item.Checkouttime, &item.Duration, &item.Status, &item.Note, &item.Ip, &item.Device, &item.Createdby, &item.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Email, &_user.Name, &_user.Tel, &_user.Address, &_user.Image, &_user.Sex, &_user.Birth, &_user.Type, &_user.Connectid, &_user.Level, &_user.Role, &_user.Use, &_user.Logindate, &_user.Lastchangepasswddate, &_user.Date, &_membership.Id, &_membership.Gym, &_membership.User, &_membership.Name, &_membership.Sex, &_membership.Birth, &_membership.Phonenum, &_membership.Address, &_membership.Image, &_membership.Date, &_gym.Id, &_gym.Name, &_gym.Date)
+        err = rows.Scan(&item.Id, &item.User, &item.Usehealth, &item.Gym, &item.Type, &item.Method, &item.Checkintime, &item.Checkouttime, &item.Duration, &item.Status, &item.Note, &item.Ip, &item.Device, &item.Createdby, &item.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Email, &_user.Name, &_user.Tel, &_user.Address, &_user.Image, &_user.Sex, &_user.Birth, &_user.Type, &_user.Connectid, &_user.Level, &_user.Role, &_user.Use, &_user.Logindate, &_user.Lastchangepasswddate, &_user.Date, &_usehealth.Id, &_usehealth.Order, &_usehealth.Health, &_usehealth.Membership, &_usehealth.User, &_usehealth.Term, &_usehealth.Discount, &_usehealth.Startday, &_usehealth.Endday, &_usehealth.Gym, &_usehealth.Status, &_usehealth.Totalcount, &_usehealth.Usedcount, &_usehealth.Remainingcount, &_usehealth.Qrcode, &_usehealth.Lastuseddate, &_usehealth.Date, &_gym.Id, &_gym.Name, &_gym.Address, &_gym.Tel, &_gym.User, &_gym.Date)
         
         if item.Checkintime == "0000-00-00 00:00:00" || item.Checkintime == "1000-01-01 00:00:00" || item.Checkintime == "9999-01-01 00:00:00" {
             item.Checkintime = ""
@@ -832,8 +832,8 @@ func (p *AttendanceManager) ReadRow(rows *sql.Rows) *Attendance {
         item.InitExtra()
         _user.InitExtra()
         item.AddExtra("user",  _user)
-_membership.InitExtra()
-        item.AddExtra("membership",  _membership)
+_usehealth.InitExtra()
+        item.AddExtra("usehealth",  _usehealth)
 _gym.InitExtra()
         item.AddExtra("gym",  _gym)
 
@@ -847,11 +847,11 @@ func (p *AttendanceManager) ReadRows(rows *sql.Rows) []Attendance {
     for rows.Next() {
         var item Attendance
         var _user User
-        var _membership Membership
+        var _usehealth Usehealth
         var _gym Gym
         
 
-        err := rows.Scan(&item.Id, &item.User, &item.Membership, &item.Gym, &item.Type, &item.Method, &item.Checkintime, &item.Checkouttime, &item.Duration, &item.Status, &item.Note, &item.Ip, &item.Device, &item.Createdby, &item.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Email, &_user.Name, &_user.Tel, &_user.Address, &_user.Image, &_user.Sex, &_user.Birth, &_user.Type, &_user.Connectid, &_user.Level, &_user.Role, &_user.Use, &_user.Logindate, &_user.Lastchangepasswddate, &_user.Date, &_membership.Id, &_membership.Gym, &_membership.User, &_membership.Name, &_membership.Sex, &_membership.Birth, &_membership.Phonenum, &_membership.Address, &_membership.Image, &_membership.Date, &_gym.Id, &_gym.Name, &_gym.Date)
+        err := rows.Scan(&item.Id, &item.User, &item.Usehealth, &item.Gym, &item.Type, &item.Method, &item.Checkintime, &item.Checkouttime, &item.Duration, &item.Status, &item.Note, &item.Ip, &item.Device, &item.Createdby, &item.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Email, &_user.Name, &_user.Tel, &_user.Address, &_user.Image, &_user.Sex, &_user.Birth, &_user.Type, &_user.Connectid, &_user.Level, &_user.Role, &_user.Use, &_user.Logindate, &_user.Lastchangepasswddate, &_user.Date, &_usehealth.Id, &_usehealth.Order, &_usehealth.Health, &_usehealth.Membership, &_usehealth.User, &_usehealth.Term, &_usehealth.Discount, &_usehealth.Startday, &_usehealth.Endday, &_usehealth.Gym, &_usehealth.Status, &_usehealth.Totalcount, &_usehealth.Usedcount, &_usehealth.Remainingcount, &_usehealth.Qrcode, &_usehealth.Lastuseddate, &_usehealth.Date, &_gym.Id, &_gym.Name, &_gym.Address, &_gym.Tel, &_gym.User, &_gym.Date)
         if err != nil {
            if p.Log {
              log.Error().Str("error", err.Error()).Msg("SQL")
@@ -888,8 +888,8 @@ func (p *AttendanceManager) ReadRows(rows *sql.Rows) []Attendance {
         item.InitExtra()
         _user.InitExtra()
         item.AddExtra("user",  _user)
-_membership.InitExtra()
-        item.AddExtra("membership",  _membership)
+_usehealth.InitExtra()
+        item.AddExtra("usehealth",  _usehealth)
 _gym.InitExtra()
         item.AddExtra("gym",  _gym)
 
@@ -912,7 +912,7 @@ func (p *AttendanceManager) Get(id int64) *Attendance {
     
     query.WriteString(" and at_user = u_id")
     
-    query.WriteString(" and at_membership = m_id")
+    query.WriteString(" and at_usehealth = uh_id")
     
     query.WriteString(" and at_gym = g_id")
     

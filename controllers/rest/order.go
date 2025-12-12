@@ -34,9 +34,17 @@ func (c *OrderController) Index(page int, pagesize int) {
 
     var args []interface{}
     
-    _membership := c.Geti64("membership")
-    if _membership != 0 {
-        args = append(args, models.Where{Column:"membership", Value:_membership, Compare:"="})    
+    _user := c.Geti64("user")
+    if _user != 0 {
+        args = append(args, models.Where{Column:"user", Value:_user, Compare:"="})    
+    }
+    _gym := c.Geti64("gym")
+    if _gym != 0 {
+        args = append(args, models.Where{Column:"gym", Value:_gym, Compare:"="})    
+    }
+    _health := c.Geti64("health")
+    if _health != 0 {
+        args = append(args, models.Where{Column:"health", Value:_health, Compare:"="})    
     }
     _startdate := c.Get("startdate")
     _enddate := c.Get("enddate")
@@ -101,9 +109,17 @@ func (c *OrderController) Count() {
 
     var args []interface{}
     
-    _membership := c.Geti64("membership")
-    if _membership != 0 {
-        args = append(args, models.Where{Column:"membership", Value:_membership, Compare:"="})    
+    _user := c.Geti64("user")
+    if _user != 0 {
+        args = append(args, models.Where{Column:"user", Value:_user, Compare:"="})    
+    }
+    _gym := c.Geti64("gym")
+    if _gym != 0 {
+        args = append(args, models.Where{Column:"gym", Value:_gym, Compare:"="})    
+    }
+    _health := c.Geti64("health")
+    if _health != 0 {
+        args = append(args, models.Where{Column:"health", Value:_health, Compare:"="})    
     }
     _startdate := c.Get("startdate")
     _enddate := c.Get("enddate")

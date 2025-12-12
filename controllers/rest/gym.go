@@ -39,6 +39,18 @@ func (c *GymController) Index(page int, pagesize int) {
         args = append(args, models.Where{Column:"name", Value:_name, Compare:"like"})
         
     }
+    _address := c.Get("address")
+    if _address != "" {
+        args = append(args, models.Where{Column:"address", Value:_address, Compare:"like"})
+    }
+    _tel := c.Get("tel")
+    if _tel != "" {
+        args = append(args, models.Where{Column:"tel", Value:_tel, Compare:"like"})
+    }
+    _user := c.Geti64("user")
+    if _user != 0 {
+        args = append(args, models.Where{Column:"user", Value:_user, Compare:"="})    
+    }
     _startdate := c.Get("startdate")
     _enddate := c.Get("enddate")
     if _startdate != "" && _enddate != "" {        
@@ -107,6 +119,20 @@ func (c *GymController) Count() {
         args = append(args, models.Where{Column:"name", Value:_name, Compare:"like"})
         
         
+    }
+    _address := c.Get("address")
+    if _address != "" {
+        args = append(args, models.Where{Column:"address", Value:_address, Compare:"like"})
+        
+    }
+    _tel := c.Get("tel")
+    if _tel != "" {
+        args = append(args, models.Where{Column:"tel", Value:_tel, Compare:"like"})
+        
+    }
+    _user := c.Geti64("user")
+    if _user != 0 {
+        args = append(args, models.Where{Column:"user", Value:_user, Compare:"="})    
     }
     _startdate := c.Get("startdate")
     _enddate := c.Get("enddate")

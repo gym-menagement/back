@@ -34,9 +34,9 @@ func (c *StopController) Index(page int, pagesize int) {
 
     var args []interface{}
     
-    _usehelth := c.Geti64("usehelth")
-    if _usehelth != 0 {
-        args = append(args, models.Where{Column:"usehelth", Value:_usehelth, Compare:"="})    
+    _usehealth := c.Geti64("usehealth")
+    if _usehealth != 0 {
+        args = append(args, models.Where{Column:"usehealth", Value:_usehealth, Compare:"="})    
     }
     _startstartday := c.Get("startstartday")
     _endstartday := c.Get("endstartday")
@@ -129,9 +129,9 @@ func (c *StopController) Count() {
 
     var args []interface{}
     
-    _usehelth := c.Geti64("usehelth")
-    if _usehelth != 0 {
-        args = append(args, models.Where{Column:"usehelth", Value:_usehelth, Compare:"="})    
+    _usehealth := c.Geti64("usehealth")
+    if _usehealth != 0 {
+        args = append(args, models.Where{Column:"usehealth", Value:_usehealth, Compare:"="})    
     }
     _startstartday := c.Get("startstartday")
     _endstartday := c.Get("endstartday")

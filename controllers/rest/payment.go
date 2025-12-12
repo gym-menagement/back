@@ -42,9 +42,9 @@ func (c *PaymentController) Index(page int, pagesize int) {
     if _order != 0 {
         args = append(args, models.Where{Column:"order", Value:_order, Compare:"="})    
     }
-    _membership := c.Geti64("membership")
-    if _membership != 0 {
-        args = append(args, models.Where{Column:"membership", Value:_membership, Compare:"="})    
+    _user := c.Geti64("user")
+    if _user != 0 {
+        args = append(args, models.Where{Column:"user", Value:_user, Compare:"="})    
     }
     _cost := c.Geti("cost")
     if _cost != 0 {
@@ -121,9 +121,9 @@ func (c *PaymentController) Count() {
     if _order != 0 {
         args = append(args, models.Where{Column:"order", Value:_order, Compare:"="})    
     }
-    _membership := c.Geti64("membership")
-    if _membership != 0 {
-        args = append(args, models.Where{Column:"membership", Value:_membership, Compare:"="})    
+    _user := c.Geti64("user")
+    if _user != 0 {
+        args = append(args, models.Where{Column:"user", Value:_user, Compare:"="})    
     }
     _cost := c.Geti("cost")
     if _cost != 0 {

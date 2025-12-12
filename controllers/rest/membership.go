@@ -34,46 +34,13 @@ func (c *MembershipController) Index(page int, pagesize int) {
 
     var args []interface{}
     
-    _gym := c.Geti64("gym")
-    if _gym != 0 {
-        args = append(args, models.Where{Column:"gym", Value:_gym, Compare:"="})    
-    }
     _user := c.Geti64("user")
     if _user != 0 {
         args = append(args, models.Where{Column:"user", Value:_user, Compare:"="})    
     }
-    _name := c.Get("name")
-    if _name != "" {
-        args = append(args, models.Where{Column:"name", Value:_name, Compare:"like"})
-        
-    }
-    _sex := c.Geti("sex")
-    if _sex != 0 {
-        args = append(args, models.Where{Column:"sex", Value:_sex, Compare:"="})    
-    }
-    _startbirth := c.Get("startbirth")
-    _endbirth := c.Get("endbirth")
-    if _startbirth != "" && _endbirth != "" {        
-        var v [2]string
-        v[0] = _startbirth
-        v[1] = _endbirth  
-        args = append(args, models.Where{Column:"birth", Value:v, Compare:"between"})    
-    } else if  _startbirth != "" {          
-        args = append(args, models.Where{Column:"birth", Value:_startbirth, Compare:">="})
-    } else if  _endbirth != "" {          
-        args = append(args, models.Where{Column:"birth", Value:_endbirth, Compare:"<="})            
-    }
-    _phonenum := c.Get("phonenum")
-    if _phonenum != "" {
-        args = append(args, models.Where{Column:"phonenum", Value:_phonenum, Compare:"like"})
-    }
-    _address := c.Get("address")
-    if _address != "" {
-        args = append(args, models.Where{Column:"address", Value:_address, Compare:"like"})
-    }
-    _image := c.Get("image")
-    if _image != "" {
-        args = append(args, models.Where{Column:"image", Value:_image, Compare:"like"})
+    _gym := c.Geti64("gym")
+    if _gym != 0 {
+        args = append(args, models.Where{Column:"gym", Value:_gym, Compare:"="})    
     }
     _startdate := c.Get("startdate")
     _enddate := c.Get("enddate")
@@ -138,51 +105,13 @@ func (c *MembershipController) Count() {
 
     var args []interface{}
     
-    _gym := c.Geti64("gym")
-    if _gym != 0 {
-        args = append(args, models.Where{Column:"gym", Value:_gym, Compare:"="})    
-    }
     _user := c.Geti64("user")
     if _user != 0 {
         args = append(args, models.Where{Column:"user", Value:_user, Compare:"="})    
     }
-    _name := c.Get("name")
-    if _name != "" {
-        args = append(args, models.Where{Column:"name", Value:_name, Compare:"like"})
-        
-        
-    }
-    _sex := c.Geti("sex")
-    if _sex != 0 {
-        args = append(args, models.Where{Column:"sex", Value:_sex, Compare:"="})    
-    }
-    _startbirth := c.Get("startbirth")
-    _endbirth := c.Get("endbirth")
-
-    if _startbirth != "" && _endbirth != "" {        
-        var v [2]string
-        v[0] = _startbirth
-        v[1] = _endbirth  
-        args = append(args, models.Where{Column:"birth", Value:v, Compare:"between"})    
-    } else if  _startbirth != "" {          
-        args = append(args, models.Where{Column:"birth", Value:_startbirth, Compare:">="})
-    } else if  _endbirth != "" {          
-        args = append(args, models.Where{Column:"birth", Value:_endbirth, Compare:"<="})            
-    }
-    _phonenum := c.Get("phonenum")
-    if _phonenum != "" {
-        args = append(args, models.Where{Column:"phonenum", Value:_phonenum, Compare:"like"})
-        
-    }
-    _address := c.Get("address")
-    if _address != "" {
-        args = append(args, models.Where{Column:"address", Value:_address, Compare:"like"})
-        
-    }
-    _image := c.Get("image")
-    if _image != "" {
-        args = append(args, models.Where{Column:"image", Value:_image, Compare:"like"})
-        
+    _gym := c.Geti64("gym")
+    if _gym != 0 {
+        args = append(args, models.Where{Column:"gym", Value:_gym, Compare:"="})    
     }
     _startdate := c.Get("startdate")
     _enddate := c.Get("enddate")

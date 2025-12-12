@@ -7,7 +7,7 @@ const (
     
     ColumnId
     ColumnUser
-    ColumnMembership
+    ColumnUsehealth
     ColumnGym
     ColumnType
     ColumnMethod

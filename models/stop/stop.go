@@ -6,7 +6,7 @@ const (
     _ Column = iota
     
     ColumnId
-    ColumnUsehelth
+    ColumnUsehealth
     ColumnStartday
     ColumnEndday
     ColumnCount

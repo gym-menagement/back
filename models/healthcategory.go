@@ -114,7 +114,7 @@ func (p *HealthcategoryManager) GetQuery() string {
 
     var ret strings.Builder
 
-    ret.WriteString("select hc_id, hc_gym, hc_name, hc_date, g_id, g_name, g_date from healthcategory_tb, gym_tb")
+    ret.WriteString("select hc_id, hc_gym, hc_name, hc_date, g_id, g_name, g_address, g_tel, g_user, g_date from healthcategory_tb, gym_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -527,7 +527,7 @@ func (p *HealthcategoryManager) ReadRow(rows *sql.Rows) *Healthcategory {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Gym, &item.Name, &item.Date, &_gym.Id, &_gym.Name, &_gym.Date)
+        err = rows.Scan(&item.Id, &item.Gym, &item.Name, &item.Date, &_gym.Id, &_gym.Name, &_gym.Address, &_gym.Tel, &_gym.User, &_gym.Date)
         
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" || item.Date == "9999-01-01 00:00:00" {
             item.Date = ""
@@ -565,7 +565,7 @@ func (p *HealthcategoryManager) ReadRows(rows *sql.Rows) []Healthcategory {
         var _gym Gym
         
 
-        err := rows.Scan(&item.Id, &item.Gym, &item.Name, &item.Date, &_gym.Id, &_gym.Name, &_gym.Date)
+        err := rows.Scan(&item.Id, &item.Gym, &item.Name, &item.Date, &_gym.Id, &_gym.Name, &_gym.Address, &_gym.Tel, &_gym.User, &_gym.Date)
         if err != nil {
            if p.Log {
              log.Error().Str("error", err.Error()).Msg("SQL")

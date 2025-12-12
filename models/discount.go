@@ -18,6 +18,7 @@ import (
 type Discount struct {
             
     Id                int64 `json:"id"`         
+    Gym                int64 `json:"gym"`         
     Name                string `json:"name"`         
     Discount                int `json:"discount"`         
     Date                string `json:"date"` 
@@ -114,7 +115,7 @@ func (p *DiscountManager) GetQuery() string {
 
     var ret strings.Builder
 
-    ret.WriteString("select d_id, d_name, d_discount, d_date from discount_tb")
+    ret.WriteString("select d_id, d_gym, d_name, d_discount, d_date, g_id, g_name, g_address, g_tel, g_user, g_date from discount_tb, gym_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -128,6 +129,8 @@ func (p *DiscountManager) GetQuery() string {
     }
 
     ret.WriteString(" where 1=1 ")
+    
+    ret.WriteString("and d_gym = g_id ")
     
 
     return ret.String()
@@ -155,6 +158,8 @@ func (p *DiscountManager) GetQuerySelect() string {
 
     ret.WriteString(" where 1=1 ")
     
+    ret.WriteString("and d_gym = g_id ")
+    
 
     return ret.String()
 }
@@ -176,6 +181,8 @@ func (p *DiscountManager) GetQueryGroup(name string) string {
     }
 
     ret.WriteString(" where 1=1 ")
+    
+    ret.WriteString("and d_gym = g_id ")
     
 
     return ret.String()
@@ -219,11 +226,11 @@ func (p *DiscountManager) Insert(item *Discount) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into discount_tb (d_id, d_name, d_discount, d_date) values (?, ?, ?, ?)"
-        res, err = p.Exec(query, item.Id, item.Name, item.Discount, item.Date)
+        query = "insert into discount_tb (d_id, d_gym, d_name, d_discount, d_date) values (?, ?, ?, ?, ?)"
+        res, err = p.Exec(query, item.Id, item.Gym, item.Name, item.Discount, item.Date)
     } else {
-        query = "insert into discount_tb (d_name, d_discount, d_date) values (?, ?, ?)"
-        res, err = p.Exec(query, item.Name, item.Discount, item.Date)
+        query = "insert into discount_tb (d_gym, d_name, d_discount, d_date) values (?, ?, ?, ?)"
+        res, err = p.Exec(query, item.Gym, item.Name, item.Discount, item.Date)
     }
     
     if err == nil {
@@ -374,8 +381,8 @@ func (p *DiscountManager) Update(item *Discount) error {
     }
 	
 
-	query := "update discount_tb set d_name = ?, d_discount = ?, d_date = ? where d_id = ?"
-	_, err := p.Exec(query, item.Name, item.Discount, item.Date, item.Id)
+	query := "update discount_tb set d_gym = ?, d_name = ?, d_discount = ?, d_date = ? where d_id = ?"
+	_, err := p.Exec(query, item.Gym, item.Name, item.Discount, item.Date, item.Id)
 
     if err != nil {
         if p.Log {
@@ -403,6 +410,9 @@ func (p *DiscountManager) UpdateWhere(columns []discount.Params, args []interfac
 
         if v.Column == discount.ColumnId {
         initQuery.WriteString("d_id = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == discount.ColumnGym {
+        initQuery.WriteString("d_gym = ?")
         initParams = append(initParams, v.Value)
         } else if v.Column == discount.ColumnName {
         initQuery.WriteString("d_name = ?")
@@ -435,6 +445,23 @@ func (p *DiscountManager) UpdateWhere(columns []discount.Params, args []interfac
 
 /*
 
+
+func (p *DiscountManager) UpdateGym(value int64, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update discount_tb set d_gym = ? where d_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
 
 func (p *DiscountManager) UpdateName(value string, id int64) error {
     if !p.Conn.IsConnect() {
@@ -517,10 +544,11 @@ func (p *DiscountManager) ReadRow(rows *sql.Rows) *Discount {
     var item Discount
     var err error
 
+    var _gym Gym
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Name, &item.Discount, &item.Date)
+        err = rows.Scan(&item.Id, &item.Gym, &item.Name, &item.Discount, &item.Date, &_gym.Id, &_gym.Name, &_gym.Address, &_gym.Tel, &_gym.User, &_gym.Date)
         
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" || item.Date == "9999-01-01 00:00:00" {
             item.Date = ""
@@ -543,7 +571,9 @@ func (p *DiscountManager) ReadRow(rows *sql.Rows) *Discount {
     } else {
 
         item.InitExtra()
-        
+        _gym.InitExtra()
+        item.AddExtra("gym",  _gym)
+
         return &item
     }
 }
@@ -553,9 +583,10 @@ func (p *DiscountManager) ReadRows(rows *sql.Rows) []Discount {
 
     for rows.Next() {
         var item Discount
+        var _gym Gym
         
 
-        err := rows.Scan(&item.Id, &item.Name, &item.Discount, &item.Date)
+        err := rows.Scan(&item.Id, &item.Gym, &item.Name, &item.Discount, &item.Date, &_gym.Id, &_gym.Name, &_gym.Address, &_gym.Tel, &_gym.User, &_gym.Date)
         if err != nil {
            if p.Log {
              log.Error().Str("error", err.Error()).Msg("SQL")
@@ -574,7 +605,9 @@ func (p *DiscountManager) ReadRows(rows *sql.Rows) []Discount {
 		
 
         item.InitExtra()
-        
+        _gym.InitExtra()
+        item.AddExtra("gym",  _gym)
+
         items = append(items, item)
     }
 
@@ -591,6 +624,8 @@ func (p *DiscountManager) Get(id int64) *Discount {
     query.WriteString(p.GetQuery())
     query.WriteString(" and d_id = ?")
 
+    
+    query.WriteString(" and d_gym = g_id")
     
     
     rows, err := p.Query(query.String(), id)

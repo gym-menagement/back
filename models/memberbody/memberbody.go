@@ -6,6 +6,7 @@ const (
     _ Column = iota
     
     ColumnId
+    ColumnGym
     ColumnUser
     ColumnHeight
     ColumnWeight

@@ -17,6 +17,32 @@ import (
 // SetupTokenRoutes sets up routes for token domain
 func SetupTokenRoutes(group fiber.Router) {
 
+	group.Delete("/token", func(c *fiber.Ctx) error {
+			item_ := &models.Token{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.TokenController
+		controller.Init(c)
+		controller.Delete(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Delete("/token/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Token{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.TokenController
+		controller.Init(c)
+		controller.Deletebatch(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
 	group.Get("/token/:id", func(c *fiber.Ctx) error {
 			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 		var controller rest.TokenController
@@ -80,32 +106,6 @@ func SetupTokenRoutes(group fiber.Router) {
 		var controller rest.TokenController
 		controller.Init(c)
 		controller.Update(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Delete("/token", func(c *fiber.Ctx) error {
-			item_ := &models.Token{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.TokenController
-		controller.Init(c)
-		controller.Delete(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Delete("/token/batch", func(c *fiber.Ctx) error {
-			item_ := &[]models.Token{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.TokenController
-		controller.Init(c)
-		controller.Deletebatch(item_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

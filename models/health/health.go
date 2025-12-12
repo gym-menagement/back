@@ -14,6 +14,7 @@ const (
     ColumnDiscount
     ColumnCostdiscount
     ColumnContent
+    ColumnGym
     ColumnDate
 )
 

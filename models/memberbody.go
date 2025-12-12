@@ -18,6 +18,7 @@ import (
 type Memberbody struct {
             
     Id                int64 `json:"id"`         
+    Gym                int64 `json:"gym"`         
     User                int64 `json:"user"`         
     Height                int `json:"height"`         
     Weight                int `json:"weight"`         
@@ -128,7 +129,7 @@ func (p *MemberbodyManager) GetQuery() string {
 
     var ret strings.Builder
 
-    ret.WriteString("select mb_id, mb_user, mb_height, mb_weight, mb_bodyfat, mb_musclemass, mb_bmi, mb_skeletalmuscle, mb_bodywater, mb_chest, mb_waist, mb_hip, mb_arm, mb_thigh, mb_note, mb_measureddate, mb_measuredby, mb_date, u_id, u_loginid, u_passwd, u_email, u_name, u_tel, u_address, u_image, u_sex, u_birth, u_type, u_connectid, u_level, u_role, u_use, u_logindate, u_lastchangepasswddate, u_date, u_id, u_loginid, u_passwd, u_email, u_name, u_tel, u_address, u_image, u_sex, u_birth, u_type, u_connectid, u_level, u_role, u_use, u_logindate, u_lastchangepasswddate, u_date from memberbody_tb, user_tb, user_tb")
+    ret.WriteString("select mb_id, mb_gym, mb_user, mb_height, mb_weight, mb_bodyfat, mb_musclemass, mb_bmi, mb_skeletalmuscle, mb_bodywater, mb_chest, mb_waist, mb_hip, mb_arm, mb_thigh, mb_note, mb_measureddate, mb_measuredby, mb_date, g_id, g_name, g_address, g_tel, g_user, g_date, u_id, u_loginid, u_passwd, u_email, u_name, u_tel, u_address, u_image, u_sex, u_birth, u_type, u_connectid, u_level, u_role, u_use, u_logindate, u_lastchangepasswddate, u_date, u_id, u_loginid, u_passwd, u_email, u_name, u_tel, u_address, u_image, u_sex, u_birth, u_type, u_connectid, u_level, u_role, u_use, u_logindate, u_lastchangepasswddate, u_date from memberbody_tb, gym_tb, user_tb, user_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -142,6 +143,8 @@ func (p *MemberbodyManager) GetQuery() string {
     }
 
     ret.WriteString(" where 1=1 ")
+    
+    ret.WriteString("and mb_gym = g_id ")
     
     ret.WriteString("and mb_user = u_id ")
     
@@ -173,6 +176,8 @@ func (p *MemberbodyManager) GetQuerySelect() string {
 
     ret.WriteString(" where 1=1 ")
     
+    ret.WriteString("and mb_gym = g_id ")
+    
     ret.WriteString("and mb_user = u_id ")
     
     ret.WriteString("and mb_measuredby = u_id ")
@@ -198,6 +203,8 @@ func (p *MemberbodyManager) GetQueryGroup(name string) string {
     }
 
     ret.WriteString(" where 1=1 ")
+    
+    ret.WriteString("and mb_gym = g_id ")
     
     ret.WriteString("and mb_user = u_id ")
     
@@ -249,11 +256,11 @@ func (p *MemberbodyManager) Insert(item *Memberbody) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into memberbody_tb (mb_id, mb_user, mb_height, mb_weight, mb_bodyfat, mb_musclemass, mb_bmi, mb_skeletalmuscle, mb_bodywater, mb_chest, mb_waist, mb_hip, mb_arm, mb_thigh, mb_note, mb_measureddate, mb_measuredby, mb_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query, item.Id, item.User, item.Height, item.Weight, item.Bodyfat, item.Musclemass, item.Bmi, item.Skeletalmuscle, item.Bodywater, item.Chest, item.Waist, item.Hip, item.Arm, item.Thigh, item.Note, item.Measureddate, item.Measuredby, item.Date)
+        query = "insert into memberbody_tb (mb_id, mb_gym, mb_user, mb_height, mb_weight, mb_bodyfat, mb_musclemass, mb_bmi, mb_skeletalmuscle, mb_bodywater, mb_chest, mb_waist, mb_hip, mb_arm, mb_thigh, mb_note, mb_measureddate, mb_measuredby, mb_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query, item.Id, item.Gym, item.User, item.Height, item.Weight, item.Bodyfat, item.Musclemass, item.Bmi, item.Skeletalmuscle, item.Bodywater, item.Chest, item.Waist, item.Hip, item.Arm, item.Thigh, item.Note, item.Measureddate, item.Measuredby, item.Date)
     } else {
-        query = "insert into memberbody_tb (mb_user, mb_height, mb_weight, mb_bodyfat, mb_musclemass, mb_bmi, mb_skeletalmuscle, mb_bodywater, mb_chest, mb_waist, mb_hip, mb_arm, mb_thigh, mb_note, mb_measureddate, mb_measuredby, mb_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query, item.User, item.Height, item.Weight, item.Bodyfat, item.Musclemass, item.Bmi, item.Skeletalmuscle, item.Bodywater, item.Chest, item.Waist, item.Hip, item.Arm, item.Thigh, item.Note, item.Measureddate, item.Measuredby, item.Date)
+        query = "insert into memberbody_tb (mb_gym, mb_user, mb_height, mb_weight, mb_bodyfat, mb_musclemass, mb_bmi, mb_skeletalmuscle, mb_bodywater, mb_chest, mb_waist, mb_hip, mb_arm, mb_thigh, mb_note, mb_measureddate, mb_measuredby, mb_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        res, err = p.Exec(query, item.Gym, item.User, item.Height, item.Weight, item.Bodyfat, item.Musclemass, item.Bmi, item.Skeletalmuscle, item.Bodywater, item.Chest, item.Waist, item.Hip, item.Arm, item.Thigh, item.Note, item.Measureddate, item.Measuredby, item.Date)
     }
     
     if err == nil {
@@ -408,8 +415,8 @@ func (p *MemberbodyManager) Update(item *Memberbody) error {
     }
 	
 
-	query := "update memberbody_tb set mb_user = ?, mb_height = ?, mb_weight = ?, mb_bodyfat = ?, mb_musclemass = ?, mb_bmi = ?, mb_skeletalmuscle = ?, mb_bodywater = ?, mb_chest = ?, mb_waist = ?, mb_hip = ?, mb_arm = ?, mb_thigh = ?, mb_note = ?, mb_measureddate = ?, mb_measuredby = ?, mb_date = ? where mb_id = ?"
-	_, err := p.Exec(query, item.User, item.Height, item.Weight, item.Bodyfat, item.Musclemass, item.Bmi, item.Skeletalmuscle, item.Bodywater, item.Chest, item.Waist, item.Hip, item.Arm, item.Thigh, item.Note, item.Measureddate, item.Measuredby, item.Date, item.Id)
+	query := "update memberbody_tb set mb_gym = ?, mb_user = ?, mb_height = ?, mb_weight = ?, mb_bodyfat = ?, mb_musclemass = ?, mb_bmi = ?, mb_skeletalmuscle = ?, mb_bodywater = ?, mb_chest = ?, mb_waist = ?, mb_hip = ?, mb_arm = ?, mb_thigh = ?, mb_note = ?, mb_measureddate = ?, mb_measuredby = ?, mb_date = ? where mb_id = ?"
+	_, err := p.Exec(query, item.Gym, item.User, item.Height, item.Weight, item.Bodyfat, item.Musclemass, item.Bmi, item.Skeletalmuscle, item.Bodywater, item.Chest, item.Waist, item.Hip, item.Arm, item.Thigh, item.Note, item.Measureddate, item.Measuredby, item.Date, item.Id)
 
     if err != nil {
         if p.Log {
@@ -437,6 +444,9 @@ func (p *MemberbodyManager) UpdateWhere(columns []memberbody.Params, args []inte
 
         if v.Column == memberbody.ColumnId {
         initQuery.WriteString("mb_id = ?")
+        initParams = append(initParams, v.Value)
+        } else if v.Column == memberbody.ColumnGym {
+        initQuery.WriteString("mb_gym = ?")
         initParams = append(initParams, v.Value)
         } else if v.Column == memberbody.ColumnUser {
         initQuery.WriteString("mb_user = ?")
@@ -511,6 +521,23 @@ func (p *MemberbodyManager) UpdateWhere(columns []memberbody.Params, args []inte
 
 /*
 
+
+func (p *MemberbodyManager) UpdateGym(value int64, id int64) error {
+    if !p.Conn.IsConnect() {
+        return errors.New("Connection Error")
+    }
+
+	query := "update memberbody_tb set mb_gym = ? where mb_id = ?"
+	_, err := p.Exec(query, value, id)
+
+    if err != nil {
+        if p.Log {
+          log.Error().Str("error", err.Error()).Msg("SQL")
+        }
+    }
+
+    return err
+}
 
 func (p *MemberbodyManager) UpdateUser(value int64, id int64) error {
     if !p.Conn.IsConnect() {
@@ -831,12 +858,13 @@ func (p *MemberbodyManager) ReadRow(rows *sql.Rows) *Memberbody {
     var item Memberbody
     var err error
 
+    var _gym Gym
     var _memberuser User
     var _measuredbyuser User
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.User, &item.Height, &item.Weight, &item.Bodyfat, &item.Musclemass, &item.Bmi, &item.Skeletalmuscle, &item.Bodywater, &item.Chest, &item.Waist, &item.Hip, &item.Arm, &item.Thigh, &item.Note, &item.Measureddate, &item.Measuredby, &item.Date, &_memberuser.Id, &_memberuser.Loginid, &_memberuser.Passwd, &_memberuser.Email, &_memberuser.Name, &_memberuser.Tel, &_memberuser.Address, &_memberuser.Image, &_memberuser.Sex, &_memberuser.Birth, &_memberuser.Type, &_memberuser.Connectid, &_memberuser.Level, &_memberuser.Role, &_memberuser.Use, &_memberuser.Logindate, &_memberuser.Lastchangepasswddate, &_memberuser.Date, &_measuredbyuser.Id, &_measuredbyuser.Loginid, &_measuredbyuser.Passwd, &_measuredbyuser.Email, &_measuredbyuser.Name, &_measuredbyuser.Tel, &_measuredbyuser.Address, &_measuredbyuser.Image, &_measuredbyuser.Sex, &_measuredbyuser.Birth, &_measuredbyuser.Type, &_measuredbyuser.Connectid, &_measuredbyuser.Level, &_measuredbyuser.Role, &_measuredbyuser.Use, &_measuredbyuser.Logindate, &_measuredbyuser.Lastchangepasswddate, &_measuredbyuser.Date)
+        err = rows.Scan(&item.Id, &item.Gym, &item.User, &item.Height, &item.Weight, &item.Bodyfat, &item.Musclemass, &item.Bmi, &item.Skeletalmuscle, &item.Bodywater, &item.Chest, &item.Waist, &item.Hip, &item.Arm, &item.Thigh, &item.Note, &item.Measureddate, &item.Measuredby, &item.Date, &_gym.Id, &_gym.Name, &_gym.Address, &_gym.Tel, &_gym.User, &_gym.Date, &_memberuser.Id, &_memberuser.Loginid, &_memberuser.Passwd, &_memberuser.Email, &_memberuser.Name, &_memberuser.Tel, &_memberuser.Address, &_memberuser.Image, &_memberuser.Sex, &_memberuser.Birth, &_memberuser.Type, &_memberuser.Connectid, &_memberuser.Level, &_memberuser.Role, &_memberuser.Use, &_memberuser.Logindate, &_memberuser.Lastchangepasswddate, &_memberuser.Date, &_measuredbyuser.Id, &_measuredbyuser.Loginid, &_measuredbyuser.Passwd, &_measuredbyuser.Email, &_measuredbyuser.Name, &_measuredbyuser.Tel, &_measuredbyuser.Address, &_measuredbyuser.Image, &_measuredbyuser.Sex, &_measuredbyuser.Birth, &_measuredbyuser.Type, &_measuredbyuser.Connectid, &_measuredbyuser.Level, &_measuredbyuser.Role, &_measuredbyuser.Use, &_measuredbyuser.Logindate, &_measuredbyuser.Lastchangepasswddate, &_measuredbyuser.Date)
         
         if item.Measureddate == "0000-00-00 00:00:00" || item.Measureddate == "1000-01-01 00:00:00" || item.Measureddate == "9999-01-01 00:00:00" {
             item.Measureddate = ""
@@ -867,7 +895,9 @@ func (p *MemberbodyManager) ReadRow(rows *sql.Rows) *Memberbody {
     } else {
 
         item.InitExtra()
-        _memberuser.InitExtra()
+        _gym.InitExtra()
+        item.AddExtra("gym",  _gym)
+_memberuser.InitExtra()
         item.AddExtra("memberuser",  _memberuser)
 _measuredbyuser.InitExtra()
         item.AddExtra("measuredbyuser",  _measuredbyuser)
@@ -881,11 +911,12 @@ func (p *MemberbodyManager) ReadRows(rows *sql.Rows) []Memberbody {
 
     for rows.Next() {
         var item Memberbody
+        var _gym Gym
         var _memberuser User
         var _measuredbyuser User
         
 
-        err := rows.Scan(&item.Id, &item.User, &item.Height, &item.Weight, &item.Bodyfat, &item.Musclemass, &item.Bmi, &item.Skeletalmuscle, &item.Bodywater, &item.Chest, &item.Waist, &item.Hip, &item.Arm, &item.Thigh, &item.Note, &item.Measureddate, &item.Measuredby, &item.Date, &_memberuser.Id, &_memberuser.Loginid, &_memberuser.Passwd, &_memberuser.Email, &_memberuser.Name, &_memberuser.Tel, &_memberuser.Address, &_memberuser.Image, &_memberuser.Sex, &_memberuser.Birth, &_memberuser.Type, &_memberuser.Connectid, &_memberuser.Level, &_memberuser.Role, &_memberuser.Use, &_memberuser.Logindate, &_memberuser.Lastchangepasswddate, &_memberuser.Date, &_measuredbyuser.Id, &_measuredbyuser.Loginid, &_measuredbyuser.Passwd, &_measuredbyuser.Email, &_measuredbyuser.Name, &_measuredbyuser.Tel, &_measuredbyuser.Address, &_measuredbyuser.Image, &_measuredbyuser.Sex, &_measuredbyuser.Birth, &_measuredbyuser.Type, &_measuredbyuser.Connectid, &_measuredbyuser.Level, &_measuredbyuser.Role, &_measuredbyuser.Use, &_measuredbyuser.Logindate, &_measuredbyuser.Lastchangepasswddate, &_measuredbyuser.Date)
+        err := rows.Scan(&item.Id, &item.Gym, &item.User, &item.Height, &item.Weight, &item.Bodyfat, &item.Musclemass, &item.Bmi, &item.Skeletalmuscle, &item.Bodywater, &item.Chest, &item.Waist, &item.Hip, &item.Arm, &item.Thigh, &item.Note, &item.Measureddate, &item.Measuredby, &item.Date, &_gym.Id, &_gym.Name, &_gym.Address, &_gym.Tel, &_gym.User, &_gym.Date, &_memberuser.Id, &_memberuser.Loginid, &_memberuser.Passwd, &_memberuser.Email, &_memberuser.Name, &_memberuser.Tel, &_memberuser.Address, &_memberuser.Image, &_memberuser.Sex, &_memberuser.Birth, &_memberuser.Type, &_memberuser.Connectid, &_memberuser.Level, &_memberuser.Role, &_memberuser.Use, &_memberuser.Logindate, &_memberuser.Lastchangepasswddate, &_memberuser.Date, &_measuredbyuser.Id, &_measuredbyuser.Loginid, &_measuredbyuser.Passwd, &_measuredbyuser.Email, &_measuredbyuser.Name, &_measuredbyuser.Tel, &_measuredbyuser.Address, &_measuredbyuser.Image, &_measuredbyuser.Sex, &_measuredbyuser.Birth, &_measuredbyuser.Type, &_measuredbyuser.Connectid, &_measuredbyuser.Level, &_measuredbyuser.Role, &_measuredbyuser.Use, &_measuredbyuser.Logindate, &_measuredbyuser.Lastchangepasswddate, &_measuredbyuser.Date)
         if err != nil {
            if p.Log {
              log.Error().Str("error", err.Error()).Msg("SQL")
@@ -912,7 +943,9 @@ func (p *MemberbodyManager) ReadRows(rows *sql.Rows) []Memberbody {
 		
 
         item.InitExtra()
-        _memberuser.InitExtra()
+        _gym.InitExtra()
+        item.AddExtra("gym",  _gym)
+_memberuser.InitExtra()
         item.AddExtra("memberuser",  _memberuser)
 _measuredbyuser.InitExtra()
         item.AddExtra("measuredbyuser",  _measuredbyuser)
@@ -933,6 +966,8 @@ func (p *MemberbodyManager) Get(id int64) *Memberbody {
     query.WriteString(p.GetQuery())
     query.WriteString(" and mb_id = ?")
 
+    
+    query.WriteString(" and mb_gym = g_id")
     
     query.WriteString(" and mb_user = u_id")
     

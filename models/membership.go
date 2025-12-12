@@ -18,14 +18,8 @@ import (
 type Membership struct {
             
     Id                int64 `json:"id"`         
-    Gym                int64 `json:"gym"`         
     User                int64 `json:"user"`         
-    Name                string `json:"name"`         
-    Sex                membership.Sex `json:"sex"`         
-    Birth                string `json:"birth"`         
-    Phonenum                string `json:"phonenum"`         
-    Address                string `json:"address"`         
-    Image                string `json:"image"`         
+    Gym                int64 `json:"gym"`         
     Date                string `json:"date"` 
     
     Extra                    map[string]interface{} `json:"extra"`
@@ -120,7 +114,7 @@ func (p *MembershipManager) GetQuery() string {
 
     var ret strings.Builder
 
-    ret.WriteString("select m_id, m_gym, m_user, m_name, m_sex, m_birth, m_phonenum, m_address, m_image, m_date, g_id, g_name, g_date, u_id, u_loginid, u_passwd, u_email, u_name, u_tel, u_address, u_image, u_sex, u_birth, u_type, u_connectid, u_level, u_role, u_use, u_logindate, u_lastchangepasswddate, u_date from membership_tb, gym_tb, user_tb")
+    ret.WriteString("select m_id, m_user, m_gym, m_date, g_id, g_name, g_address, g_tel, g_user, g_date, u_id, u_loginid, u_passwd, u_email, u_name, u_tel, u_address, u_image, u_sex, u_birth, u_type, u_connectid, u_level, u_role, u_use, u_logindate, u_lastchangepasswddate, u_date from membership_tb, gym_tb, user_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -228,10 +222,6 @@ func (p *MembershipManager) Insert(item *Membership) error {
     }
 
     
-    if item.Birth == "" {
-       item.Birth = "1000-01-01 00:00:00"
-    }
-	
     if item.Date == "" {
        item.Date = "1000-01-01 00:00:00"
     }
@@ -241,11 +231,11 @@ func (p *MembershipManager) Insert(item *Membership) error {
     var res sql.Result
     var err error
     if item.Id > 0 {
-        query = "insert into membership_tb (m_id, m_gym, m_user, m_name, m_sex, m_birth, m_phonenum, m_address, m_image, m_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query, item.Id, item.Gym, item.User, item.Name, item.Sex, item.Birth, item.Phonenum, item.Address, item.Image, item.Date)
+        query = "insert into membership_tb (m_id, m_user, m_gym, m_date) values (?, ?, ?, ?)"
+        res, err = p.Exec(query, item.Id, item.User, item.Gym, item.Date)
     } else {
-        query = "insert into membership_tb (m_gym, m_user, m_name, m_sex, m_birth, m_phonenum, m_address, m_image, m_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        res, err = p.Exec(query, item.Gym, item.User, item.Name, item.Sex, item.Birth, item.Phonenum, item.Address, item.Image, item.Date)
+        query = "insert into membership_tb (m_user, m_gym, m_date) values (?, ?, ?)"
+        res, err = p.Exec(query, item.User, item.Gym, item.Date)
     }
     
     if err == nil {
@@ -391,17 +381,13 @@ func (p *MembershipManager) Update(item *Membership) error {
     }
     
     
-    if item.Birth == "" {
-       item.Birth = "1000-01-01 00:00:00"
-    }
-	
     if item.Date == "" {
        item.Date = "1000-01-01 00:00:00"
     }
 	
 
-	query := "update membership_tb set m_gym = ?, m_user = ?, m_name = ?, m_sex = ?, m_birth = ?, m_phonenum = ?, m_address = ?, m_image = ?, m_date = ? where m_id = ?"
-	_, err := p.Exec(query, item.Gym, item.User, item.Name, item.Sex, item.Birth, item.Phonenum, item.Address, item.Image, item.Date, item.Id)
+	query := "update membership_tb set m_user = ?, m_gym = ?, m_date = ? where m_id = ?"
+	_, err := p.Exec(query, item.User, item.Gym, item.Date, item.Id)
 
     if err != nil {
         if p.Log {
@@ -430,29 +416,11 @@ func (p *MembershipManager) UpdateWhere(columns []membership.Params, args []inte
         if v.Column == membership.ColumnId {
         initQuery.WriteString("m_id = ?")
         initParams = append(initParams, v.Value)
-        } else if v.Column == membership.ColumnGym {
-        initQuery.WriteString("m_gym = ?")
-        initParams = append(initParams, v.Value)
         } else if v.Column == membership.ColumnUser {
         initQuery.WriteString("m_user = ?")
         initParams = append(initParams, v.Value)
-        } else if v.Column == membership.ColumnName {
-        initQuery.WriteString("m_name = ?")
-        initParams = append(initParams, v.Value)
-        } else if v.Column == membership.ColumnSex {
-        initQuery.WriteString("m_sex = ?")
-        initParams = append(initParams, v.Value)
-        } else if v.Column == membership.ColumnBirth {
-        initQuery.WriteString("m_birth = ?")
-        initParams = append(initParams, v.Value)
-        } else if v.Column == membership.ColumnPhonenum {
-        initQuery.WriteString("m_phonenum = ?")
-        initParams = append(initParams, v.Value)
-        } else if v.Column == membership.ColumnAddress {
-        initQuery.WriteString("m_address = ?")
-        initParams = append(initParams, v.Value)
-        } else if v.Column == membership.ColumnImage {
-        initQuery.WriteString("m_image = ?")
+        } else if v.Column == membership.ColumnGym {
+        initQuery.WriteString("m_gym = ?")
         initParams = append(initParams, v.Value)
         } else if v.Column == membership.ColumnDate {
         initQuery.WriteString("m_date = ?")
@@ -480,23 +448,6 @@ func (p *MembershipManager) UpdateWhere(columns []membership.Params, args []inte
 /*
 
 
-func (p *MembershipManager) UpdateGym(value int64, id int64) error {
-    if !p.Conn.IsConnect() {
-        return errors.New("Connection Error")
-    }
-
-	query := "update membership_tb set m_gym = ? where m_id = ?"
-	_, err := p.Exec(query, value, id)
-
-    if err != nil {
-        if p.Log {
-          log.Error().Str("error", err.Error()).Msg("SQL")
-        }
-    }
-
-    return err
-}
-
 func (p *MembershipManager) UpdateUser(value int64, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
@@ -514,97 +465,12 @@ func (p *MembershipManager) UpdateUser(value int64, id int64) error {
     return err
 }
 
-func (p *MembershipManager) UpdateName(value string, id int64) error {
+func (p *MembershipManager) UpdateGym(value int64, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
 
-	query := "update membership_tb set m_name = ? where m_id = ?"
-	_, err := p.Exec(query, value, id)
-
-    if err != nil {
-        if p.Log {
-          log.Error().Str("error", err.Error()).Msg("SQL")
-        }
-    }
-
-    return err
-}
-
-func (p *MembershipManager) UpdateSex(value membership.Sex, id int64) error {
-    if !p.Conn.IsConnect() {
-        return errors.New("Connection Error")
-    }
-
-	query := "update membership_tb set m_sex = ? where m_id = ?"
-	_, err := p.Exec(query, value, id)
-
-    if err != nil {
-        if p.Log {
-          log.Error().Str("error", err.Error()).Msg("SQL")
-        }
-    }
-
-    return err
-}
-
-func (p *MembershipManager) UpdateBirth(value string, id int64) error {
-    if !p.Conn.IsConnect() {
-        return errors.New("Connection Error")
-    }
-
-	query := "update membership_tb set m_birth = ? where m_id = ?"
-	_, err := p.Exec(query, value, id)
-
-    if err != nil {
-        if p.Log {
-          log.Error().Str("error", err.Error()).Msg("SQL")
-        }
-    }
-
-    return err
-}
-
-func (p *MembershipManager) UpdatePhonenum(value string, id int64) error {
-    if !p.Conn.IsConnect() {
-        return errors.New("Connection Error")
-    }
-
-	query := "update membership_tb set m_phonenum = ? where m_id = ?"
-	_, err := p.Exec(query, value, id)
-
-    if err != nil {
-        if p.Log {
-          log.Error().Str("error", err.Error()).Msg("SQL")
-        }
-    }
-
-    return err
-}
-
-func (p *MembershipManager) UpdateAddress(value string, id int64) error {
-    if !p.Conn.IsConnect() {
-        return errors.New("Connection Error")
-    }
-
-	query := "update membership_tb set m_address = ? where m_id = ?"
-	_, err := p.Exec(query, value, id)
-
-    if err != nil {
-        if p.Log {
-          log.Error().Str("error", err.Error()).Msg("SQL")
-        }
-    }
-
-    return err
-}
-
-func (p *MembershipManager) UpdateImage(value string, id int64) error {
-    if !p.Conn.IsConnect() {
-        return errors.New("Connection Error")
-    }
-
-	query := "update membership_tb set m_image = ? where m_id = ?"
+	query := "update membership_tb set m_gym = ? where m_id = ?"
 	_, err := p.Exec(query, value, id)
 
     if err != nil {
@@ -655,7 +521,6 @@ func (p *MembershipManager) GetIdentity() int64 {
 
 func (p *Membership) InitExtra() {
     p.Extra = map[string]interface{}{
-            "sex":     membership.GetSex(p.Sex),
 
     }
 }
@@ -669,16 +534,8 @@ func (p *MembershipManager) ReadRow(rows *sql.Rows) *Membership {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Gym, &item.User, &item.Name, &item.Sex, &item.Birth, &item.Phonenum, &item.Address, &item.Image, &item.Date, &_gym.Id, &_gym.Name, &_gym.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Email, &_user.Name, &_user.Tel, &_user.Address, &_user.Image, &_user.Sex, &_user.Birth, &_user.Type, &_user.Connectid, &_user.Level, &_user.Role, &_user.Use, &_user.Logindate, &_user.Lastchangepasswddate, &_user.Date)
+        err = rows.Scan(&item.Id, &item.User, &item.Gym, &item.Date, &_gym.Id, &_gym.Name, &_gym.Address, &_gym.Tel, &_gym.User, &_gym.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Email, &_user.Name, &_user.Tel, &_user.Address, &_user.Image, &_user.Sex, &_user.Birth, &_user.Type, &_user.Connectid, &_user.Level, &_user.Role, &_user.Use, &_user.Logindate, &_user.Lastchangepasswddate, &_user.Date)
         
-        if item.Birth == "0000-00-00 00:00:00" || item.Birth == "1000-01-01 00:00:00" || item.Birth == "9999-01-01 00:00:00" {
-            item.Birth = ""
-        }
-
-        if config.Database.Type == config.Postgresql {
-            item.Birth = strings.ReplaceAll(strings.ReplaceAll(item.Birth, "T", " "), "Z", "")
-        }
-		
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" || item.Date == "9999-01-01 00:00:00" {
             item.Date = ""
         }
@@ -718,7 +575,7 @@ func (p *MembershipManager) ReadRows(rows *sql.Rows) []Membership {
         var _user User
         
 
-        err := rows.Scan(&item.Id, &item.Gym, &item.User, &item.Name, &item.Sex, &item.Birth, &item.Phonenum, &item.Address, &item.Image, &item.Date, &_gym.Id, &_gym.Name, &_gym.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Email, &_user.Name, &_user.Tel, &_user.Address, &_user.Image, &_user.Sex, &_user.Birth, &_user.Type, &_user.Connectid, &_user.Level, &_user.Role, &_user.Use, &_user.Logindate, &_user.Lastchangepasswddate, &_user.Date)
+        err := rows.Scan(&item.Id, &item.User, &item.Gym, &item.Date, &_gym.Id, &_gym.Name, &_gym.Address, &_gym.Tel, &_gym.User, &_gym.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Email, &_user.Name, &_user.Tel, &_user.Address, &_user.Image, &_user.Sex, &_user.Birth, &_user.Type, &_user.Connectid, &_user.Level, &_user.Role, &_user.Use, &_user.Logindate, &_user.Lastchangepasswddate, &_user.Date)
         if err != nil {
            if p.Log {
              log.Error().Str("error", err.Error()).Msg("SQL")
@@ -727,14 +584,6 @@ func (p *MembershipManager) ReadRows(rows *sql.Rows) []Membership {
         }
 
         
-        if item.Birth == "0000-00-00 00:00:00" || item.Birth == "1000-01-01 00:00:00" || item.Birth == "9999-01-01 00:00:00" {
-            item.Birth = ""
-        }
-
-        if config.Database.Type == config.Postgresql {
-            item.Birth = strings.ReplaceAll(strings.ReplaceAll(item.Birth, "T", " "), "Z", "")
-        }
-		
         if item.Date == "0000-00-00 00:00:00" || item.Date == "1000-01-01 00:00:00" || item.Date == "9999-01-01 00:00:00" {
             item.Date = ""
         }

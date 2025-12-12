@@ -126,7 +126,7 @@ func (p *NoticeManager) GetQuery() string {
 
     var ret strings.Builder
 
-    ret.WriteString("select nt_id, nt_gym, nt_title, nt_content, nt_type, nt_ispopup, nt_ispush, nt_target, nt_viewcount, nt_startdate, nt_enddate, nt_status, nt_createdby, nt_createddate, nt_updateddate, nt_date, g_id, g_name, g_date, u_id, u_loginid, u_passwd, u_email, u_name, u_tel, u_address, u_image, u_sex, u_birth, u_type, u_connectid, u_level, u_role, u_use, u_logindate, u_lastchangepasswddate, u_date from notice_tb, gym_tb, user_tb")
+    ret.WriteString("select nt_id, nt_gym, nt_title, nt_content, nt_type, nt_ispopup, nt_ispush, nt_target, nt_viewcount, nt_startdate, nt_enddate, nt_status, nt_createdby, nt_createddate, nt_updateddate, nt_date, g_id, g_name, g_address, g_tel, g_user, g_date, u_id, u_loginid, u_passwd, u_email, u_name, u_tel, u_address, u_image, u_sex, u_birth, u_type, u_connectid, u_level, u_role, u_use, u_logindate, u_lastchangepasswddate, u_date from notice_tb, gym_tb, user_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -823,7 +823,7 @@ func (p *NoticeManager) ReadRow(rows *sql.Rows) *Notice {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Gym, &item.Title, &item.Content, &item.Type, &item.Ispopup, &item.Ispush, &item.Target, &item.Viewcount, &item.Startdate, &item.Enddate, &item.Status, &item.Createdby, &item.Createddate, &item.Updateddate, &item.Date, &_gym.Id, &_gym.Name, &_gym.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Email, &_user.Name, &_user.Tel, &_user.Address, &_user.Image, &_user.Sex, &_user.Birth, &_user.Type, &_user.Connectid, &_user.Level, &_user.Role, &_user.Use, &_user.Logindate, &_user.Lastchangepasswddate, &_user.Date)
+        err = rows.Scan(&item.Id, &item.Gym, &item.Title, &item.Content, &item.Type, &item.Ispopup, &item.Ispush, &item.Target, &item.Viewcount, &item.Startdate, &item.Enddate, &item.Status, &item.Createdby, &item.Createddate, &item.Updateddate, &item.Date, &_gym.Id, &_gym.Name, &_gym.Address, &_gym.Tel, &_gym.User, &_gym.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Email, &_user.Name, &_user.Tel, &_user.Address, &_user.Image, &_user.Sex, &_user.Birth, &_user.Type, &_user.Connectid, &_user.Level, &_user.Role, &_user.Use, &_user.Logindate, &_user.Lastchangepasswddate, &_user.Date)
         
         if item.Startdate == "0000-00-00 00:00:00" || item.Startdate == "1000-01-01 00:00:00" || item.Startdate == "9999-01-01 00:00:00" {
             item.Startdate = ""
@@ -896,7 +896,7 @@ func (p *NoticeManager) ReadRows(rows *sql.Rows) []Notice {
         var _user User
         
 
-        err := rows.Scan(&item.Id, &item.Gym, &item.Title, &item.Content, &item.Type, &item.Ispopup, &item.Ispush, &item.Target, &item.Viewcount, &item.Startdate, &item.Enddate, &item.Status, &item.Createdby, &item.Createddate, &item.Updateddate, &item.Date, &_gym.Id, &_gym.Name, &_gym.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Email, &_user.Name, &_user.Tel, &_user.Address, &_user.Image, &_user.Sex, &_user.Birth, &_user.Type, &_user.Connectid, &_user.Level, &_user.Role, &_user.Use, &_user.Logindate, &_user.Lastchangepasswddate, &_user.Date)
+        err := rows.Scan(&item.Id, &item.Gym, &item.Title, &item.Content, &item.Type, &item.Ispopup, &item.Ispush, &item.Target, &item.Viewcount, &item.Startdate, &item.Enddate, &item.Status, &item.Createdby, &item.Createddate, &item.Updateddate, &item.Date, &_gym.Id, &_gym.Name, &_gym.Address, &_gym.Tel, &_gym.User, &_gym.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Email, &_user.Name, &_user.Tel, &_user.Address, &_user.Image, &_user.Sex, &_user.Birth, &_user.Type, &_user.Connectid, &_user.Level, &_user.Role, &_user.Use, &_user.Logindate, &_user.Lastchangepasswddate, &_user.Date)
         if err != nil {
            if p.Log {
              log.Error().Str("error", err.Error()).Msg("SQL")
