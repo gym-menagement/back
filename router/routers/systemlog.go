@@ -17,47 +17,18 @@ import (
 // SetupSystemlogRoutes sets up routes for systemlog domain
 func SetupSystemlogRoutes(group fiber.Router) {
 
-	group.Put("/systemlog", func(c *fiber.Ctx) error {
-			item_ := &models.Systemlog{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
+	group.Get("/systemlog", func(c *fiber.Ctx) error {
+		page_, _ := strconv.Atoi(c.Query("page"))
+		pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
 		var controller rest.SystemlogController
 		controller.Init(c)
-		controller.Update(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Delete("/systemlog", func(c *fiber.Ctx) error {
-			item_ := &models.Systemlog{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.SystemlogController
-		controller.Init(c)
-		controller.Delete(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Delete("/systemlog/batch", func(c *fiber.Ctx) error {
-			item_ := &[]models.Systemlog{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.SystemlogController
-		controller.Init(c)
-		controller.Deletebatch(item_)
+		controller.Index(page_, pagesize_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})
 
 	group.Get("/systemlog/:id", func(c *fiber.Ctx) error {
-			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+		id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 		var controller rest.SystemlogController
 		controller.Init(c)
 		controller.Read(id_)
@@ -65,12 +36,29 @@ func SetupSystemlogRoutes(group fiber.Router) {
 		return c.JSON(controller.Result)
 	})
 
-	group.Get("/systemlog", func(c *fiber.Ctx) error {
-			page_, _ := strconv.Atoi(c.Query("page"))
-			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+	group.Post("/systemlog", func(c *fiber.Ctx) error {
+		item_ := &models.Systemlog{}
+		err := c.BodyParser(item_)
+		if err != nil {
+		    log.Error().Msg(err.Error())
+		}
 		var controller rest.SystemlogController
 		controller.Init(c)
-		controller.Index(page_, pagesize_)
+		controller.Insert(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Post("/systemlog/batch", func(c *fiber.Ctx) error {
+		var items_ *[]models.Systemlog
+		items__ref := &items_
+		err := c.BodyParser(items__ref)
+		if err != nil {
+		    log.Error().Msg(err.Error())
+		}
+		var controller rest.SystemlogController
+		controller.Init(c)
+		controller.Insertbatch(items_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})
@@ -84,28 +72,41 @@ func SetupSystemlogRoutes(group fiber.Router) {
 		return c.JSON(controller.Result)
 	})
 
-	group.Post("/systemlog", func(c *fiber.Ctx) error {
-			item_ := &models.Systemlog{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
+	group.Put("/systemlog", func(c *fiber.Ctx) error {
+		item_ := &models.Systemlog{}
+		err := c.BodyParser(item_)
+		if err != nil {
+		    log.Error().Msg(err.Error())
+		}
 		var controller rest.SystemlogController
 		controller.Init(c)
-		controller.Insert(item_)
+		controller.Update(item_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})
 
-	group.Post("/systemlog/batch", func(c *fiber.Ctx) error {
-			item_ := &[]models.Systemlog{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
+	group.Delete("/systemlog", func(c *fiber.Ctx) error {
+		item_ := &models.Systemlog{}
+		err := c.BodyParser(item_)
+		if err != nil {
+		    log.Error().Msg(err.Error())
+		}
 		var controller rest.SystemlogController
 		controller.Init(c)
-		controller.Insertbatch(item_)
+		controller.Delete(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Delete("/systemlog/batch", func(c *fiber.Ctx) error {
+		item_ := &[]models.Systemlog{}
+		err := c.BodyParser(item_)
+		if err != nil {
+		    log.Error().Msg(err.Error())
+		}
+		var controller rest.SystemlogController
+		controller.Init(c)
+		controller.Deletebatch(item_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})
