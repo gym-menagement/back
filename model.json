@@ -8,9 +8,9 @@
   "authTimeout": "not",
   "adminLevel": "3",
   "language": "react",
-  "goModelFilePath": "../gym/gymspring/",
-  "dartModelFilePath": "../../gym/gym/lib/model/",
-  "kotlinModelFilePath": "../../gym/android/app/src/main/kotlin/com/gowoobro/gymspring/",
+  "goModelFilePath": "",
+  "dartModelFilePath": "../../gym/app/lib/model/",
+  "kotlinModelFilePath": "../../gym/gymspring/android/app/src/main/kotlin/com/gowoobro/gymspring/",
   "ReactModelFilePath": "../../gym/front/src/",
   "table": [
     {
