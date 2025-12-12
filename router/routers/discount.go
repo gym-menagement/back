@@ -17,6 +17,32 @@ import (
 // SetupDiscountRoutes sets up routes for discount domain
 func SetupDiscountRoutes(group fiber.Router) {
 
+	group.Put("/discount", func(c *fiber.Ctx) error {
+			item_ := &models.Discount{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.DiscountController
+		controller.Init(c)
+		controller.Update(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Delete("/discount", func(c *fiber.Ctx) error {
+			item_ := &models.Discount{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.DiscountController
+		controller.Init(c)
+		controller.Delete(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
 	group.Delete("/discount/batch", func(c *fiber.Ctx) error {
 			item_ := &[]models.Discount{}
 			err := c.BodyParser(item_)
@@ -80,32 +106,6 @@ func SetupDiscountRoutes(group fiber.Router) {
 		var controller rest.DiscountController
 		controller.Init(c)
 		controller.Insertbatch(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Put("/discount", func(c *fiber.Ctx) error {
-			item_ := &models.Discount{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.DiscountController
-		controller.Init(c)
-		controller.Update(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Delete("/discount", func(c *fiber.Ctx) error {
-			item_ := &models.Discount{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.DiscountController
-		controller.Init(c)
-		controller.Delete(item_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

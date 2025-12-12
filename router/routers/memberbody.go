@@ -17,6 +17,19 @@ import (
 // SetupMemberbodyRoutes sets up routes for memberbody domain
 func SetupMemberbodyRoutes(group fiber.Router) {
 
+	group.Put("/memberbody", func(c *fiber.Ctx) error {
+			item_ := &models.Memberbody{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.MemberbodyController
+		controller.Init(c)
+		controller.Update(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
 	group.Delete("/memberbody", func(c *fiber.Ctx) error {
 			item_ := &models.Memberbody{}
 			err := c.BodyParser(item_)
@@ -93,19 +106,6 @@ func SetupMemberbodyRoutes(group fiber.Router) {
 		var controller rest.MemberbodyController
 		controller.Init(c)
 		controller.Insertbatch(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Put("/memberbody", func(c *fiber.Ctx) error {
-			item_ := &models.Memberbody{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.MemberbodyController
-		controller.Init(c)
-		controller.Update(item_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

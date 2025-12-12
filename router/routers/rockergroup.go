@@ -17,6 +17,32 @@ import (
 // SetupRockergroupRoutes sets up routes for rockergroup domain
 func SetupRockergroupRoutes(group fiber.Router) {
 
+	group.Post("/rockergroup/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Rockergroup{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.RockergroupController
+		controller.Init(c)
+		controller.Insertbatch(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Put("/rockergroup", func(c *fiber.Ctx) error {
+			item_ := &models.Rockergroup{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.RockergroupController
+		controller.Init(c)
+		controller.Update(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
 	group.Delete("/rockergroup", func(c *fiber.Ctx) error {
 			item_ := &models.Rockergroup{}
 			err := c.BodyParser(item_)
@@ -80,32 +106,6 @@ func SetupRockergroupRoutes(group fiber.Router) {
 		var controller rest.RockergroupController
 		controller.Init(c)
 		controller.Insert(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Post("/rockergroup/batch", func(c *fiber.Ctx) error {
-			item_ := &[]models.Rockergroup{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.RockergroupController
-		controller.Init(c)
-		controller.Insertbatch(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Put("/rockergroup", func(c *fiber.Ctx) error {
-			item_ := &models.Rockergroup{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.RockergroupController
-		controller.Init(c)
-		controller.Update(item_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

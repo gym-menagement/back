@@ -17,32 +17,6 @@ import (
 // SetupLoginlogRoutes sets up routes for loginlog domain
 func SetupLoginlogRoutes(group fiber.Router) {
 
-	group.Put("/loginlog", func(c *fiber.Ctx) error {
-			item_ := &models.Loginlog{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.LoginlogController
-		controller.Init(c)
-		controller.Update(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Delete("/loginlog", func(c *fiber.Ctx) error {
-			item_ := &models.Loginlog{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.LoginlogController
-		controller.Init(c)
-		controller.Delete(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
 	group.Delete("/loginlog/batch", func(c *fiber.Ctx) error {
 			item_ := &[]models.Loginlog{}
 			err := c.BodyParser(item_)
@@ -106,6 +80,32 @@ func SetupLoginlogRoutes(group fiber.Router) {
 		var controller rest.LoginlogController
 		controller.Init(c)
 		controller.Insertbatch(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Put("/loginlog", func(c *fiber.Ctx) error {
+			item_ := &models.Loginlog{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.LoginlogController
+		controller.Init(c)
+		controller.Update(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Delete("/loginlog", func(c *fiber.Ctx) error {
+			item_ := &models.Loginlog{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.LoginlogController
+		controller.Init(c)
+		controller.Delete(item_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

@@ -17,6 +17,15 @@ import (
 // SetupOrderRoutes sets up routes for order domain
 func SetupOrderRoutes(group fiber.Router) {
 
+	group.Post("/order/count", func(c *fiber.Ctx) error {
+
+		var controller rest.OrderController
+		controller.Init(c)
+		controller.Count()
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
 	group.Post("/order", func(c *fiber.Ctx) error {
 			item_ := &models.Order{}
 			err := c.BodyParser(item_)
@@ -97,15 +106,6 @@ func SetupOrderRoutes(group fiber.Router) {
 		var controller rest.OrderController
 		controller.Init(c)
 		controller.Index(page_, pagesize_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Post("/order/count", func(c *fiber.Ctx) error {
-
-		var controller rest.OrderController
-		controller.Init(c)
-		controller.Count()
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

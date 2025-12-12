@@ -17,45 +17,6 @@ import (
 // SetupInquiryRoutes sets up routes for inquiry domain
 func SetupInquiryRoutes(group fiber.Router) {
 
-	group.Post("/inquiry/batch", func(c *fiber.Ctx) error {
-			item_ := &[]models.Inquiry{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.InquiryController
-		controller.Init(c)
-		controller.Insertbatch(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Put("/inquiry", func(c *fiber.Ctx) error {
-			item_ := &models.Inquiry{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.InquiryController
-		controller.Init(c)
-		controller.Update(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Delete("/inquiry", func(c *fiber.Ctx) error {
-			item_ := &models.Inquiry{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.InquiryController
-		controller.Init(c)
-		controller.Delete(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
 	group.Delete("/inquiry/batch", func(c *fiber.Ctx) error {
 			item_ := &[]models.Inquiry{}
 			err := c.BodyParser(item_)
@@ -106,6 +67,45 @@ func SetupInquiryRoutes(group fiber.Router) {
 		var controller rest.InquiryController
 		controller.Init(c)
 		controller.Insert(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Post("/inquiry/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Inquiry{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.InquiryController
+		controller.Init(c)
+		controller.Insertbatch(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Put("/inquiry", func(c *fiber.Ctx) error {
+			item_ := &models.Inquiry{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.InquiryController
+		controller.Init(c)
+		controller.Update(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Delete("/inquiry", func(c *fiber.Ctx) error {
+			item_ := &models.Inquiry{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.InquiryController
+		controller.Init(c)
+		controller.Delete(item_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

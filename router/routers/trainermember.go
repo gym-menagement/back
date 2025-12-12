@@ -17,6 +17,25 @@ import (
 // SetupTrainermemberRoutes sets up routes for trainermember domain
 func SetupTrainermemberRoutes(group fiber.Router) {
 
+	group.Get("/trainermember", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+		var controller rest.TrainermemberController
+		controller.Init(c)
+		controller.Index(page_, pagesize_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Post("/trainermember/count", func(c *fiber.Ctx) error {
+
+		var controller rest.TrainermemberController
+		controller.Init(c)
+		controller.Count()
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
 	group.Post("/trainermember", func(c *fiber.Ctx) error {
 			item_ := &models.Trainermember{}
 			err := c.BodyParser(item_)
@@ -87,25 +106,6 @@ func SetupTrainermemberRoutes(group fiber.Router) {
 		var controller rest.TrainermemberController
 		controller.Init(c)
 		controller.Read(id_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Get("/trainermember", func(c *fiber.Ctx) error {
-			page_, _ := strconv.Atoi(c.Query("page"))
-			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
-		var controller rest.TrainermemberController
-		controller.Init(c)
-		controller.Index(page_, pagesize_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Post("/trainermember/count", func(c *fiber.Ctx) error {
-
-		var controller rest.TrainermemberController
-		controller.Init(c)
-		controller.Count()
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

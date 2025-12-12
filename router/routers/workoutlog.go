@@ -17,45 +17,6 @@ import (
 // SetupWorkoutlogRoutes sets up routes for workoutlog domain
 func SetupWorkoutlogRoutes(group fiber.Router) {
 
-	group.Post("/workoutlog", func(c *fiber.Ctx) error {
-			item_ := &models.Workoutlog{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.WorkoutlogController
-		controller.Init(c)
-		controller.Insert(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Post("/workoutlog/batch", func(c *fiber.Ctx) error {
-			item_ := &[]models.Workoutlog{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.WorkoutlogController
-		controller.Init(c)
-		controller.Insertbatch(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Put("/workoutlog", func(c *fiber.Ctx) error {
-			item_ := &models.Workoutlog{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.WorkoutlogController
-		controller.Init(c)
-		controller.Update(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
 	group.Delete("/workoutlog", func(c *fiber.Ctx) error {
 			item_ := &models.Workoutlog{}
 			err := c.BodyParser(item_)
@@ -106,6 +67,45 @@ func SetupWorkoutlogRoutes(group fiber.Router) {
 		var controller rest.WorkoutlogController
 		controller.Init(c)
 		controller.Count()
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Post("/workoutlog", func(c *fiber.Ctx) error {
+			item_ := &models.Workoutlog{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.WorkoutlogController
+		controller.Init(c)
+		controller.Insert(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Post("/workoutlog/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Workoutlog{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.WorkoutlogController
+		controller.Init(c)
+		controller.Insertbatch(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Put("/workoutlog", func(c *fiber.Ctx) error {
+			item_ := &models.Workoutlog{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.WorkoutlogController
+		controller.Init(c)
+		controller.Update(item_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

@@ -17,6 +17,32 @@ import (
 // SetupAlarmRoutes sets up routes for alarm domain
 func SetupAlarmRoutes(group fiber.Router) {
 
+	group.Post("/alarm/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Alarm{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.AlarmController
+		controller.Init(c)
+		controller.Insertbatch(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Put("/alarm", func(c *fiber.Ctx) error {
+			item_ := &models.Alarm{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.AlarmController
+		controller.Init(c)
+		controller.Update(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
 	group.Delete("/alarm", func(c *fiber.Ctx) error {
 			item_ := &models.Alarm{}
 			err := c.BodyParser(item_)
@@ -80,32 +106,6 @@ func SetupAlarmRoutes(group fiber.Router) {
 		var controller rest.AlarmController
 		controller.Init(c)
 		controller.Insert(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Post("/alarm/batch", func(c *fiber.Ctx) error {
-			item_ := &[]models.Alarm{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.AlarmController
-		controller.Init(c)
-		controller.Insertbatch(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Put("/alarm", func(c *fiber.Ctx) error {
-			item_ := &models.Alarm{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.AlarmController
-		controller.Init(c)
-		controller.Update(item_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

@@ -17,6 +17,25 @@ import (
 // SetupHealthRoutes sets up routes for health domain
 func SetupHealthRoutes(group fiber.Router) {
 
+	group.Get("/health", func(c *fiber.Ctx) error {
+			page_, _ := strconv.Atoi(c.Query("page"))
+			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
+		var controller rest.HealthController
+		controller.Init(c)
+		controller.Index(page_, pagesize_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Post("/health/count", func(c *fiber.Ctx) error {
+
+		var controller rest.HealthController
+		controller.Init(c)
+		controller.Count()
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
 	group.Post("/health", func(c *fiber.Ctx) error {
 			item_ := &models.Health{}
 			err := c.BodyParser(item_)
@@ -87,25 +106,6 @@ func SetupHealthRoutes(group fiber.Router) {
 		var controller rest.HealthController
 		controller.Init(c)
 		controller.Read(id_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Get("/health", func(c *fiber.Ctx) error {
-			page_, _ := strconv.Atoi(c.Query("page"))
-			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
-		var controller rest.HealthController
-		controller.Init(c)
-		controller.Index(page_, pagesize_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Post("/health/count", func(c *fiber.Ctx) error {
-
-		var controller rest.HealthController
-		controller.Init(c)
-		controller.Count()
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

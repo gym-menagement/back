@@ -17,6 +17,15 @@ import (
 // SetupIpblockRoutes sets up routes for ipblock domain
 func SetupIpblockRoutes(group fiber.Router) {
 
+	group.Get("/ipblock/:id", func(c *fiber.Ctx) error {
+			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+		var controller rest.IpblockController
+		controller.Init(c)
+		controller.Read(id_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
 	group.Get("/ipblock", func(c *fiber.Ctx) error {
 			page_, _ := strconv.Atoi(c.Query("page"))
 			pagesize_, _ := strconv.Atoi(c.Query("pagesize"))
@@ -97,15 +106,6 @@ func SetupIpblockRoutes(group fiber.Router) {
 		var controller rest.IpblockController
 		controller.Init(c)
 		controller.Deletebatch(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Get("/ipblock/:id", func(c *fiber.Ctx) error {
-			id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
-		var controller rest.IpblockController
-		controller.Init(c)
-		controller.Read(id_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

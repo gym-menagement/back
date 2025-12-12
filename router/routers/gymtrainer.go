@@ -17,41 +17,6 @@ import (
 // SetupGymtrainerRoutes sets up routes for gymtrainer domain
 func SetupGymtrainerRoutes(group fiber.Router) {
 
-	group.Post("/gymtrainer/count", func(c *fiber.Ctx) error {
-
-		var controller rest.GymtrainerController
-		controller.Init(c)
-		controller.Count()
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Post("/gymtrainer", func(c *fiber.Ctx) error {
-			item_ := &models.Gymtrainer{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.GymtrainerController
-		controller.Init(c)
-		controller.Insert(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
-	group.Post("/gymtrainer/batch", func(c *fiber.Ctx) error {
-			item_ := &[]models.Gymtrainer{}
-			err := c.BodyParser(item_)
-			if err != nil {
-			    log.Error().Msg(err.Error())
-			}
-		var controller rest.GymtrainerController
-		controller.Init(c)
-		controller.Insertbatch(item_)
-		controller.Close()
-		return c.JSON(controller.Result)
-	})
-
 	group.Put("/gymtrainer", func(c *fiber.Ctx) error {
 			item_ := &models.Gymtrainer{}
 			err := c.BodyParser(item_)
@@ -106,6 +71,41 @@ func SetupGymtrainerRoutes(group fiber.Router) {
 		var controller rest.GymtrainerController
 		controller.Init(c)
 		controller.Index(page_, pagesize_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Post("/gymtrainer/count", func(c *fiber.Ctx) error {
+
+		var controller rest.GymtrainerController
+		controller.Init(c)
+		controller.Count()
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Post("/gymtrainer", func(c *fiber.Ctx) error {
+			item_ := &models.Gymtrainer{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.GymtrainerController
+		controller.Init(c)
+		controller.Insert(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Post("/gymtrainer/batch", func(c *fiber.Ctx) error {
+			item_ := &[]models.Gymtrainer{}
+			err := c.BodyParser(item_)
+			if err != nil {
+			    log.Error().Msg(err.Error())
+			}
+		var controller rest.GymtrainerController
+		controller.Init(c)
+		controller.Insertbatch(item_)
 		controller.Close()
 		return c.JSON(controller.Result)
 	})
