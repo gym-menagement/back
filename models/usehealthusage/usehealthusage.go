@@ -34,7 +34,7 @@ const (
 
     TypeEntry
     TypePt
-    TypeClass
+    TypeGroupclass
 )
 
 var Types = []string{ "", "입장", "PT수업", "그룹수업" }

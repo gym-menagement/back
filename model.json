@@ -10,7 +10,7 @@
   "language": "react",
   "goModelFilePath": "",
   "dartModelFilePath": "../../gym/app/lib/model/",
-  "kotlinModelFilePath": "../../gym/gymspring/android/app/src/main/kotlin/com/gowoobro/gymspring/",
+  "kotlinModelFilePath": "../../gym/gymspring/src/main/kotlin/com/gowoobro/gymspring/",
   "ReactModelFilePath": "../../gym/front/src/",
   "table": [
     {
