@@ -1,6 +1,7 @@
 package router
 
 import (
+	"encoding/json"
 	"net/http/httptest"
 	"strings"
 	"testing"
@@ -160,4 +161,83 @@ func TestBlockPrivilegedSignupIgnoresOtherRoutes(t *testing.T) {
 			t.Errorf("%s %s 는 통과해야 한다: status=%d", r.method, r.path, resp.StatusCode)
 		}
 	}
+}
+
+// 무인증 아이디 중복확인이 개인정보를 흘리지 않는지 확인한다.
+// 이 경로는 가입 흐름 때문에 열어둬야 해서 응답 쪽에서 막는 수밖에 없다.
+func TestMaskPublicUserLookup(t *testing.T) {
+	const full = `{"code":"ok","item":{"id":1,"loginid":"admin","email":"admin@gym.com",` +
+		`"name":"최고관리자","tel":"010-0001-0001","address":"서울시 강남구",` +
+		`"birth":"1980-01-01","level":5,"role":5}}`
+
+	newApp := func(authenticated bool) *fiber.App {
+		app := fiber.New()
+		if authenticated {
+			app.Use(func(c *fiber.Ctx) error {
+				c.Locals("user", &struct{ Name string }{"admin"})
+				return c.Next()
+			})
+		}
+		app.Use(MaskPublicUserLookup)
+		h := func(c *fiber.Ctx) error {
+			c.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSON)
+			return c.SendString(full)
+		}
+		app.Get("/api/user/search/loginid", h)
+		app.Get("/api/user/search/email", h) // 인증 필요 경로 — 미들웨어가 건드리면 안 된다
+		return app
+	}
+
+	read := func(t *testing.T, app *fiber.App, path string) map[string]any {
+		t.Helper()
+		resp, err := app.Test(httptest.NewRequest(fiber.MethodGet, path, nil))
+		if err != nil {
+			t.Fatalf("요청 실패: %v", err)
+		}
+		var out map[string]any
+		if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
+			t.Fatalf("응답 파싱 실패: %v", err)
+		}
+		return out
+	}
+
+	leaky := []string{"email", "name", "tel", "address", "birth", "level", "role"}
+
+	t.Run("무인증이면 개인정보가 제거된다", func(t *testing.T) {
+		out := read(t, newApp(false), "/api/user/search/loginid?loginid=admin")
+		item, ok := out["item"].(map[string]any)
+		if !ok {
+			t.Fatalf("item 이 객체가 아니다: %#v", out["item"])
+		}
+		for _, k := range leaky {
+			if _, exists := item[k]; exists {
+				t.Errorf("개인정보 %q 가 남아 있다", k)
+			}
+		}
+		// 중복 판단에 필요한 필드는 유지돼야 한다.
+		for _, k := range []string{"id", "loginid"} {
+			if _, exists := item[k]; !exists {
+				t.Errorf("필수 필드 %q 가 사라졌다", k)
+			}
+		}
+		if out["code"] != "ok" {
+			t.Errorf("응답 형태가 바뀌었다: code=%v", out["code"])
+		}
+	})
+
+	t.Run("인증된 요청은 원본 그대로", func(t *testing.T) {
+		out := read(t, newApp(true), "/api/user/search/loginid?loginid=admin")
+		item := out["item"].(map[string]any)
+		if _, exists := item["email"]; !exists {
+			t.Error("인증된 요청인데 email 이 제거됐다")
+		}
+	})
+
+	t.Run("다른 경로는 건드리지 않는다", func(t *testing.T) {
+		out := read(t, newApp(false), "/api/user/search/email?email=x")
+		item := out["item"].(map[string]any)
+		if _, exists := item["email"]; !exists {
+			t.Error("대상이 아닌 경로의 응답이 변형됐다")
+		}
+	})
 }
