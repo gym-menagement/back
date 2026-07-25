@@ -49,6 +49,10 @@ func SetRouter(r *fiber.App) {
 	// c.Locals("user") 를 채운 뒤여야 인증된 관리자의 생성과 구분된다.
 	apiGroup.Use(BlockPrivilegedSignup)
 
+	// 무인증 아이디 중복확인 응답에서 개인정보를 지운다. 같은 이유로
+	// JwtAuthRequired 다음에 온다.
+	apiGroup.Use(MaskPublicUserLookup)
+
 
 	// Setup domain-specific routes
 	routers.SetupMembershipRoutes(apiGroup)

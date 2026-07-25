@@ -191,6 +191,59 @@ var BlockPrivilegedSignup = func(c *fiber.Ctx) error {
 	return c.Next()
 }
 
+// MaskPublicUserLookup 은 무인증 아이디 중복확인 응답에서 개인정보를 지운다.
+//
+// /api/user/search/loginid 는 가입 흐름의 중복확인 때문에 무인증으로 열어둬야
+// 하는데, 핸들러는 사용자 레코드 전문을 돌려준다. 아이디만 알면 그 사람의
+// 이메일·전화번호·주소·생년월일·권한이 그대로 나갔다. 추측하기 쉬운
+// 아이디(admin 등)면 관리자 정보가 공개되는 셈이다.
+//
+// 존재 확인에 필요한 필드만 남기고 나머지를 버린다. 응답 형태({code, item})는
+// 유지한다 — 클라이언트가 item 유무로 중복을 판단하므로 구조를 바꾸면 가입
+// 흐름이 깨진다.
+//
+// JwtAuthRequired 다음에 등록해야 c.Locals("user") 로 인증 여부를 구분할 수 있다.
+var MaskPublicUserLookup = func(c *fiber.Ctx) error {
+	if err := c.Next(); err != nil {
+		return err
+	}
+	if c.Method() != fiber.MethodGet || c.Path() != "/api/user/search/loginid" {
+		return nil
+	}
+	// 인증된 요청은 원래 응답을 그대로 쓴다(관리자 화면에서 필요).
+	if c.Locals("user") != nil {
+		return nil
+	}
+
+	var payload map[string]any
+	if json.Unmarshal(c.Response().Body(), &payload) != nil {
+		return nil
+	}
+	// item 이 객체가 아니면(미존재·에러 응답) 개인정보가 없으므로 손대지 않는다.
+	item, ok := payload["item"].(map[string]any)
+	if !ok {
+		return nil
+	}
+
+	masked := map[string]any{}
+	for _, k := range publicUserFields {
+		if v, exists := item[k]; exists {
+			masked[k] = v
+		}
+	}
+	payload["item"] = masked
+
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return nil
+	}
+	c.Response().SetBody(body)
+	return nil
+}
+
+// 무인증 조회에서 내보낼 필드. 중복 여부 판단에 필요한 최소한만 둔다.
+var publicUserFields = []string{"id", "loginid"}
+
 // signupPrivilege 는 요청 본문에서 level·role 을 읽는다.
 // JSON 과 form(urlencoded·multipart)을 모두 본다. 한쪽만 검사하면 다른 쪽
 // 인코딩으로 그대로 우회된다.
