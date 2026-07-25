@@ -3,6 +3,7 @@ package rest
 
 import (
 	"gym/controllers"
+	
 	"gym/models"
 
     "strings"
@@ -148,6 +149,8 @@ func (c *SystemlogController) Count() {
 func (c *SystemlogController) Insert(item *models.Systemlog) {
     
     
+    
+
 	conn := c.NewConnection()
     
 	manager := models.NewSystemlogManager(conn)
@@ -177,6 +180,7 @@ func (c *SystemlogController) Insertbatch(item *[]models.Systemlog) {
 	manager := models.NewSystemlogManager(conn)
 
     for i := 0; i < rows; i++ {
+        
 	    err := manager.Insert(&((*item)[i]))
         if err != nil {
             c.Set("code", "error")    
@@ -189,6 +193,8 @@ func (c *SystemlogController) Insertbatch(item *[]models.Systemlog) {
 func (c *SystemlogController) Update(item *models.Systemlog) {
     
     
+    
+
 	conn := c.NewConnection()
 
 	manager := models.NewSystemlogManager(conn)

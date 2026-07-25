@@ -1,17 +1,14 @@
 package routers
 
 import (
-
 	"strconv"
 
 	"gym/global/log"
 
-
 	"gym/controllers/rest"
 
-
-	"gym/models"
 	"github.com/gofiber/fiber/v2"
+	"gym/models"
 )
 
 // SetupUsehealthRoutes sets up routes for usehealth domain
@@ -27,7 +24,7 @@ func SetupUsehealthRoutes(group fiber.Router) {
 		return c.JSON(controller.Result)
 	})
 
-	group.Get("/usehealth/:id", func(c *fiber.Ctx) error {
+	group.Get("/usehealth/:id<int>", func(c *fiber.Ctx) error {
 		id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 		var controller rest.UsehealthController
 		controller.Init(c)
@@ -40,7 +37,7 @@ func SetupUsehealthRoutes(group fiber.Router) {
 		item_ := &models.Usehealth{}
 		err := c.BodyParser(item_)
 		if err != nil {
-		    log.Error().Msg(err.Error())
+			log.Error().Msg(err.Error())
 		}
 		var controller rest.UsehealthController
 		controller.Init(c)
@@ -54,7 +51,7 @@ func SetupUsehealthRoutes(group fiber.Router) {
 		items__ref := &items_
 		err := c.BodyParser(items__ref)
 		if err != nil {
-		    log.Error().Msg(err.Error())
+			log.Error().Msg(err.Error())
 		}
 		var controller rest.UsehealthController
 		controller.Init(c)
@@ -63,7 +60,7 @@ func SetupUsehealthRoutes(group fiber.Router) {
 		return c.JSON(controller.Result)
 	})
 
-	group.Post("/usehealth/count", func(c *fiber.Ctx) error {
+	group.Get("/usehealth/count", func(c *fiber.Ctx) error {
 
 		var controller rest.UsehealthController
 		controller.Init(c)
@@ -72,12 +69,14 @@ func SetupUsehealthRoutes(group fiber.Router) {
 		return c.JSON(controller.Result)
 	})
 
-	group.Put("/usehealth", func(c *fiber.Ctx) error {
+	group.Put("/usehealth/:id<int>", func(c *fiber.Ctx) error {
+		id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 		item_ := &models.Usehealth{}
 		err := c.BodyParser(item_)
 		if err != nil {
-		    log.Error().Msg(err.Error())
+			log.Error().Msg(err.Error())
 		}
+		item_.Id = id_
 		var controller rest.UsehealthController
 		controller.Init(c)
 		controller.Update(item_)
@@ -85,12 +84,29 @@ func SetupUsehealthRoutes(group fiber.Router) {
 		return c.JSON(controller.Result)
 	})
 
-	group.Delete("/usehealth", func(c *fiber.Ctx) error {
+	group.Patch("/usehealth/:id<int>", func(c *fiber.Ctx) error {
+		id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 		item_ := &models.Usehealth{}
 		err := c.BodyParser(item_)
 		if err != nil {
-		    log.Error().Msg(err.Error())
+			log.Error().Msg(err.Error())
 		}
+		item_.Id = id_
+		var controller rest.UsehealthController
+		controller.Init(c)
+		controller.Update(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Delete("/usehealth/:id<int>", func(c *fiber.Ctx) error {
+		id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+		item_ := &models.Usehealth{}
+		err := c.BodyParser(item_)
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
+		item_.Id = id_
 		var controller rest.UsehealthController
 		controller.Init(c)
 		controller.Delete(item_)
@@ -102,7 +118,7 @@ func SetupUsehealthRoutes(group fiber.Router) {
 		item_ := &[]models.Usehealth{}
 		err := c.BodyParser(item_)
 		if err != nil {
-		    log.Error().Msg(err.Error())
+			log.Error().Msg(err.Error())
 		}
 		var controller rest.UsehealthController
 		controller.Init(c)

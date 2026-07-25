@@ -1,17 +1,14 @@
 package routers
 
 import (
-
 	"strconv"
 
 	"gym/global/log"
 
-
 	"gym/controllers/rest"
 
-
-	"gym/models"
 	"github.com/gofiber/fiber/v2"
+	"gym/models"
 )
 
 // SetupMemberbodyRoutes sets up routes for memberbody domain
@@ -27,7 +24,7 @@ func SetupMemberbodyRoutes(group fiber.Router) {
 		return c.JSON(controller.Result)
 	})
 
-	group.Get("/memberbody/:id", func(c *fiber.Ctx) error {
+	group.Get("/memberbody/:id<int>", func(c *fiber.Ctx) error {
 		id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 		var controller rest.MemberbodyController
 		controller.Init(c)
@@ -40,7 +37,7 @@ func SetupMemberbodyRoutes(group fiber.Router) {
 		item_ := &models.Memberbody{}
 		err := c.BodyParser(item_)
 		if err != nil {
-		    log.Error().Msg(err.Error())
+			log.Error().Msg(err.Error())
 		}
 		var controller rest.MemberbodyController
 		controller.Init(c)
@@ -54,7 +51,7 @@ func SetupMemberbodyRoutes(group fiber.Router) {
 		items__ref := &items_
 		err := c.BodyParser(items__ref)
 		if err != nil {
-		    log.Error().Msg(err.Error())
+			log.Error().Msg(err.Error())
 		}
 		var controller rest.MemberbodyController
 		controller.Init(c)
@@ -63,7 +60,7 @@ func SetupMemberbodyRoutes(group fiber.Router) {
 		return c.JSON(controller.Result)
 	})
 
-	group.Post("/memberbody/count", func(c *fiber.Ctx) error {
+	group.Get("/memberbody/count", func(c *fiber.Ctx) error {
 
 		var controller rest.MemberbodyController
 		controller.Init(c)
@@ -72,12 +69,14 @@ func SetupMemberbodyRoutes(group fiber.Router) {
 		return c.JSON(controller.Result)
 	})
 
-	group.Put("/memberbody", func(c *fiber.Ctx) error {
+	group.Put("/memberbody/:id<int>", func(c *fiber.Ctx) error {
+		id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 		item_ := &models.Memberbody{}
 		err := c.BodyParser(item_)
 		if err != nil {
-		    log.Error().Msg(err.Error())
+			log.Error().Msg(err.Error())
 		}
+		item_.Id = id_
 		var controller rest.MemberbodyController
 		controller.Init(c)
 		controller.Update(item_)
@@ -85,12 +84,29 @@ func SetupMemberbodyRoutes(group fiber.Router) {
 		return c.JSON(controller.Result)
 	})
 
-	group.Delete("/memberbody", func(c *fiber.Ctx) error {
+	group.Patch("/memberbody/:id<int>", func(c *fiber.Ctx) error {
+		id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 		item_ := &models.Memberbody{}
 		err := c.BodyParser(item_)
 		if err != nil {
-		    log.Error().Msg(err.Error())
+			log.Error().Msg(err.Error())
 		}
+		item_.Id = id_
+		var controller rest.MemberbodyController
+		controller.Init(c)
+		controller.Update(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Delete("/memberbody/:id<int>", func(c *fiber.Ctx) error {
+		id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+		item_ := &models.Memberbody{}
+		err := c.BodyParser(item_)
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
+		item_.Id = id_
 		var controller rest.MemberbodyController
 		controller.Init(c)
 		controller.Delete(item_)
@@ -102,7 +118,7 @@ func SetupMemberbodyRoutes(group fiber.Router) {
 		item_ := &[]models.Memberbody{}
 		err := c.BodyParser(item_)
 		if err != nil {
-		    log.Error().Msg(err.Error())
+			log.Error().Msg(err.Error())
 		}
 		var controller rest.MemberbodyController
 		controller.Init(c)

@@ -21,11 +21,11 @@ type Notificationhistory struct {
     Sender                int64 `json:"sender"`         
     Receiver                int64 `json:"receiver"`         
     Gym                int64 `json:"gym"`         
-    Type                notificationhistory.Type `json:"type"`         
+    Type                int `json:"type"`         
     Title                string `json:"title"`         
     Body                string `json:"body"`         
     Data                string `json:"data"`         
-    Status                notificationhistory.Status `json:"status"`         
+    Status                int `json:"status"`         
     Errormessage                string `json:"errormessage"`         
     Sentdate                string `json:"sentdate"`         
     Date                string `json:"date"` 
@@ -122,7 +122,7 @@ func (p *NotificationhistoryManager) GetQuery() string {
 
     var ret strings.Builder
 
-    ret.WriteString("select nh_id, nh_sender, nh_receiver, nh_gym, nh_type, nh_title, nh_body, nh_data, nh_status, nh_errormessage, nh_sentdate, nh_date, u_id, u_loginid, u_passwd, u_email, u_name, u_tel, u_address, u_image, u_sex, u_birth, u_type, u_connectid, u_level, u_role, u_use, u_logindate, u_lastchangepasswddate, u_date, u_id, u_loginid, u_passwd, u_email, u_name, u_tel, u_address, u_image, u_sex, u_birth, u_type, u_connectid, u_level, u_role, u_use, u_logindate, u_lastchangepasswddate, u_date, g_id, g_name, g_address, g_tel, g_user, g_date from notificationhistory_tb, user_tb, user_tb, gym_tb")
+    ret.WriteString("select nh_id, nh_sender, nh_receiver, nh_gym, nh_type, nh_title, nh_body, nh_data, nh_status, nh_errormessage, nh_sentdate, nh_date from notificationhistory_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -136,12 +136,6 @@ func (p *NotificationhistoryManager) GetQuery() string {
     }
 
     ret.WriteString(" where 1=1 ")
-    
-    ret.WriteString("and nh_sender = u_id ")
-    
-    ret.WriteString("and nh_receiver = u_id ")
-    
-    ret.WriteString("and nh_gym = g_id ")
     
 
     return ret.String()
@@ -169,12 +163,6 @@ func (p *NotificationhistoryManager) GetQuerySelect() string {
 
     ret.WriteString(" where 1=1 ")
     
-    ret.WriteString("and nh_sender = u_id ")
-    
-    ret.WriteString("and nh_receiver = u_id ")
-    
-    ret.WriteString("and nh_gym = g_id ")
-    
 
     return ret.String()
 }
@@ -196,12 +184,6 @@ func (p *NotificationhistoryManager) GetQueryGroup(name string) string {
     }
 
     ret.WriteString(" where 1=1 ")
-    
-    ret.WriteString("and nh_sender = u_id ")
-    
-    ret.WriteString("and nh_receiver = u_id ")
-    
-    ret.WriteString("and nh_gym = g_id ")
     
 
     return ret.String()
@@ -545,7 +527,7 @@ func (p *NotificationhistoryManager) UpdateGym(value int64, id int64) error {
     return err
 }
 
-func (p *NotificationhistoryManager) UpdateType(value notificationhistory.Type, id int64) error {
+func (p *NotificationhistoryManager) UpdateType(value int, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
@@ -613,7 +595,7 @@ func (p *NotificationhistoryManager) UpdateData(value string, id int64) error {
     return err
 }
 
-func (p *NotificationhistoryManager) UpdateStatus(value notificationhistory.Status, id int64) error {
+func (p *NotificationhistoryManager) UpdateStatus(value int, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
@@ -703,8 +685,6 @@ func (p *NotificationhistoryManager) GetIdentity() int64 {
 
 func (p *Notificationhistory) InitExtra() {
     p.Extra = map[string]interface{}{
-            "type":     notificationhistory.GetType(p.Type),
-            "status":     notificationhistory.GetStatus(p.Status),
 
     }
 }
@@ -713,13 +693,10 @@ func (p *NotificationhistoryManager) ReadRow(rows *sql.Rows) *Notificationhistor
     var item Notificationhistory
     var err error
 
-    var _senderuser User
-    var _receiveruser User
-    var _gym Gym
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Sender, &item.Receiver, &item.Gym, &item.Type, &item.Title, &item.Body, &item.Data, &item.Status, &item.Errormessage, &item.Sentdate, &item.Date, &_senderuser.Id, &_senderuser.Loginid, &_senderuser.Passwd, &_senderuser.Email, &_senderuser.Name, &_senderuser.Tel, &_senderuser.Address, &_senderuser.Image, &_senderuser.Sex, &_senderuser.Birth, &_senderuser.Type, &_senderuser.Connectid, &_senderuser.Level, &_senderuser.Role, &_senderuser.Use, &_senderuser.Logindate, &_senderuser.Lastchangepasswddate, &_senderuser.Date, &_receiveruser.Id, &_receiveruser.Loginid, &_receiveruser.Passwd, &_receiveruser.Email, &_receiveruser.Name, &_receiveruser.Tel, &_receiveruser.Address, &_receiveruser.Image, &_receiveruser.Sex, &_receiveruser.Birth, &_receiveruser.Type, &_receiveruser.Connectid, &_receiveruser.Level, &_receiveruser.Role, &_receiveruser.Use, &_receiveruser.Logindate, &_receiveruser.Lastchangepasswddate, &_receiveruser.Date, &_gym.Id, &_gym.Name, &_gym.Address, &_gym.Tel, &_gym.User, &_gym.Date)
+        err = rows.Scan(&item.Id, &item.Sender, &item.Receiver, &item.Gym, &item.Type, &item.Title, &item.Body, &item.Data, &item.Status, &item.Errormessage, &item.Sentdate, &item.Date)
         
         if item.Sentdate == "0000-00-00 00:00:00" || item.Sentdate == "1000-01-01 00:00:00" || item.Sentdate == "9999-01-01 00:00:00" {
             item.Sentdate = ""
@@ -750,13 +727,7 @@ func (p *NotificationhistoryManager) ReadRow(rows *sql.Rows) *Notificationhistor
     } else {
 
         item.InitExtra()
-        _senderuser.InitExtra()
-        item.AddExtra("senderuser",  _senderuser)
-_receiveruser.InitExtra()
-        item.AddExtra("receiveruser",  _receiveruser)
-_gym.InitExtra()
-        item.AddExtra("gym",  _gym)
-
+        
         return &item
     }
 }
@@ -766,12 +737,9 @@ func (p *NotificationhistoryManager) ReadRows(rows *sql.Rows) []Notificationhist
 
     for rows.Next() {
         var item Notificationhistory
-        var _senderuser User
-        var _receiveruser User
-        var _gym Gym
         
 
-        err := rows.Scan(&item.Id, &item.Sender, &item.Receiver, &item.Gym, &item.Type, &item.Title, &item.Body, &item.Data, &item.Status, &item.Errormessage, &item.Sentdate, &item.Date, &_senderuser.Id, &_senderuser.Loginid, &_senderuser.Passwd, &_senderuser.Email, &_senderuser.Name, &_senderuser.Tel, &_senderuser.Address, &_senderuser.Image, &_senderuser.Sex, &_senderuser.Birth, &_senderuser.Type, &_senderuser.Connectid, &_senderuser.Level, &_senderuser.Role, &_senderuser.Use, &_senderuser.Logindate, &_senderuser.Lastchangepasswddate, &_senderuser.Date, &_receiveruser.Id, &_receiveruser.Loginid, &_receiveruser.Passwd, &_receiveruser.Email, &_receiveruser.Name, &_receiveruser.Tel, &_receiveruser.Address, &_receiveruser.Image, &_receiveruser.Sex, &_receiveruser.Birth, &_receiveruser.Type, &_receiveruser.Connectid, &_receiveruser.Level, &_receiveruser.Role, &_receiveruser.Use, &_receiveruser.Logindate, &_receiveruser.Lastchangepasswddate, &_receiveruser.Date, &_gym.Id, &_gym.Name, &_gym.Address, &_gym.Tel, &_gym.User, &_gym.Date)
+        err := rows.Scan(&item.Id, &item.Sender, &item.Receiver, &item.Gym, &item.Type, &item.Title, &item.Body, &item.Data, &item.Status, &item.Errormessage, &item.Sentdate, &item.Date)
         if err != nil {
            if p.Log {
              log.Error().Str("error", err.Error()).Msg("SQL")
@@ -798,13 +766,7 @@ func (p *NotificationhistoryManager) ReadRows(rows *sql.Rows) []Notificationhist
 		
 
         item.InitExtra()
-        _senderuser.InitExtra()
-        item.AddExtra("senderuser",  _senderuser)
-_receiveruser.InitExtra()
-        item.AddExtra("receiveruser",  _receiveruser)
-_gym.InitExtra()
-        item.AddExtra("gym",  _gym)
-
+        
         items = append(items, item)
     }
 
@@ -821,12 +783,6 @@ func (p *NotificationhistoryManager) Get(id int64) *Notificationhistory {
     query.WriteString(p.GetQuery())
     query.WriteString(" and nh_id = ?")
 
-    
-    query.WriteString(" and nh_sender = u_id")
-    
-    query.WriteString(" and nh_receiver = u_id")
-    
-    query.WriteString(" and nh_gym = g_id")
     
     
     rows, err := p.Query(query.String(), id)

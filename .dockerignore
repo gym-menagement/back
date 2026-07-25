@@ -1,0 +1,6 @@
+.git
+bin
+*.log
+webdata
+.env
+.env.yml

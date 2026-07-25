@@ -19,17 +19,17 @@ type Notificationsetting struct {
             
     Id                int64 `json:"id"`         
     User                int64 `json:"user"`         
-    Enabled                notificationsetting.Enabled `json:"enabled"`         
-    Membershipexpiry                notificationsetting.Membershipexpiry `json:"membershipexpiry"`         
-    Membershipnear                notificationsetting.Membershipnear `json:"membershipnear"`         
-    Attendanceenc                notificationsetting.Attendanceenc `json:"attendanceenc"`         
-    Gymannounce                notificationsetting.Gymannounce `json:"gymannounce"`         
-    Systemnotice                notificationsetting.Systemnotice `json:"systemnotice"`         
-    Paymentconfirm                notificationsetting.Paymentconfirm `json:"paymentconfirm"`         
-    Pauseexpiry                notificationsetting.Pauseexpiry `json:"pauseexpiry"`         
-    Weeklygoal                notificationsetting.Weeklygoal `json:"weeklygoal"`         
-    Personalrecord                notificationsetting.Personalrecord `json:"personalrecord"`         
-    Quietenabled                notificationsetting.Quietenabled `json:"quietenabled"`         
+    Enabled                int `json:"enabled"`         
+    Membershipexpiry                int `json:"membershipexpiry"`         
+    Membershipnear                int `json:"membershipnear"`         
+    Attendanceenc                int `json:"attendanceenc"`         
+    Gymannounce                int `json:"gymannounce"`         
+    Systemnotice                int `json:"systemnotice"`         
+    Paymentconfirm                int `json:"paymentconfirm"`         
+    Pauseexpiry                int `json:"pauseexpiry"`         
+    Weeklygoal                int `json:"weeklygoal"`         
+    Personalrecord                int `json:"personalrecord"`         
+    Quietenabled                int `json:"quietenabled"`         
     Quietstart                string `json:"quietstart"`         
     Quietend                string `json:"quietend"`         
     Createddate                string `json:"createddate"`         
@@ -128,7 +128,7 @@ func (p *NotificationsettingManager) GetQuery() string {
 
     var ret strings.Builder
 
-    ret.WriteString("select ns_id, ns_user, ns_enabled, ns_membershipexpiry, ns_membershipnear, ns_attendanceenc, ns_gymannounce, ns_systemnotice, ns_paymentconfirm, ns_pauseexpiry, ns_weeklygoal, ns_personalrecord, ns_quietenabled, ns_quietstart, ns_quietend, ns_createddate, ns_updateddate, ns_date, u_id, u_loginid, u_passwd, u_email, u_name, u_tel, u_address, u_image, u_sex, u_birth, u_type, u_connectid, u_level, u_role, u_use, u_logindate, u_lastchangepasswddate, u_date from notificationsetting_tb, user_tb")
+    ret.WriteString("select ns_id, ns_user, ns_enabled, ns_membershipexpiry, ns_membershipnear, ns_attendanceenc, ns_gymannounce, ns_systemnotice, ns_paymentconfirm, ns_pauseexpiry, ns_weeklygoal, ns_personalrecord, ns_quietenabled, ns_quietstart, ns_quietend, ns_createddate, ns_updateddate, ns_date from notificationsetting_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -142,8 +142,6 @@ func (p *NotificationsettingManager) GetQuery() string {
     }
 
     ret.WriteString(" where 1=1 ")
-    
-    ret.WriteString("and ns_user = u_id ")
     
 
     return ret.String()
@@ -171,8 +169,6 @@ func (p *NotificationsettingManager) GetQuerySelect() string {
 
     ret.WriteString(" where 1=1 ")
     
-    ret.WriteString("and ns_user = u_id ")
-    
 
     return ret.String()
 }
@@ -194,8 +190,6 @@ func (p *NotificationsettingManager) GetQueryGroup(name string) string {
     }
 
     ret.WriteString(" where 1=1 ")
-    
-    ret.WriteString("and ns_user = u_id ")
     
 
     return ret.String()
@@ -223,10 +217,10 @@ func (p *NotificationsettingManager) Insert(item *Notificationsetting) error {
         return errors.New("Connection Error")
     }
 
-    if item.Date == "" {
+    if item.Createddate == "" {
         t := time.Now().UTC().Add(time.Hour * 9)
         //t := time.Now()
-        item.Date = fmt.Sprintf("%04d-%02d-%02d %02d:%02d:%02d", t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second())
+        item.Createddate = fmt.Sprintf("%04d-%02d-%02d %02d:%02d:%02d", t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second())
     }
 
     
@@ -531,7 +525,7 @@ func (p *NotificationsettingManager) UpdateUser(value int64, id int64) error {
     return err
 }
 
-func (p *NotificationsettingManager) UpdateEnabled(value notificationsetting.Enabled, id int64) error {
+func (p *NotificationsettingManager) UpdateEnabled(value int, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
@@ -548,7 +542,7 @@ func (p *NotificationsettingManager) UpdateEnabled(value notificationsetting.Ena
     return err
 }
 
-func (p *NotificationsettingManager) UpdateMembershipexpiry(value notificationsetting.Membershipexpiry, id int64) error {
+func (p *NotificationsettingManager) UpdateMembershipexpiry(value int, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
@@ -565,7 +559,7 @@ func (p *NotificationsettingManager) UpdateMembershipexpiry(value notificationse
     return err
 }
 
-func (p *NotificationsettingManager) UpdateMembershipnear(value notificationsetting.Membershipnear, id int64) error {
+func (p *NotificationsettingManager) UpdateMembershipnear(value int, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
@@ -582,7 +576,7 @@ func (p *NotificationsettingManager) UpdateMembershipnear(value notificationsett
     return err
 }
 
-func (p *NotificationsettingManager) UpdateAttendanceenc(value notificationsetting.Attendanceenc, id int64) error {
+func (p *NotificationsettingManager) UpdateAttendanceenc(value int, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
@@ -599,7 +593,7 @@ func (p *NotificationsettingManager) UpdateAttendanceenc(value notificationsetti
     return err
 }
 
-func (p *NotificationsettingManager) UpdateGymannounce(value notificationsetting.Gymannounce, id int64) error {
+func (p *NotificationsettingManager) UpdateGymannounce(value int, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
@@ -616,7 +610,7 @@ func (p *NotificationsettingManager) UpdateGymannounce(value notificationsetting
     return err
 }
 
-func (p *NotificationsettingManager) UpdateSystemnotice(value notificationsetting.Systemnotice, id int64) error {
+func (p *NotificationsettingManager) UpdateSystemnotice(value int, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
@@ -633,7 +627,7 @@ func (p *NotificationsettingManager) UpdateSystemnotice(value notificationsettin
     return err
 }
 
-func (p *NotificationsettingManager) UpdatePaymentconfirm(value notificationsetting.Paymentconfirm, id int64) error {
+func (p *NotificationsettingManager) UpdatePaymentconfirm(value int, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
@@ -650,7 +644,7 @@ func (p *NotificationsettingManager) UpdatePaymentconfirm(value notificationsett
     return err
 }
 
-func (p *NotificationsettingManager) UpdatePauseexpiry(value notificationsetting.Pauseexpiry, id int64) error {
+func (p *NotificationsettingManager) UpdatePauseexpiry(value int, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
@@ -667,7 +661,7 @@ func (p *NotificationsettingManager) UpdatePauseexpiry(value notificationsetting
     return err
 }
 
-func (p *NotificationsettingManager) UpdateWeeklygoal(value notificationsetting.Weeklygoal, id int64) error {
+func (p *NotificationsettingManager) UpdateWeeklygoal(value int, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
@@ -684,7 +678,7 @@ func (p *NotificationsettingManager) UpdateWeeklygoal(value notificationsetting.
     return err
 }
 
-func (p *NotificationsettingManager) UpdatePersonalrecord(value notificationsetting.Personalrecord, id int64) error {
+func (p *NotificationsettingManager) UpdatePersonalrecord(value int, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
@@ -701,7 +695,7 @@ func (p *NotificationsettingManager) UpdatePersonalrecord(value notificationsett
     return err
 }
 
-func (p *NotificationsettingManager) UpdateQuietenabled(value notificationsetting.Quietenabled, id int64) error {
+func (p *NotificationsettingManager) UpdateQuietenabled(value int, id int64) error {
     if !p.Conn.IsConnect() {
         return errors.New("Connection Error")
     }
@@ -825,17 +819,6 @@ func (p *NotificationsettingManager) GetIdentity() int64 {
 
 func (p *Notificationsetting) InitExtra() {
     p.Extra = map[string]interface{}{
-            "enabled":     notificationsetting.GetEnabled(p.Enabled),
-            "membershipexpiry":     notificationsetting.GetMembershipexpiry(p.Membershipexpiry),
-            "membershipnear":     notificationsetting.GetMembershipnear(p.Membershipnear),
-            "attendanceenc":     notificationsetting.GetAttendanceenc(p.Attendanceenc),
-            "gymannounce":     notificationsetting.GetGymannounce(p.Gymannounce),
-            "systemnotice":     notificationsetting.GetSystemnotice(p.Systemnotice),
-            "paymentconfirm":     notificationsetting.GetPaymentconfirm(p.Paymentconfirm),
-            "pauseexpiry":     notificationsetting.GetPauseexpiry(p.Pauseexpiry),
-            "weeklygoal":     notificationsetting.GetWeeklygoal(p.Weeklygoal),
-            "personalrecord":     notificationsetting.GetPersonalrecord(p.Personalrecord),
-            "quietenabled":     notificationsetting.GetQuietenabled(p.Quietenabled),
 
     }
 }
@@ -844,11 +827,10 @@ func (p *NotificationsettingManager) ReadRow(rows *sql.Rows) *Notificationsettin
     var item Notificationsetting
     var err error
 
-    var _user User
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.User, &item.Enabled, &item.Membershipexpiry, &item.Membershipnear, &item.Attendanceenc, &item.Gymannounce, &item.Systemnotice, &item.Paymentconfirm, &item.Pauseexpiry, &item.Weeklygoal, &item.Personalrecord, &item.Quietenabled, &item.Quietstart, &item.Quietend, &item.Createddate, &item.Updateddate, &item.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Email, &_user.Name, &_user.Tel, &_user.Address, &_user.Image, &_user.Sex, &_user.Birth, &_user.Type, &_user.Connectid, &_user.Level, &_user.Role, &_user.Use, &_user.Logindate, &_user.Lastchangepasswddate, &_user.Date)
+        err = rows.Scan(&item.Id, &item.User, &item.Enabled, &item.Membershipexpiry, &item.Membershipnear, &item.Attendanceenc, &item.Gymannounce, &item.Systemnotice, &item.Paymentconfirm, &item.Pauseexpiry, &item.Weeklygoal, &item.Personalrecord, &item.Quietenabled, &item.Quietstart, &item.Quietend, &item.Createddate, &item.Updateddate, &item.Date)
         
         if item.Createddate == "0000-00-00 00:00:00" || item.Createddate == "1000-01-01 00:00:00" || item.Createddate == "9999-01-01 00:00:00" {
             item.Createddate = ""
@@ -887,9 +869,7 @@ func (p *NotificationsettingManager) ReadRow(rows *sql.Rows) *Notificationsettin
     } else {
 
         item.InitExtra()
-        _user.InitExtra()
-        item.AddExtra("user",  _user)
-
+        
         return &item
     }
 }
@@ -899,10 +879,9 @@ func (p *NotificationsettingManager) ReadRows(rows *sql.Rows) []Notificationsett
 
     for rows.Next() {
         var item Notificationsetting
-        var _user User
         
 
-        err := rows.Scan(&item.Id, &item.User, &item.Enabled, &item.Membershipexpiry, &item.Membershipnear, &item.Attendanceenc, &item.Gymannounce, &item.Systemnotice, &item.Paymentconfirm, &item.Pauseexpiry, &item.Weeklygoal, &item.Personalrecord, &item.Quietenabled, &item.Quietstart, &item.Quietend, &item.Createddate, &item.Updateddate, &item.Date, &_user.Id, &_user.Loginid, &_user.Passwd, &_user.Email, &_user.Name, &_user.Tel, &_user.Address, &_user.Image, &_user.Sex, &_user.Birth, &_user.Type, &_user.Connectid, &_user.Level, &_user.Role, &_user.Use, &_user.Logindate, &_user.Lastchangepasswddate, &_user.Date)
+        err := rows.Scan(&item.Id, &item.User, &item.Enabled, &item.Membershipexpiry, &item.Membershipnear, &item.Attendanceenc, &item.Gymannounce, &item.Systemnotice, &item.Paymentconfirm, &item.Pauseexpiry, &item.Weeklygoal, &item.Personalrecord, &item.Quietenabled, &item.Quietstart, &item.Quietend, &item.Createddate, &item.Updateddate, &item.Date)
         if err != nil {
            if p.Log {
              log.Error().Str("error", err.Error()).Msg("SQL")
@@ -937,9 +916,7 @@ func (p *NotificationsettingManager) ReadRows(rows *sql.Rows) []Notificationsett
 		
 
         item.InitExtra()
-        _user.InitExtra()
-        item.AddExtra("user",  _user)
-
+        
         items = append(items, item)
     }
 
@@ -956,8 +933,6 @@ func (p *NotificationsettingManager) Get(id int64) *Notificationsetting {
     query.WriteString(p.GetQuery())
     query.WriteString(" and ns_id = ?")
 
-    
-    query.WriteString(" and ns_user = u_id")
     
     
     rows, err := p.Query(query.String(), id)

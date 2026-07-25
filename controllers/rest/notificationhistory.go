@@ -3,6 +3,7 @@ package rest
 
 import (
 	"gym/controllers"
+	
 	"gym/models"
 
     "strings"
@@ -52,7 +53,7 @@ func (c *NotificationhistoryController) Index(page int, pagesize int) {
     }
     _title := c.Get("title")
     if _title != "" {
-        args = append(args, models.Where{Column:"title", Value:_title, Compare:"like"})
+        args = append(args, models.Where{Column:"title", Value:_title, Compare:"="})
         
     }
     _body := c.Get("body")
@@ -164,7 +165,7 @@ func (c *NotificationhistoryController) Count() {
     }
     _title := c.Get("title")
     if _title != "" {
-        args = append(args, models.Where{Column:"title", Value:_title, Compare:"like"})
+        args = append(args, models.Where{Column:"title", Value:_title, Compare:"="})
         
         
     }
@@ -224,6 +225,8 @@ func (c *NotificationhistoryController) Count() {
 func (c *NotificationhistoryController) Insert(item *models.Notificationhistory) {
     
     
+    
+
 	conn := c.NewConnection()
     
 	manager := models.NewNotificationhistoryManager(conn)
@@ -253,6 +256,7 @@ func (c *NotificationhistoryController) Insertbatch(item *[]models.Notificationh
 	manager := models.NewNotificationhistoryManager(conn)
 
     for i := 0; i < rows; i++ {
+        
 	    err := manager.Insert(&((*item)[i]))
         if err != nil {
             c.Set("code", "error")    
@@ -265,6 +269,8 @@ func (c *NotificationhistoryController) Insertbatch(item *[]models.Notificationh
 func (c *NotificationhistoryController) Update(item *models.Notificationhistory) {
     
     
+    
+
 	conn := c.NewConnection()
 
 	manager := models.NewNotificationhistoryManager(conn)

@@ -3,6 +3,7 @@ package rest
 
 import (
 	"gym/controllers"
+	
 	"gym/models"
 
     "strings"
@@ -167,6 +168,8 @@ func (c *AlarmController) Count() {
 func (c *AlarmController) Insert(item *models.Alarm) {
     
     
+    
+
 	conn := c.NewConnection()
     
 	manager := models.NewAlarmManager(conn)
@@ -196,6 +199,7 @@ func (c *AlarmController) Insertbatch(item *[]models.Alarm) {
 	manager := models.NewAlarmManager(conn)
 
     for i := 0; i < rows; i++ {
+        
 	    err := manager.Insert(&((*item)[i]))
         if err != nil {
             c.Set("code", "error")    
@@ -208,6 +212,8 @@ func (c *AlarmController) Insertbatch(item *[]models.Alarm) {
 func (c *AlarmController) Update(item *models.Alarm) {
     
     
+    
+
 	conn := c.NewConnection()
 
 	manager := models.NewAlarmManager(conn)

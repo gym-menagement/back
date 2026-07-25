@@ -3,6 +3,7 @@ package rest
 
 import (
 	"gym/controllers"
+	
 	"gym/models"
 
     "strings"
@@ -140,6 +141,8 @@ func (c *HealthcategoryController) Count() {
 func (c *HealthcategoryController) Insert(item *models.Healthcategory) {
     
     
+    
+
 	conn := c.NewConnection()
     
 	manager := models.NewHealthcategoryManager(conn)
@@ -169,6 +172,7 @@ func (c *HealthcategoryController) Insertbatch(item *[]models.Healthcategory) {
 	manager := models.NewHealthcategoryManager(conn)
 
     for i := 0; i < rows; i++ {
+        
 	    err := manager.Insert(&((*item)[i]))
         if err != nil {
             c.Set("code", "error")    
@@ -181,6 +185,8 @@ func (c *HealthcategoryController) Insertbatch(item *[]models.Healthcategory) {
 func (c *HealthcategoryController) Update(item *models.Healthcategory) {
     
     
+    
+
 	conn := c.NewConnection()
 
 	manager := models.NewHealthcategoryManager(conn)

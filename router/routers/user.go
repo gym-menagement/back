@@ -1,21 +1,18 @@
 package routers
 
 import (
-
 	"encoding/json"
 
 	"strconv"
 
 	"gym/global/log"
 
-
 	"gym/controllers/rest"
-
 
 	"gym/models/user"
 
-	"gym/models"
 	"github.com/gofiber/fiber/v2"
+	"gym/models"
 )
 
 // SetupUserRoutes sets up routes for user domain
@@ -31,7 +28,7 @@ func SetupUserRoutes(group fiber.Router) {
 		return c.JSON(controller.Result)
 	})
 
-	group.Get("/user/:id", func(c *fiber.Ctx) error {
+	group.Get("/user/:id<int>", func(c *fiber.Ctx) error {
 		id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 		var controller rest.UserController
 		controller.Init(c)
@@ -41,10 +38,10 @@ func SetupUserRoutes(group fiber.Router) {
 	})
 
 	group.Post("/user", func(c *fiber.Ctx) error {
-		item_ := &models.User{}
+		item_ := &models.UserUpdate{}
 		err := c.BodyParser(item_)
 		if err != nil {
-		    log.Error().Msg(err.Error())
+			log.Error().Msg(err.Error())
 		}
 		var controller rest.UserController
 		controller.Init(c)
@@ -54,11 +51,11 @@ func SetupUserRoutes(group fiber.Router) {
 	})
 
 	group.Post("/user/batch", func(c *fiber.Ctx) error {
-		var items_ *[]models.User
+		var items_ *[]models.UserUpdate
 		items__ref := &items_
 		err := c.BodyParser(items__ref)
 		if err != nil {
-		    log.Error().Msg(err.Error())
+			log.Error().Msg(err.Error())
 		}
 		var controller rest.UserController
 		controller.Init(c)
@@ -67,7 +64,7 @@ func SetupUserRoutes(group fiber.Router) {
 		return c.JSON(controller.Result)
 	})
 
-	group.Post("/user/count", func(c *fiber.Ctx) error {
+	group.Get("/user/count", func(c *fiber.Ctx) error {
 
 		var controller rest.UserController
 		controller.Init(c)
@@ -76,12 +73,14 @@ func SetupUserRoutes(group fiber.Router) {
 		return c.JSON(controller.Result)
 	})
 
-	group.Put("/user", func(c *fiber.Ctx) error {
-		item_ := &models.User{}
+	group.Put("/user/:id<int>", func(c *fiber.Ctx) error {
+		id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+		item_ := &models.UserUpdate{}
 		err := c.BodyParser(item_)
 		if err != nil {
-		    log.Error().Msg(err.Error())
+			log.Error().Msg(err.Error())
 		}
+		item_.Id = id_
 		var controller rest.UserController
 		controller.Init(c)
 		controller.Update(item_)
@@ -89,12 +88,29 @@ func SetupUserRoutes(group fiber.Router) {
 		return c.JSON(controller.Result)
 	})
 
-	group.Delete("/user", func(c *fiber.Ctx) error {
+	group.Patch("/user/:id<int>", func(c *fiber.Ctx) error {
+		id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+		item_ := &models.UserUpdate{}
+		err := c.BodyParser(item_)
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
+		item_.Id = id_
+		var controller rest.UserController
+		controller.Init(c)
+		controller.Update(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Delete("/user/:id<int>", func(c *fiber.Ctx) error {
+		id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 		item_ := &models.User{}
 		err := c.BodyParser(item_)
 		if err != nil {
-		    log.Error().Msg(err.Error())
+			log.Error().Msg(err.Error())
 		}
+		item_.Id = id_
 		var controller rest.UserController
 		controller.Init(c)
 		controller.Delete(item_)
@@ -106,7 +122,7 @@ func SetupUserRoutes(group fiber.Router) {
 		item_ := &[]models.User{}
 		err := c.BodyParser(item_)
 		if err != nil {
-		    log.Error().Msg(err.Error())
+			log.Error().Msg(err.Error())
 		}
 		var controller rest.UserController
 		controller.Init(c)
@@ -147,7 +163,7 @@ func SetupUserRoutes(group fiber.Router) {
 		jsonData := c.Body()
 		jsonErr := json.Unmarshal(jsonData, &results)
 		if jsonErr != nil {
-		    log.Error().Msg(jsonErr.Error())
+			log.Error().Msg(jsonErr.Error())
 		}
 		var logindate_ string
 		if v, flag := results["logindate"]; flag {
@@ -190,6 +206,48 @@ func SetupUserRoutes(group fiber.Router) {
 		var controller rest.UserController
 		controller.Init(c)
 		controller.FindByTel(tel_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	// 프론트 호환 검색 라우트: /user/search/{field}?{field}=value
+	group.Get("/user/search/loginid", func(c *fiber.Ctx) error {
+		var controller rest.UserController
+		controller.Init(c)
+		controller.GetByLoginid(c.Query("loginid"))
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Get("/user/search/connectid", func(c *fiber.Ctx) error {
+		var controller rest.UserController
+		controller.Init(c)
+		controller.GetByConnectid(c.Query("connectid"))
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Get("/user/search/level", func(c *fiber.Ctx) error {
+		level__, _ := strconv.Atoi(c.Query("level"))
+		var controller rest.UserController
+		controller.Init(c)
+		controller.FindByLevel(user.Level(level__))
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Get("/user/search/email", func(c *fiber.Ctx) error {
+		var controller rest.UserController
+		controller.Init(c)
+		controller.FindByEmail(c.Query("email"))
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Get("/user/search/tel", func(c *fiber.Ctx) error {
+		var controller rest.UserController
+		controller.Init(c)
+		controller.FindByTel(c.Query("tel"))
 		controller.Close()
 		return c.JSON(controller.Result)
 	})

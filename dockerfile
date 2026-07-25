@@ -1,18 +1,17 @@
-FROM golang:1.21 AS builder
-
-WORKDIR /app
-
+# ---- build ----
+FROM --platform=linux/amd64 golang:1.24 AS build
+WORKDIR /src
+COPY go.mod go.sum ./
+RUN go mod download
 COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /app/server .
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -ldflags '-s' -o bin/gym.linux main.go
-
-FROM        alpine
-
-COPY --from=builder /app/bin/gym.linux /usr/local/main/main
-COPY ./config/config.json.docker /usr/local/main/config/config.json
-CMD mkdir -p /usr/local/main/webdata
-#ADD ./assets /usr/local/main/assets
-#ADD ./views /usr/local/main/views
-
-WORKDIR /usr/local/main
-CMD ./main
+# ---- runtime ----
+FROM --platform=linux/amd64 alpine:3.20
+RUN apk add --no-cache ca-certificates tzdata && \
+    cp /usr/share/zoneinfo/Asia/Seoul /etc/localtime && echo "Asia/Seoul" > /etc/timezone
+ENV TZ=Asia/Seoul
+WORKDIR /app
+COPY --from=build /app/server /app/server
+EXPOSE 8004
+CMD ["/app/server"]

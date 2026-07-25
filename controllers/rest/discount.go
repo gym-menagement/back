@@ -3,6 +3,7 @@ package rest
 
 import (
 	"gym/controllers"
+	
 	"gym/models"
 
     "strings"
@@ -148,6 +149,8 @@ func (c *DiscountController) Count() {
 func (c *DiscountController) Insert(item *models.Discount) {
     
     
+    
+
 	conn := c.NewConnection()
     
 	manager := models.NewDiscountManager(conn)
@@ -177,6 +180,7 @@ func (c *DiscountController) Insertbatch(item *[]models.Discount) {
 	manager := models.NewDiscountManager(conn)
 
     for i := 0; i < rows; i++ {
+        
 	    err := manager.Insert(&((*item)[i]))
         if err != nil {
             c.Set("code", "error")    
@@ -189,6 +193,8 @@ func (c *DiscountController) Insertbatch(item *[]models.Discount) {
 func (c *DiscountController) Update(item *models.Discount) {
     
     
+    
+
 	conn := c.NewConnection()
 
 	manager := models.NewDiscountManager(conn)
