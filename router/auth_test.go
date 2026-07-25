@@ -71,6 +71,10 @@ func TestBlockPrivilegedSignup(t *testing.T) {
 		{"회원 가입", fiber.MIMEApplicationJSON, `{"loginid":"a","role":1,"level":1}`, false},
 		{"트레이너 가입", fiber.MIMEApplicationJSON, `{"loginid":"a","role":2,"level":2}`, false},
 		{"헬스장관리자 가입", fiber.MIMEApplicationJSON, `{"loginid":"a","role":4,"level":3}`, false},
+
+		// Level 과 Role 은 라벨 순서가 어긋나 같은 숫자가 같은 권한이 아니다.
+		// Level 4 는 플랫폼관리자라 막고, Role 4 는 헬스장관리자라 연다.
+		{"level 4 는 플랫폼관리자", fiber.MIMEApplicationJSON, `{"loginid":"a","level":4}`, true},
 		{"권한 필드 없음", fiber.MIMEApplicationJSON, `{"loginid":"a"}`, false},
 		{"빈 본문", fiber.MIMEApplicationJSON, ``, false},
 
