@@ -6,10 +6,21 @@
 # 404/405 없이 도달하는지(=라우팅 일치) 확인한다.
 # 데이터 검증까지 하려면 GYM_LOGINID / GYM_PASSWD 를 넘긴다.
 #
-#   DB_HOST=140.82.12.99 DB_USER=gym DB_PASS=gymdb DB_NAME=gym ./verify_routes.sh
-#   (선택) GYM_LOGINID=admin GYM_PASSWD=... 추가 시 로그인+목록까지 확인
+# DB 접속 정보는 환경변수로만 받는다. 예전엔 기본값에 실제 자격증명이 박혀
+# 있었는데, 이 저장소는 공개라 그대로 유출됐다. 기본값을 두지 않고 없으면
+# 즉시 중단해서 같은 실수가 반복되지 않게 한다.
+#
+#   DB_HOST=<host> DB_USER=<user> DB_PASS=<pass> DB_NAME=<db> ./verify_routes.sh
+#   (선택) GYM_LOGINID=<id> GYM_PASSWD=<pw> 추가 시 로그인+목록까지 확인
 set -uo pipefail
 cd "$(dirname "$0")"
+
+for v in DB_HOST DB_USER DB_PASS DB_NAME; do
+  if [ -z "${!v:-}" ]; then
+    echo "환경변수 $v 가 필요하다. 사용법은 이 파일 상단 주석 참고." >&2
+    exit 2
+  fi
+done
 
 PORT=${PORT:-8104}
 BASE="http://127.0.0.1:${PORT}/api"
@@ -24,10 +35,10 @@ echo "── 빌드 ──"
 GOWORK=off CGO_ENABLED=0 go build -o /tmp/gym_verify.bin . || { echo "빌드 실패"; exit 1; }
 ok "빌드"
 
-echo "── 서버 실행 (DB: ${DB_HOST:-140.82.12.99}/${DB_NAME:-gym}) ──"
+echo "── 서버 실행 (DB: ${DB_HOST}/${DB_NAME}) ──"
 APP_MODE=production PORT=$PORT \
-  DB_TYPE=mysql DB_HOST=${DB_HOST:-140.82.12.99} DB_PORT=${DB_PORT:-3306} \
-  DB_NAME=${DB_NAME:-gym} DB_USER=${DB_USER:-gym} DB_PASS=${DB_PASS:-gymdb} \
+  DB_TYPE=mysql DB_HOST="$DB_HOST" DB_PORT=${DB_PORT:-3306} \
+  DB_NAME="$DB_NAME" DB_USER="$DB_USER" DB_PASS="$DB_PASS" \
   /tmp/gym_verify.bin >/tmp/gym_verify.log 2>&1 &
 PID=$!
 sleep 3
