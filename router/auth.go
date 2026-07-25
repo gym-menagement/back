@@ -4,6 +4,7 @@ import (
 	"crypto/rsa"
 	"crypto/tls"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"gym/global"
 	"gym/global/jwt"
@@ -15,7 +16,7 @@ import (
 	"gym/models/systemlog"
 	"gym/models/user"
 	"math/big"
-	"net/url"
+	"strconv"
 	"strings"
 
 	jwtgo "github.com/dgrijalva/jwt-go/v4"
@@ -112,32 +113,112 @@ var JwtAuthRequired = func(c *fiber.Ctx) error {
 		}
 	}
 
-	path := c.Path()
-	u, _ := url.Parse(path)
-
-	if u.Path == "/api/jwt" {
+	if isPublicPath(c.Method(), c.Path()) {
 		return c.Next()
 	}
 
-	if u.Path[:9] == "/api/user" {
+	log.Info().Str("method", c.Method()).Str("path", c.Path()).Msg("Jwt header is broken")
+
+	// 예전엔 nil 을 반환했는데, fiber 에서 c.Next() 없이 nil 을 돌려주면
+	// 빈 본문에 200 이 나간다. 인증 실패는 401 로 명확히 끊는다.
+	return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"code": "unauthorized"})
+}
+
+// isPublicPath 는 토큰 없이 허용할 경로를 화이트리스트로 정의한다.
+//
+// 로그인 전에 반드시 필요한 것만 연다:
+//   - GET  /api/jwt                     로그인
+//   - POST /api/user                    회원가입
+//   - GET  /api/user/search/loginid     가입 시 아이디 중복확인
+//
+// 예전 구현은 "/api/user" 로 시작하면 전부 통과시켜서
+// `GET /api/user` 로 전체 회원 명단(이메일·전화번호·주소·생년월일)이
+// 무인증 조회됐다. 또 u.Path[:9] 는 9자 미만 경로(예: "/api/gym")에서
+// 슬라이스 범위 초과로 패닉했다.
+//
+// 경로는 접두사가 아니라 완전 일치로 본다. 애매하면 막는 쪽(fail-closed).
+func isPublicPath(method, path string) bool {
+	switch path {
+	case "/api/jwt":
+		return method == fiber.MethodGet
+	case "/api/user":
+		return method == fiber.MethodPost
+	case "/api/user/search/loginid":
+		return method == fiber.MethodGet
+	}
+	return false
+}
+
+// 무인증 회원가입이 스스로에게 줄 수 있는 권한의 상한.
+//
+// UserUpdate 는 level·role 을 그대로 JSON 바인딩하고 Insert 가 DB 에 쓰기 때문에,
+// 가입 요청만으로 최고관리자 계정을 만들 수 있었다.
+//
+// 상한은 실제 사용 형태에 맞췄다. 두 값이 다른 건 Level 과 Role 의 라벨
+// 순서가 어긋나 있어서다 — 같은 숫자가 같은 권한을 뜻하지 않는다.
+//
+//	Level 3 = 헬스장관리자, 4 = 플랫폼관리자, 5 = 최고관리자
+//	Role  4 = 헬스장관리자, 5 = 플랫폼관리자
+//
+// 웹 가입 화면이 회원·트레이너·헬스장관리자 중 고르게 돼 있어 헬스장 사장의
+// 직접 가입이 정상 흐름이다. 그 최대치가 Level 3 / Role 4 다. 실 DB 102건에서도
+// level 4 는 0명, level 5 와 role 5 는 최고관리자 1명뿐이라 이 상한은 지금
+// 쓰는 기능을 하나도 막지 않으면서 권한 상승만 끊는다.
+const (
+	maxSignupLevel = 3
+	maxSignupRole  = 4
+)
+
+// BlockPrivilegedSignup 은 무인증 가입 요청이 상한을 넘는 level·role 을
+// 요구하면 거부한다. 값을 조용히 깎지 않고 403 으로 끊는 건, 정상 클라이언트는
+// 애초에 이 범위를 넘기지 않으므로 넘어온다는 건 공격이거나 버그라서다.
+//
+// JwtAuthRequired 다음에 등록해야 한다 — 인증을 통과한 관리자가 만드는
+// 계정은 c.Locals("user") 로 구분해 그대로 통과시킨다.
+var BlockPrivilegedSignup = func(c *fiber.Ctx) error {
+	if c.Method() != fiber.MethodPost || c.Path() != "/api/user" {
+		return c.Next()
+	}
+	if c.Locals("user") != nil {
 		return c.Next()
 	}
 
-	// if u.Path == "/api/user/changepasswd" {
-	// 	return c.Next()
-	// }
+	level, role := signupPrivilege(c)
+	if level > maxSignupLevel || role > maxSignupRole {
+		log.Info().Int("level", level).Int("role", role).Msg("privileged signup blocked")
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"code": "forbidden"})
+	}
+	return c.Next()
+}
 
-	// if u.Path == "/api/integration/approve" {
-	// 	return c.Next()
-	// }
+// signupPrivilege 는 요청 본문에서 level·role 을 읽는다.
+// JSON 과 form(urlencoded·multipart)을 모두 본다. 한쪽만 검사하면 다른 쪽
+// 인코딩으로 그대로 우회된다.
+func signupPrivilege(c *fiber.Ctx) (level, role int) {
+	var payload map[string]any
+	if json.Unmarshal(c.Body(), &payload) == nil {
+		level, role = privilegeValue(payload["level"]), privilegeValue(payload["role"])
+	}
+	if v, err := strconv.Atoi(c.FormValue("level")); err == nil && v > level {
+		level = v
+	}
+	if v, err := strconv.Atoi(c.FormValue("role")); err == nil && v > role {
+		role = v
+	}
+	return level, role
+}
 
-	// if u.Path == "/api/upload/sync" {
-	// 	return c.Next()
-	// }
-
-	log.Info().Msg("Jwt header is broken")
-
-	return nil
+// privilegeValue 는 JSON 값을 정수로 바꾼다. 숫자는 float64 로 들어오고,
+// 따옴표로 감싸 보내는 클라이언트도 있어 문자열도 함께 받는다.
+func privilegeValue(v any) int {
+	switch n := v.(type) {
+	case float64:
+		return int(n)
+	case string:
+		i, _ := strconv.Atoi(n)
+		return i
+	}
+	return 0
 }
 
 func JwtAuth(c *fiber.Ctx, loginid string, passwd string) map[string]interface{} {
@@ -426,7 +507,6 @@ func JwtAuth(c *fiber.Ctx, loginid string, passwd string) map[string]interface{}
 		"user":  item,
 	}
 }
-
 
 func validateAppleToken(idToken string) (*AppleResponse, error) {
 	claims := jwtgo.MapClaims{}

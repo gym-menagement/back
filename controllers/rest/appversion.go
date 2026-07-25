@@ -3,6 +3,7 @@ package rest
 
 import (
 	"gym/controllers"
+	
 	"gym/models"
 
     "strings"
@@ -232,6 +233,8 @@ func (c *AppversionController) Count() {
 func (c *AppversionController) Insert(item *models.Appversion) {
     
     
+    
+
 	conn := c.NewConnection()
     
 	manager := models.NewAppversionManager(conn)
@@ -261,6 +264,7 @@ func (c *AppversionController) Insertbatch(item *[]models.Appversion) {
 	manager := models.NewAppversionManager(conn)
 
     for i := 0; i < rows; i++ {
+        
 	    err := manager.Insert(&((*item)[i]))
         if err != nil {
             c.Set("code", "error")    
@@ -273,6 +277,8 @@ func (c *AppversionController) Insertbatch(item *[]models.Appversion) {
 func (c *AppversionController) Update(item *models.Appversion) {
     
     
+    
+
 	conn := c.NewConnection()
 
 	manager := models.NewAppversionManager(conn)

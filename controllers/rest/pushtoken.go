@@ -3,6 +3,7 @@ package rest
 
 import (
 	"gym/controllers"
+	
 	"gym/models"
 
     "strings"
@@ -223,6 +224,8 @@ func (c *PushtokenController) Count() {
 func (c *PushtokenController) Insert(item *models.Pushtoken) {
     
     
+    
+
 	conn := c.NewConnection()
     
 	manager := models.NewPushtokenManager(conn)
@@ -252,6 +255,7 @@ func (c *PushtokenController) Insertbatch(item *[]models.Pushtoken) {
 	manager := models.NewPushtokenManager(conn)
 
     for i := 0; i < rows; i++ {
+        
 	    err := manager.Insert(&((*item)[i]))
         if err != nil {
             c.Set("code", "error")    
@@ -264,6 +268,8 @@ func (c *PushtokenController) Insertbatch(item *[]models.Pushtoken) {
 func (c *PushtokenController) Update(item *models.Pushtoken) {
     
     
+    
+
 	conn := c.NewConnection()
 
 	manager := models.NewPushtokenManager(conn)

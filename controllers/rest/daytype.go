@@ -3,6 +3,7 @@ package rest
 
 import (
 	"gym/controllers"
+	
 	"gym/models"
 
     "strings"
@@ -140,6 +141,8 @@ func (c *DaytypeController) Count() {
 func (c *DaytypeController) Insert(item *models.Daytype) {
     
     
+    
+
 	conn := c.NewConnection()
     
 	manager := models.NewDaytypeManager(conn)
@@ -169,6 +172,7 @@ func (c *DaytypeController) Insertbatch(item *[]models.Daytype) {
 	manager := models.NewDaytypeManager(conn)
 
     for i := 0; i < rows; i++ {
+        
 	    err := manager.Insert(&((*item)[i]))
         if err != nil {
             c.Set("code", "error")    
@@ -181,6 +185,8 @@ func (c *DaytypeController) Insertbatch(item *[]models.Daytype) {
 func (c *DaytypeController) Update(item *models.Daytype) {
     
     
+    
+
 	conn := c.NewConnection()
 
 	manager := models.NewDaytypeManager(conn)

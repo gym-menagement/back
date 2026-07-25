@@ -3,6 +3,7 @@ package rest
 
 import (
 	"gym/controllers"
+	
 	"gym/models"
 
     "strings"
@@ -148,6 +149,8 @@ func (c *RoleController) Count() {
 func (c *RoleController) Insert(item *models.Role) {
     
     
+    
+
 	conn := c.NewConnection()
     
 	manager := models.NewRoleManager(conn)
@@ -177,6 +180,7 @@ func (c *RoleController) Insertbatch(item *[]models.Role) {
 	manager := models.NewRoleManager(conn)
 
     for i := 0; i < rows; i++ {
+        
 	    err := manager.Insert(&((*item)[i]))
         if err != nil {
             c.Set("code", "error")    
@@ -189,6 +193,8 @@ func (c *RoleController) Insertbatch(item *[]models.Role) {
 func (c *RoleController) Update(item *models.Role) {
     
     
+    
+
 	conn := c.NewConnection()
 
 	manager := models.NewRoleManager(conn)

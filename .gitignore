@@ -11,3 +11,5 @@
 # model.json
 model.json
 gym.sql
+# 런타임 로그·업로드 산출물 (서버가 생성)
+webdata/

@@ -3,6 +3,7 @@ package rest
 
 import (
 	"gym/controllers"
+	
 	"gym/models"
 
     "strings"
@@ -238,6 +239,8 @@ func (c *QrcodeController) Count() {
 func (c *QrcodeController) Insert(item *models.Qrcode) {
     
     
+    
+
 	conn := c.NewConnection()
     
 	manager := models.NewQrcodeManager(conn)
@@ -267,6 +270,7 @@ func (c *QrcodeController) Insertbatch(item *[]models.Qrcode) {
 	manager := models.NewQrcodeManager(conn)
 
     for i := 0; i < rows; i++ {
+        
 	    err := manager.Insert(&((*item)[i]))
         if err != nil {
             c.Set("code", "error")    
@@ -279,6 +283,8 @@ func (c *QrcodeController) Insertbatch(item *[]models.Qrcode) {
 func (c *QrcodeController) Update(item *models.Qrcode) {
     
     
+    
+
 	conn := c.NewConnection()
 
 	manager := models.NewQrcodeManager(conn)

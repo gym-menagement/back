@@ -1,17 +1,14 @@
 package routers
 
 import (
-
 	"strconv"
 
 	"gym/global/log"
 
-
 	"gym/controllers/rest"
 
-
-	"gym/models"
 	"github.com/gofiber/fiber/v2"
+	"gym/models"
 )
 
 // SetupNotificationsettingRoutes sets up routes for notificationsetting domain
@@ -27,7 +24,7 @@ func SetupNotificationsettingRoutes(group fiber.Router) {
 		return c.JSON(controller.Result)
 	})
 
-	group.Get("/notificationsetting/:id", func(c *fiber.Ctx) error {
+	group.Get("/notificationsetting/:id<int>", func(c *fiber.Ctx) error {
 		id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 		var controller rest.NotificationsettingController
 		controller.Init(c)
@@ -40,7 +37,7 @@ func SetupNotificationsettingRoutes(group fiber.Router) {
 		item_ := &models.Notificationsetting{}
 		err := c.BodyParser(item_)
 		if err != nil {
-		    log.Error().Msg(err.Error())
+			log.Error().Msg(err.Error())
 		}
 		var controller rest.NotificationsettingController
 		controller.Init(c)
@@ -54,7 +51,7 @@ func SetupNotificationsettingRoutes(group fiber.Router) {
 		items__ref := &items_
 		err := c.BodyParser(items__ref)
 		if err != nil {
-		    log.Error().Msg(err.Error())
+			log.Error().Msg(err.Error())
 		}
 		var controller rest.NotificationsettingController
 		controller.Init(c)
@@ -63,7 +60,7 @@ func SetupNotificationsettingRoutes(group fiber.Router) {
 		return c.JSON(controller.Result)
 	})
 
-	group.Post("/notificationsetting/count", func(c *fiber.Ctx) error {
+	group.Get("/notificationsetting/count", func(c *fiber.Ctx) error {
 
 		var controller rest.NotificationsettingController
 		controller.Init(c)
@@ -72,12 +69,14 @@ func SetupNotificationsettingRoutes(group fiber.Router) {
 		return c.JSON(controller.Result)
 	})
 
-	group.Put("/notificationsetting", func(c *fiber.Ctx) error {
+	group.Put("/notificationsetting/:id<int>", func(c *fiber.Ctx) error {
+		id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 		item_ := &models.Notificationsetting{}
 		err := c.BodyParser(item_)
 		if err != nil {
-		    log.Error().Msg(err.Error())
+			log.Error().Msg(err.Error())
 		}
+		item_.Id = id_
 		var controller rest.NotificationsettingController
 		controller.Init(c)
 		controller.Update(item_)
@@ -85,12 +84,29 @@ func SetupNotificationsettingRoutes(group fiber.Router) {
 		return c.JSON(controller.Result)
 	})
 
-	group.Delete("/notificationsetting", func(c *fiber.Ctx) error {
+	group.Patch("/notificationsetting/:id<int>", func(c *fiber.Ctx) error {
+		id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 		item_ := &models.Notificationsetting{}
 		err := c.BodyParser(item_)
 		if err != nil {
-		    log.Error().Msg(err.Error())
+			log.Error().Msg(err.Error())
 		}
+		item_.Id = id_
+		var controller rest.NotificationsettingController
+		controller.Init(c)
+		controller.Update(item_)
+		controller.Close()
+		return c.JSON(controller.Result)
+	})
+
+	group.Delete("/notificationsetting/:id<int>", func(c *fiber.Ctx) error {
+		id_, _ := strconv.ParseInt(c.Params("id"), 10, 64)
+		item_ := &models.Notificationsetting{}
+		err := c.BodyParser(item_)
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
+		item_.Id = id_
 		var controller rest.NotificationsettingController
 		controller.Init(c)
 		controller.Delete(item_)
@@ -102,7 +118,7 @@ func SetupNotificationsettingRoutes(group fiber.Router) {
 		item_ := &[]models.Notificationsetting{}
 		err := c.BodyParser(item_)
 		if err != nil {
-		    log.Error().Msg(err.Error())
+			log.Error().Msg(err.Error())
 		}
 		var controller rest.NotificationsettingController
 		controller.Init(c)

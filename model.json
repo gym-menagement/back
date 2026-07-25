@@ -8,24 +8,17 @@
   "authTimeout": "not",
   "adminLevel": "3",
   "language": "react",
-  "goModelFilePath": "",
-  "dartModelFilePath": "../../gym/app/lib/model/",
-  "kotlinModelFilePath": "../../gym/gymspring/src/main/kotlin/com/gowoobro/gymspring/",
-  "ReactModelFilePath": "../../gym/front/src/",
+  "goModelFilePath": "../gowoobro/gym_management/back/",
+  "dartModelFilePath": "../gowoobro/gym_management/app/lib/model/",
+  "kotlinModelFilePath": "../gowoobro/gym_management/gymspring/src/main/kotlin/com/gowoobro/gymspring/",
+  "ReactModelFilePath": "../gowoobro/gym_management/front/src/",
   "table": [
     {
       "name": "user",
       "map": [
         {
           "name": "level",
-          "data": [
-            "",
-            "normal:일반회원",
-            "manager:트레이너/직원",
-            "admin:헬스장관리자",
-            "superadmin:플랫폼관리자",
-            "rootadmin:최고관리자"
-          ]
+          "data": ["", "normal:일반회원", "manager:트레이너/직원", "admin:헬스장관리자", "superadmin:플랫폼관리자", "rootadmin:최고관리자"]
         },
         {
           "name": "use",
@@ -33,40 +26,18 @@
         },
         {
           "name": "type",
-          "data": [
-            "",
-            "normal:일반",
-            "kakao:카카오",
-            "naver:네이버",
-            "google:구글",
-            "apple:애플"
-          ]
+          "data": ["", "normal:일반", "kakao:카카오", "naver:네이버", "google:구글", "apple:애플"]
         },
         {
           "name": "role",
-          "data": [
-            "",
-            "member:회원",
-            "trainer:트레이너",
-            "staff:직원",
-            "gym_admin:헬스장관리자",
-            "platform_admin:플랫폼관리자"
-          ]
+          "data": ["", "member:회원", "trainer:트레이너", "staff:직원", "gym_admin:헬스장관리자", "platform_admin:플랫폼관리자"]
         },
         {
           "name": "sex",
           "data": ["", "male:남성", "female:여성"]
         }
       ],
-      "method": [
-        "GetByLoginid",
-        "GetByConnectid",
-        "CountByLoginid",
-        "UpdateLogindateById",
-        "FindByLevel",
-        "FindByEmail",
-        "FindByTel"
-      ]
+      "method": ["GetByLoginid", "GetByConnectid", "CountByLoginid", "UpdateLogindateById", "FindByLevel", "FindByEmail", "FindByTel"]
     },
     {
       "name": "alarm",
@@ -375,13 +346,7 @@
       "map": [
         {
           "name": "status",
-          "data": [
-            "",
-            "terminated:종료",
-            "use:사용중",
-            "paused:일시정지",
-            "expired:만료"
-          ]
+          "data": ["", "terminated:종료", "use:사용중", "paused:일시정지", "expired:만료"]
         }
       ]
     },
@@ -405,14 +370,7 @@
       "map": [
         {
           "name": "roleid",
-          "data": [
-            "",
-            "member:회원",
-            "trainer:트레이너",
-            "staff:직원",
-            "gym_admin:헬스장관리자",
-            "platform_admin:플랫폼관리자"
-          ]
+          "data": ["", "member:회원", "trainer:트레이너", "staff:직원", "gym_admin:헬스장관리자", "platform_admin:플랫폼관리자"]
         }
       ],
       "compare": [
@@ -590,12 +548,7 @@
         },
         {
           "name": "target",
-          "data": [
-            "",
-            "all:전체",
-            "members_only:회원만",
-            "specific_members:특정회원"
-          ]
+          "data": ["", "all:전체", "members_only:회원만", "specific_members:특정회원"]
         },
         {
           "name": "status",
@@ -665,13 +618,7 @@
       "map": [
         {
           "name": "status",
-          "data": [
-            "",
-            "reserved:예약",
-            "completed:완료",
-            "cancelled:취소",
-            "no_show:노쇼"
-          ]
+          "data": ["", "reserved:예약", "completed:완료", "cancelled:취소", "no_show:노쇼"]
         }
       ],
       "compare": [
@@ -731,14 +678,7 @@
       "map": [
         {
           "name": "type",
-          "data": [
-            "",
-            "general:일반",
-            "membership:회원권",
-            "refund:환불",
-            "facility:시설",
-            "other:기타"
-          ]
+          "data": ["", "general:일반", "membership:회원권", "refund:환불", "facility:시설", "other:기타"]
         },
         {
           "name": "status",

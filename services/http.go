@@ -20,6 +20,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/websocket/v2"
 )
 
@@ -35,6 +36,10 @@ func Http() {
 		JSONEncoder:           json.Marshal,
 		JSONDecoder:           json.Unmarshal,
 	})
+
+	// 핸들러 패닉이 프로세스를 죽이지 않도록 가장 먼저 건다.
+	// (인증 미들웨어의 슬라이스 범위 초과 패닉으로 서버가 내려갈 수 있었다)
+	app.Use(recover.New())
 
 	sites := strings.Join(config.Cors, ", ")
 	if sites != "" {

@@ -3,6 +3,7 @@ package rest
 
 import (
 	"gym/controllers"
+	
 	"gym/models"
 
     "strings"
@@ -153,6 +154,8 @@ func (c *PaymentController) Count() {
 func (c *PaymentController) Insert(item *models.Payment) {
     
     
+    
+
 	conn := c.NewConnection()
     
 	manager := models.NewPaymentManager(conn)
@@ -182,6 +185,7 @@ func (c *PaymentController) Insertbatch(item *[]models.Payment) {
 	manager := models.NewPaymentManager(conn)
 
     for i := 0; i < rows; i++ {
+        
 	    err := manager.Insert(&((*item)[i]))
         if err != nil {
             c.Set("code", "error")    
@@ -194,6 +198,8 @@ func (c *PaymentController) Insertbatch(item *[]models.Payment) {
 func (c *PaymentController) Update(item *models.Payment) {
     
     
+    
+
 	conn := c.NewConnection()
 
 	manager := models.NewPaymentManager(conn)

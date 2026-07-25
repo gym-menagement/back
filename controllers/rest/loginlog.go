@@ -3,6 +3,7 @@ package rest
 
 import (
 	"gym/controllers"
+	
 	"gym/models"
 
     "strings"
@@ -146,6 +147,8 @@ func (c *LoginlogController) Count() {
 func (c *LoginlogController) Insert(item *models.Loginlog) {
     
     
+    
+
 	conn := c.NewConnection()
     
 	manager := models.NewLoginlogManager(conn)
@@ -175,6 +178,7 @@ func (c *LoginlogController) Insertbatch(item *[]models.Loginlog) {
 	manager := models.NewLoginlogManager(conn)
 
     for i := 0; i < rows; i++ {
+        
 	    err := manager.Insert(&((*item)[i]))
         if err != nil {
             c.Set("code", "error")    
@@ -187,6 +191,8 @@ func (c *LoginlogController) Insertbatch(item *[]models.Loginlog) {
 func (c *LoginlogController) Update(item *models.Loginlog) {
     
     
+    
+
 	conn := c.NewConnection()
 
 	manager := models.NewLoginlogManager(conn)

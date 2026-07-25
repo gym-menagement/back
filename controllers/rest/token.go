@@ -3,6 +3,7 @@ package rest
 
 import (
 	"gym/controllers"
+	
 	"gym/models"
 
     "strings"
@@ -146,6 +147,8 @@ func (c *TokenController) Count() {
 func (c *TokenController) Insert(item *models.Token) {
     
     
+    
+
 	conn := c.NewConnection()
     
 	manager := models.NewTokenManager(conn)
@@ -175,6 +178,7 @@ func (c *TokenController) Insertbatch(item *[]models.Token) {
 	manager := models.NewTokenManager(conn)
 
     for i := 0; i < rows; i++ {
+        
 	    err := manager.Insert(&((*item)[i]))
         if err != nil {
             c.Set("code", "error")    
@@ -187,6 +191,8 @@ func (c *TokenController) Insertbatch(item *[]models.Token) {
 func (c *TokenController) Update(item *models.Token) {
     
     
+    
+
 	conn := c.NewConnection()
 
 	manager := models.NewTokenManager(conn)

@@ -3,6 +3,7 @@ package rest
 
 import (
 	"gym/controllers"
+	
 	"gym/models"
 
     "strings"
@@ -162,6 +163,8 @@ func (c *IpblockController) Count() {
 func (c *IpblockController) Insert(item *models.Ipblock) {
     
     
+    
+
 	conn := c.NewConnection()
     
 	manager := models.NewIpblockManager(conn)
@@ -191,6 +194,7 @@ func (c *IpblockController) Insertbatch(item *[]models.Ipblock) {
 	manager := models.NewIpblockManager(conn)
 
     for i := 0; i < rows; i++ {
+        
 	    err := manager.Insert(&((*item)[i]))
         if err != nil {
             c.Set("code", "error")    
@@ -203,6 +207,8 @@ func (c *IpblockController) Insertbatch(item *[]models.Ipblock) {
 func (c *IpblockController) Update(item *models.Ipblock) {
     
     
+    
+
 	conn := c.NewConnection()
 
 	manager := models.NewIpblockManager(conn)

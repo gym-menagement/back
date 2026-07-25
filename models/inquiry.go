@@ -229,10 +229,10 @@ func (p *InquiryManager) Insert(item *Inquiry) error {
         return errors.New("Connection Error")
     }
 
-    if item.Date == "" {
+    if item.Createddate == "" {
         t := time.Now().UTC().Add(time.Hour * 9)
         //t := time.Now()
-        item.Date = fmt.Sprintf("%04d-%02d-%02d %02d:%02d:%02d", t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second())
+        item.Createddate = fmt.Sprintf("%04d-%02d-%02d %02d:%02d:%02d", t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second())
     }
 
     
