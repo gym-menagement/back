@@ -45,6 +45,10 @@ func SetRouter(r *fiber.App) {
 
 	apiGroup.Use(JwtAuthRequired)
 
+	// 무인증 가입이 관리자 권한을 요구하면 차단한다. JwtAuthRequired 가
+	// c.Locals("user") 를 채운 뒤여야 인증된 관리자의 생성과 구분된다.
+	apiGroup.Use(BlockPrivilegedSignup)
+
 
 	// Setup domain-specific routes
 	routers.SetupMembershipRoutes(apiGroup)
