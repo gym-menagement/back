@@ -2,7 +2,9 @@ package jwt
 
 import (
 	"errors"
+	"fmt"
 	"gym/models"
+	"os"
 	"time"
 
 	"github.com/dgrijalva/jwt-go/v4"
@@ -14,7 +16,31 @@ type AuthTokenClaims struct {
 	jwt.StandardClaims             // 표준 토큰 Claims
 }
 
-var _secretCode string = "WkaQHd100%"
+// 서명 키는 JWT_SECRET 환경변수로만 받는다. 예전엔 실제 시크릿이 소스에
+// 상수로 박혀 있었는데, 이 저장소는 공개라 그대로 유출됐다 — 그 키로 서명한
+// 토큰은 누구나 위조할 수 있다. 결제 등 돈이 걸린 API 를 붙이기 전에 제거했다.
+//
+// production 에서 JWT_SECRET 이 없으면 기동 자체를 막는다(fail-fast).
+// 개발 모드에서만 고정 기본값을 쓴다 — 유출된 옛 키와 다른 값이라 옛 토큰은
+// 어디서도 더 이상 유효하지 않다. 키 교체로 기존 로그인은 전부 무효화된다.
+var _secretCode string = loadSecret()
+
+func loadSecret() string {
+	if s := os.Getenv("JWT_SECRET"); s != "" {
+		return s
+	}
+	if os.Getenv("APP_MODE") == "production" {
+		fmt.Fprintln(os.Stderr, "JWT_SECRET is required in production mode")
+		os.Exit(1)
+	}
+	return "gym-dev-only-secret"
+}
+
+// Secret 은 파생 키(도어 QR 서명 등) 용도로 시크릿을 노출한다.
+// 그대로 다른 서명에 쓰지 말고 반드시 용도 접두사를 붙여 파생할 것.
+func Secret() string {
+	return _secretCode
+}
 
 func Check(str string) (*AuthTokenClaims, error) {
 	if len(str) < 7 || str[:7] != "Bearer " {
