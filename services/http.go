@@ -99,6 +99,9 @@ func Http() {
 	//app.Static("/webdata", config.UploadPath)
 
 	router.SetRouter(app)
+	// 손코드 라우트(P1~P5). SetRouter 가 건 /api 미들웨어(JWT 등)를 그대로
+	// 통과하도록 반드시 SetRouter 다음, SPA 폴백(/*) 이전에 등록한다.
+	router.SetCustomRouter(app)
 
 	app.Get("/*", func(ctx *fiber.Ctx) error {
 		return ctx.SendFile(fmt.Sprintf("./%v/index.html", config.DocumentRoot), true)

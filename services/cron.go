@@ -5,6 +5,7 @@ import (
 	"gym/global/log"
 	"gym/global/time"
 	"gym/models"
+	"gym/services/billing"
 
 	"github.com/robfig/cron"
 )
@@ -47,6 +48,14 @@ func InitCron() {
 	}
 
 	err = _cron.AddFunc("0 0,30 * * * *", boardCounter)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+
+	// P1 정기 구독결제: 매일 03:00 에 결제일 도래 구독을 청구한다.
+	// 심야 트래픽이 없는 시간대 + 실패 시 당일 중 재시도 여지를 둔다.
+	// 멱등성은 billing.ChargeSubscription 이 보장하므로 겹쳐 돌아도 안전.
+	err = _cron.AddFunc("0 0 3 * * *", runDailyBilling)
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
@@ -176,4 +185,9 @@ func boardCounter() {
 	// 		bignewsManager.IncreaseCountById(1, v.Id)
 	// 	}
 	// }
+}
+
+// runDailyBilling — P1 정기 구독결제 cron 진입점 (billing.RunDailyBilling 위임).
+func runDailyBilling() {
+	billing.RunDailyBilling(billing.NewPortOneFromEnv())
 }

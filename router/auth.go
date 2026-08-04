@@ -145,6 +145,15 @@ func isPublicPath(method, path string) bool {
 		return method == fiber.MethodPost
 	case "/api/user/search/loginid":
 		return method == fiber.MethodGet
+	// 아래 셋은 JWT 대신 자체 서명을 검증하는 기계 대 기계 경로다.
+	// PG/서명서비스 웹훅은 HMAC 웹훅 시크릿(billing.VerifyWebhookSignature),
+	// 도어 verify 는 도어별 시크릿(X-Door-Sign) — 핸들러가 서명 불일치면 403.
+	case "/api/billing/webhook":
+		return method == fiber.MethodPost
+	case "/api/contract/webhook":
+		return method == fiber.MethodPost
+	case "/api/door/verify":
+		return method == fiber.MethodPost
 	}
 	return false
 }

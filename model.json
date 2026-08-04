@@ -277,6 +277,16 @@
           "name": "user",
           "column": "user"
         }
+      ],
+      "map": [
+        {
+          "name": "status",
+          "data": ["", "success:성공", "pending:대기", "fail:실패", "cancelled:취소", "refunded:환불"]
+        },
+        {
+          "name": "method",
+          "data": ["", "card:카드", "transfer:계좌이체", "cash:현금", "billing:정기결제"]
+        }
       ]
     },
     {
@@ -775,6 +785,45 @@
         {
           "name": "note",
           "type": "like"
+        }
+      ]
+    },
+    {
+      "name": "billingkey",
+      "map": [
+        {
+          "name": "status",
+          "data": ["", "active:활성", "deleted:삭제"]
+        }
+      ]
+    },
+    {
+      "name": "subscription",
+      "map": [
+        {
+          "name": "status",
+          "data": ["", "active:활성", "paused:일시정지", "cancelled:해지", "failed:실패"]
+        }
+      ]
+    },
+    {
+      "name": "door",
+      "map": [
+        {
+          "name": "status",
+          "data": ["", "active:활성", "disabled:비활성"]
+        }
+      ]
+    },
+    {
+      "name": "trainerschedule"
+    },
+    {
+      "name": "contract",
+      "map": [
+        {
+          "name": "status",
+          "data": ["", "requested:요청", "signed:서명완료", "declined:거절", "expired:만료"]
         }
       ]
     }

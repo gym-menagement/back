@@ -48,6 +48,18 @@ func TestIsPublicPath(t *testing.T) {
 		{"뒤에 슬래시", "POST", "/api/user/", false},
 		{"경로 덧붙이기", "POST", "/api/users", false},
 		{"중복확인 뒤에 덧붙이기", "GET", "/api/user/search/loginid/all", false},
+
+		// P1~P5 기계 대 기계 경로 — JWT 대신 자체 서명(HMAC)을 검증한다.
+		{"PG 웹훅", "POST", "/api/billing/webhook", true},
+		{"계약 웹훅", "POST", "/api/contract/webhook", true},
+		{"도어 verify", "POST", "/api/door/verify", true},
+		// 메서드·경로 변형은 전부 막는다.
+		{"PG 웹훅에 GET", "GET", "/api/billing/webhook", false},
+		{"도어 verify 에 GET", "GET", "/api/door/verify", false},
+		{"도어 QR 발급은 인증 필요", "GET", "/api/door/qr", false},
+		{"빌링키 등록은 인증 필요", "POST", "/api/billing/key", false},
+		{"구독 생성은 인증 필요", "POST", "/api/subscription", false},
+		{"웹훅 경로 덧붙이기", "POST", "/api/billing/webhook/x", false},
 	}
 
 	for _, tt := range tests {

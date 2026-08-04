@@ -36,7 +36,10 @@ GOWORK=off CGO_ENABLED=0 go build -o /tmp/gym_verify.bin . || { echo "빌드 실
 ok "빌드"
 
 echo "── 서버 실행 (DB: ${DB_HOST}/${DB_NAME}) ──"
-APP_MODE=production PORT=$PORT \
+# JWT_SECRET 은 production 모드 필수(Phase 0에서 하드코딩 제거). 검증용으로는
+# 임시 랜덤 키면 충분하다 — 외부에서 넘기면 그 값을 쓴다.
+JWT_SECRET=${JWT_SECRET:-$(openssl rand -hex 32)} \
+  APP_MODE=production PORT=$PORT \
   DB_TYPE=mysql DB_HOST="$DB_HOST" DB_PORT=${DB_PORT:-3306} \
   DB_NAME="$DB_NAME" DB_USER="$DB_USER" DB_PASS="$DB_PASS" \
   /tmp/gym_verify.bin >/tmp/gym_verify.log 2>&1 &
@@ -63,6 +66,22 @@ reach "GET  /user/search/loginid"   "$BASE/user/search/loginid?loginid=test"
 reach "GET  /user/search/email"     "$BASE/user/search/email?email=test"
 reach "GET  /gymadmin/search/gym"   "$BASE/gymadmin/search/gym?gym=1"
 reach "GET  /jwt"                   "$BASE/jwt?loginid=x&passwd=y"
+
+echo "── P1~P5 손코드 라우트 (custom.go) ──"
+reach "POST /billing/key"           -X POST "$BASE/billing/key" -H 'Content-Type: application/json' -d '{}'
+reach "POST /subscription"          -X POST "$BASE/subscription" -H 'Content-Type: application/json' -d '{}'
+reach "GET  /subscription/my"       "$BASE/subscription/my"
+reach "GET  /subscription/gym/1"    "$BASE/subscription/gym/1"
+reach "DELETE /subscription/1"      -X DELETE "$BASE/subscription/1"
+reach "POST /billing/webhook"       -X POST "$BASE/billing/webhook" -H 'Content-Type: application/json' -d '{}'
+reach "GET  /door/qr"               "$BASE/door/qr"
+reach "POST /door/verify"           -X POST "$BASE/door/verify" -H 'Content-Type: application/json' -d '{}'
+reach "GET  /trainerschedule"       "$BASE/trainerschedule?trainer=1"
+reach "GET  /ptreservation/available" "$BASE/ptreservation/available?trainer=1&date=2026-01-01"
+reach "GET  /report/summary"        "$BASE/report/summary?gym=1&from=2026-01-01&to=2026-12-31"
+reach "POST /contract"              -X POST "$BASE/contract" -H 'Content-Type: application/json' -d '{}'
+reach "GET  /contract/my"           "$BASE/contract/my"
+reach "POST /contract/webhook"      -X POST "$BASE/contract/webhook" -H 'Content-Type: application/json' -d '{}'
 
 if [ -n "${GYM_LOGINID:-}" ] && [ -n "${GYM_PASSWD:-}" ]; then
   echo "── 인증 + 목록 데이터 검증 ──"
