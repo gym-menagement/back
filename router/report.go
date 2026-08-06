@@ -15,22 +15,25 @@ func SetupReportRoutes(group fiber.Router) {
 	// gym_admin 은 자기 헬스장만, platform_admin 은 전체(gym=0 허용).
 	group.Get("/report/summary", func(c *fiber.Ctx) error {
 		me := currentUser(c)
-		if !isGymAdmin(me) {
-			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"code": "forbidden"})
-		}
 		gymID := int64(c.QueryInt("gym"))
 		from := c.Query("from")
 		to := c.Query("to")
 		if from == "" || to == "" {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"code": "bad request"})
 		}
-		if gymID == 0 && !isPlatformAdmin(me) {
-			// 전체 집계는 플랫폼관리자만. 헬스장관리자는 gym 파라미터 필수.
-			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"code": "forbidden"})
-		}
 
 		conn := models.NewConnection()
 		defer conn.Close()
+
+		// 매출 데이터라 등급이 아닌 소유 관계로 판정한다 (canManageGym 주석 참조).
+		// 전체 집계(gym=0)는 플랫폼관리자만.
+		if gymID == 0 {
+			if !isPlatformAdmin(me) {
+				return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"code": "forbidden"})
+			}
+		} else if !canManageGym(conn, me, gymID) {
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"code": "forbidden"})
+		}
 
 		gymWhere := ""
 		params := []interface{}{from, to}

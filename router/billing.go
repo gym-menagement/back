@@ -93,14 +93,14 @@ func SetupBillingRoutes(group fiber.Router) {
 		return c.JSON(fiber.Map{"code": "ok", "items": items, "total": len(items)})
 	})
 
-	// 헬스장별 구독 현황 (관리자 웹). gym_admin 이상만.
+	// 헬스장별 구독 현황 (관리자 웹). 소유 관계 필수 — 등급만으로는 불가.
 	group.Get("/subscription/gym/:id<int>", func(c *fiber.Ctx) error {
 		me := currentUser(c)
-		if !isGymAdmin(me) {
-			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"code": "forbidden"})
-		}
 		conn := models.NewConnection()
 		defer conn.Close()
+		if !canManageGym(conn, me, gymParamID(c)) {
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"code": "forbidden"})
+		}
 		items, err := billing.FindSubscriptions(conn,
 			`WHERE s_gym = ? ORDER BY s_next_billing_date ASC`, gymParamID(c))
 		if err != nil {
@@ -122,7 +122,7 @@ func SetupBillingRoutes(group fiber.Router) {
 		if err != nil {
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"code": "not found"})
 		}
-		if s.User != me.Id && !isGymAdmin(me) {
+		if s.User != me.Id && !canManageGym(conn, me, s.Gym) {
 			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"code": "forbidden"})
 		}
 		if err := billing.CancelSubscription(conn, id); err != nil {
@@ -131,17 +131,17 @@ func SetupBillingRoutes(group fiber.Router) {
 		return c.JSON(fiber.Map{"code": "ok"})
 	})
 
-	// 실패 구독 수동 재시도 (관리자).
+	// 실패 구독 수동 재시도 (관리자). 해당 헬스장 소유 관계 필수.
 	group.Post("/subscription/:id<int>/retry", func(c *fiber.Ctx) error {
 		me := currentUser(c)
-		if !isGymAdmin(me) {
-			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"code": "forbidden"})
-		}
 		conn := models.NewConnection()
 		defer conn.Close()
 		s, err := billing.GetSubscription(conn, gymParamID(c))
 		if err != nil {
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"code": "not found"})
+		}
+		if !canManageGym(conn, me, s.Gym) {
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"code": "forbidden"})
 		}
 		if err := billing.ChargeSubscription(conn, billing.NewPortOneFromEnv(), s, timeNow()); err != nil {
 			return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{"code": "charge failed", "message": err.Error()})

@@ -56,6 +56,33 @@ func isPlatformAdmin(u *models.User) bool {
 	return u.Level >= user.LevelSuperadmin || u.Role >= user.RolePlatform_admin
 }
 
+// canManageGym 은 해당 헬스장의 관리 데이터(매출 리포트·구독 현황)에 접근할
+// 자격을 판정한다. 등급(level 3)만 보면 안 된다 — 가입 정책이 헬스장관리자
+// 자가가입을 허용하므로, 등급만 확인하면 아무나 가입해서 남의 헬스장 매출을
+// 볼 수 있다 (2026-08-06 테스트에서 실제 확인된 구멍).
+//
+// 허용 조건: 플랫폼관리자 | gym_tb.g_user 소유자 | gymadmin_tb 등록 관리자.
+func canManageGym(conn *models.Connection, u *models.User, gymID int64) bool {
+	if u == nil || gymID <= 0 {
+		return false
+	}
+	if isPlatformAdmin(u) {
+		return true
+	}
+	if !isGymAdmin(u) {
+		return false
+	}
+	rows, err := conn.Query(
+		`SELECT 1 FROM gym_tb WHERE g_id = ? AND g_user = ?
+		 UNION SELECT 1 FROM gymadmin_tb WHERE ga_gym = ? AND ga_user = ? LIMIT 1`,
+		gymID, u.Id, gymID, u.Id)
+	if err != nil {
+		return false // 판정 불가면 막는다 (fail-closed)
+	}
+	defer rows.Close()
+	return rows.Next()
+}
+
 func gymParamID(c *fiber.Ctx) int64 {
 	id, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 	return id
