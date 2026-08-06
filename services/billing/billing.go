@@ -154,7 +154,9 @@ func FindSubscriptions(conn *models.Connection, where string, params ...interfac
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*Subscription
+	// nil 이 아니라 빈 슬라이스로 시작 — JSON 이 null 대신 [] 로 나가야
+	// 프론트/앱 목록 정규화가 형태 분기 없이 동작한다.
+	items := []*Subscription{}
 	for rows.Next() {
 		s, err := scanSubscription(rows)
 		if err != nil {
