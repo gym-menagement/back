@@ -51,7 +51,7 @@ func TestChargeFlow(t *testing.T) {
 	// 픽스처: 회원권(usehealth) + 빌링키 + 구독
 	res, err := conn.Exec(
 		`INSERT INTO usehealth_tb (uh_user, uh_gym, uh_status, uh_startday, uh_endday, uh_totalcount)
-		 VALUES (9001, 9001, 1, NOW(), DATE_ADD(NOW(), INTERVAL 3 DAY), 0)`)
+		 VALUES (9001, 9001, 2, NOW(), DATE_ADD(NOW(), INTERVAL 3 DAY), 0)`)
 	if err != nil {
 		t.Fatal("usehealth fixture:", err)
 	}

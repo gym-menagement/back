@@ -40,6 +40,12 @@ const (
 	MaxFailCount = 3
 	// 결제 실패 후 회원권을 유지해 주는 유예일. 무인 센터 통상 관행.
 	GraceDays = 3
+
+	// usehealth_tb.uh_status 의 "사용중" 값. buildtool enum 은 1부터 시작해
+	// terminated=1, use=2, paused=3, expired=4 다 — 1 이 사용중이 아니라
+	// 종료라는 점에 주의 (실제로 1 로 잘못 쓴 버그가 있었다. 2회차 점검에서
+	// 운영 데이터 분포·프론트 상수와 대조해 확정).
+	UhStatusUse = 2
 )
 
 type BillingKey struct {
@@ -228,8 +234,8 @@ func ChargeSubscription(conn *models.Connection, pg PG, s *Subscription, today t
 		// 만료 전 갱신이면 endday 에서, 만료 후(유예)면 오늘부터 1개월.
 		_, err = conn.Exec(
 			`UPDATE usehealth_tb
-			 SET uh_endday = DATE_ADD(GREATEST(uh_endday, NOW()), INTERVAL 1 MONTH), uh_status = 1
-			 WHERE uh_id = ?`, s.Usehealth)
+			 SET uh_endday = DATE_ADD(GREATEST(uh_endday, NOW()), INTERVAL 1 MONTH), uh_status = ?
+			 WHERE uh_id = ?`, UhStatusUse, s.Usehealth)
 	}
 	if err == nil {
 		_, err = conn.Exec(

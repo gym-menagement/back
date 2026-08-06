@@ -70,6 +70,18 @@ func SetupBillingRoutes(group fiber.Router) {
 			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"code": "forbidden"})
 		}
 
+		// 갱신 대상 회원권도 본인 것이어야 한다 — 남의 usehealth 를 지정하면
+		// 내 카드로 남의 회원권이 연장되는 의도치 않은 흐름이 된다.
+		rows, err := conn.Query(`SELECT 1 FROM usehealth_tb WHERE uh_id = ? AND uh_user = ?`, s.Usehealth, me.Id)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"code": "error"})
+		}
+		owned := rows.Next()
+		rows.Close()
+		if !owned {
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"code": "forbidden"})
+		}
+
 		id, err := billing.InsertSubscription(conn, &s)
 		if err != nil {
 			log.Error().Msg("subscription insert: " + err.Error())
@@ -142,6 +154,11 @@ func SetupBillingRoutes(group fiber.Router) {
 		}
 		if !canManageGym(conn, me, s.Gym) {
 			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"code": "forbidden"})
+		}
+		// 해지(cancelled)·일시정지 구독은 재시도 불가 — 회원이 끊은 카드에
+		// 관리자가 다시 청구하는 사고를 막는다. 재시도는 결제 실패 복구 전용.
+		if s.Status != billing.SubFailed && s.Status != billing.SubActive {
+			return c.Status(fiber.StatusConflict).JSON(fiber.Map{"code": "not retryable"})
 		}
 		if err := billing.ChargeSubscription(conn, billing.NewPortOneFromEnv(), s, timeNow()); err != nil {
 			return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{"code": "charge failed", "message": err.Error()})

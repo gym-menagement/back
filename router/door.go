@@ -13,6 +13,7 @@ import (
 	"gym/global/jwt"
 	"gym/global/log"
 	"gym/models"
+	"gym/services/billing"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -74,6 +75,10 @@ func doorSign(secret string, body []byte) string {
 func SetupDoorRoutes(group fiber.Router) {
 
 	// 회원 앱: TTL QR 발급. 활성 회원권(usehealth)이 있어야 한다.
+	// ?usehealth=<id> 로 특정 회원권을 지정할 수 있다 — 여러 헬스장 회원권을
+	// 가진 회원이 지정 없이 발급받으면 만료일이 가장 늦은 회원권이 잡혀
+	// 지금 서 있는 헬스장 도어에서 거부될 수 있다. 지정 시에도 본인 소유·
+	// 활성 조건은 동일하게 검증한다.
 	group.Get("/door/qr", func(c *fiber.Ctx) error {
 		me := currentUser(c)
 		if me == nil {
@@ -82,11 +87,17 @@ func SetupDoorRoutes(group fiber.Router) {
 		conn := models.NewConnection()
 		defer conn.Close()
 
-		// 가장 최근의 사용중 회원권 1건. uh_status 1 = USE(사용중).
+		where, args := `uh_user = ?`, []interface{}{me.Id}
+		if uh := int64(c.QueryInt("usehealth")); uh > 0 {
+			where, args = where+` AND uh_id = ?`, append(args, uh)
+		}
+		// 지정 없으면 가장 최근의 사용중 회원권 1건 (uh_status 2 = 사용중,
+		// billing.UhStatusUse 주석 참조 — 1 은 종료다).
+		args = append(args, billing.UhStatusUse)
 		rows, err := conn.Query(
 			`SELECT uh_id FROM usehealth_tb
-			 WHERE uh_user = ? AND uh_status = 1 AND uh_endday >= NOW()
-			 ORDER BY uh_endday DESC LIMIT 1`, me.Id)
+			 WHERE `+where+` AND uh_status = ? AND uh_endday >= NOW()
+			 ORDER BY uh_endday DESC LIMIT 1`, args...)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"code": "error"})
 		}
@@ -188,7 +199,7 @@ func verifyAndCheckIn(conn *models.Connection, gymID int64, qr string) (open boo
 	switch {
 	case gid != gymID:
 		return false, "wrong gym", uid
-	case status != 1:
+	case status != billing.UhStatusUse:
 		return false, "membership inactive", uid
 	case valid != 1:
 		return false, "membership expired", uid
