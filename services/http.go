@@ -98,6 +98,10 @@ func Http() {
 	app.Static("/", config.DocumentRoot)
 	//app.Static("/webdata", config.UploadPath)
 
+	// PATCH/PUT 부분 본문을 기존 값과 병합 (구 Spring 계약 복원 — patchmerge.go).
+	// 라우트보다 먼저 걸어야 모든 생성 Update 핸들러에 적용된다.
+	app.Use(router.PatchMerge)
+
 	router.SetRouter(app)
 	// 손코드 라우트(P1~P5). SetRouter 가 건 /api 미들웨어(JWT 등)를 그대로
 	// 통과하도록 반드시 SetRouter 다음, SPA 폴백(/*) 이전에 등록한다.

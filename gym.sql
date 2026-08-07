@@ -740,3 +740,21 @@ CREATE TABLE IF NOT EXISTS gymtrainer_tb (
 -- VALUES
 -- ('android', '1.0.0', '1.0.0', 0, 1, NOW()),
 -- ('ios', '1.0.0', '1.0.0', 0, 1, NOW());
+
+--
+-- Table structure for table `gymadmin_tb`
+-- (운영 DB 에는 있었으나 이 파일에 누락돼 있었다 — 로컬 E2E 에서
+--  canManageGym 의 UNION 조회가 실패하며 발견. 운영 DESCRIBE 와 동일 구조)
+--
+
+CREATE TABLE IF NOT EXISTS `gymadmin_tb` (
+  `ga_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '관리자 권한 ID',
+  `ga_gym` bigint(20) NOT NULL DEFAULT 0 COMMENT '헬스장 ID (gym_tb 참조)',
+  `ga_user` bigint(20) NOT NULL DEFAULT 0 COMMENT '사용자 ID (user_tb 참조)',
+  `ga_level` int(11) NOT NULL DEFAULT 1 COMMENT '권한 레벨',
+  `ga_status` int(11) NOT NULL DEFAULT 0 COMMENT '상태',
+  `ga_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '등록일',
+  PRIMARY KEY (`ga_id`),
+  INDEX idx_ga_gym (ga_gym),
+  INDEX idx_ga_user (ga_user)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='헬스장 관리자 권한 테이블';
