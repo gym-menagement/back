@@ -28,6 +28,7 @@ func SetCustomRouter(app *fiber.App) {
 	SetupScheduleRoutes(group) // P3 트레이너 근무 스케줄
 	SetupReportRoutes(group)   // P4 CEO 리포트
 	SetupContractRoutes(group) // P5 전자계약
+	SetupPaymentRoutes(group)  // 수동 결제 등록 (오프라인 매출)
 }
 
 // ---- 공용 헬퍼 ----

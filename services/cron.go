@@ -6,6 +6,7 @@ import (
 	"gym/global/time"
 	"gym/models"
 	"gym/services/billing"
+	"gym/services/membership"
 
 	"github.com/robfig/cron"
 )
@@ -56,6 +57,14 @@ func InitCron() {
 	// 심야 트래픽이 없는 시간대 + 실패 시 당일 중 재시도 여지를 둔다.
 	// 멱등성은 billing.ChargeSubscription 이 보장하므로 겹쳐 돌아도 안전.
 	err = _cron.AddFunc("0 0 3 * * *", runDailyBilling)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+
+	// 회원권 만료 처리 + 만료 임박(D-7/D-3/D-1) 알림 적재.
+	// 결제(03:00) 다음에 둔다 — 자동 갱신으로 종료일이 연장된 회원권이
+	// 만료로 넘어가지 않게 하기 위해서다.
+	err = _cron.AddFunc("0 30 4 * * *", membership.RunDaily)
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}

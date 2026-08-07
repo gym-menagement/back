@@ -27,7 +27,8 @@ func main() {
 
 	setting.GetInstance()
 
-	// services.Cron()
+	// 정기결제(03:00)·회원권 만료 배치(04:30). services/cron.go 참조.
+	services.Cron()
 	// services.Fcm()
 	services.Chat()
 	services.Notify()
