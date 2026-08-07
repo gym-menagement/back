@@ -106,6 +106,9 @@ func Http() {
 	app.Use(router.PatchMerge)
 	// PT 예약 생성 시 이중예약·근무시간 밖 예약 차단 (reservationguard.go).
 	app.Use(router.ReservationGuard)
+	// 사용자 수정으로 권한이 올라가는 것 차단 (privilegeguard.go).
+	// PatchMerge 다음이어야 병합된 최종 값을 검사한다.
+	app.Use(router.BlockPrivilegeEscalation)
 
 	router.SetRouter(app)
 	// 손코드 라우트(P1~P5). SetRouter 가 건 /api 미들웨어(JWT 등)를 그대로

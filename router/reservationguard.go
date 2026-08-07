@@ -119,5 +119,39 @@ func ReservationGuard(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.Next()
+	if err := c.Next(); err != nil {
+		return err
+	}
+
+	// 위 검사는 SELECT 후 INSERT 라 그 사이에 끼어드는 동시 요청을 막지 못한다
+	// (같은 슬롯 동시 5건이 전부 생성됐다). 최종 판정은 DB 유니크 제약
+	// uq_pr_active_slot 이 하는데(migrations/p3b_reservation_unique.sql),
+	// 생성 컨트롤러가 INSERT 에러를 삼키고 id 0 으로 200 을 돌려줘 클라이언트가
+	// 예약 성공으로 오해한다. 여기서 409 로 바로잡는다.
+	if insertFailed(c.Response().Body()) {
+		log.Info().Int64("trainer", body.Trainer).Str("date", day).
+			Str("start", body.Starttime).Msg("reservation lost race — rejected")
+		c.Response().Reset()
+		return c.Status(fiber.StatusConflict).JSON(fiber.Map{
+			"code": "slot taken", "message": "이미 예약된 시간입니다.",
+		})
+	}
+	return nil
+}
+
+// insertFailed 는 생성 응답이 실패를 감춘 200 인지 본다.
+// 생성 컨트롤러는 INSERT 에러 시 {"code":"error", ...} 를 200 으로 돌려주고
+// (id 필드 없음), 성공하면 {"code":"ok","id":N} 이다.
+func insertFailed(body []byte) bool {
+	var res struct {
+		Code string `json:"code"`
+		Id   *int64 `json:"id"`
+	}
+	if err := json.Unmarshal(body, &res); err != nil {
+		return false
+	}
+	if res.Code != "" && res.Code != "ok" {
+		return true
+	}
+	return res.Id != nil && *res.Id == 0
 }
