@@ -53,7 +53,7 @@ func PatchMerge(c *fiber.Ctx) error {
 	}
 	resp, err := c.App().Test(req, 5000)
 	if err != nil || resp.StatusCode != fiber.StatusOK {
-		return c.Next()
+		return mergeUnavailable(c, m[1])
 	}
 	defer resp.Body.Close()
 
@@ -61,7 +61,7 @@ func PatchMerge(c *fiber.Ctx) error {
 		Item map[string]interface{} `json:"item"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&envelope); err != nil || envelope.Item == nil {
-		return c.Next()
+		return mergeUnavailable(c, m[1])
 	}
 
 	// 현재 값 위에 요청 본문을 덮는다. extra 같은 클라이언트 무관 필드는
@@ -103,6 +103,24 @@ func PatchMerge(c *fiber.Ctx) error {
 		}
 	}
 	return err
+}
+
+// mergeUnavailable 은 현재 값을 못 읽어 병합할 수 없을 때의 처리다.
+//
+// 그냥 통과시키면(fail-open) 요청 본문에 없는 컬럼이 전부 제로값으로 덮여
+// 행이 조용히 파괴된다 — 실제로 usehealth 에서 회원권 기간·상태·소유자가
+// 한 번에 날아갔다(2026-08-07 프로세스 E2E 2회차). 생성 모델의 단건 조회는
+// 연관 테이블 INNER JOIN 이라 FK 가 0 인 행이 조회되지 않는데, 그런 행일수록
+// 부분 수정으로 고치려 드는 대상이라 위험이 겹친다.
+//
+// 그래서 막는다(fail-closed). 클라이언트는 전체 본문 PUT 으로 명시적으로
+// 덮어쓰거나, 조회되지 않는 원인(누락 FK)을 먼저 고쳐야 한다.
+func mergeUnavailable(c *fiber.Ctx, entity string) error {
+	log.Info().Str("path", c.Path()).Str("entity", entity).Msg("patch merge unavailable — rejected")
+	return c.Status(fiber.StatusConflict).JSON(fiber.Map{
+		"code":    "merge unavailable",
+		"message": "현재 값을 읽을 수 없어 부분 수정을 처리할 수 없습니다. 전체 필드를 포함해 다시 요청하세요.",
+	})
 }
 
 // currentPasswdHash 는 병합용으로 사용자의 현재 비밀번호 해시를 읽는다.
