@@ -34,6 +34,10 @@ type Slot struct {
 
 const SlotMinutes = 60 // PT 기본 단위. pr_duration 기본값(60분)과 일치.
 
+// PrStatusReserved 는 ptreservation status 의 "예약" 값 (model.json 기준
+// 1:reserved 2:completed 3:cancelled 4:no_show).
+const PrStatusReserved = 1
+
 // interval 은 슬롯 계산용 분 단위 반개구간 [start, end).
 type interval struct{ start, end int }
 
@@ -226,8 +230,8 @@ func SetupScheduleRoutes(group fiber.Router) {
 		rows, err = conn.Query(
 			`SELECT TIME_FORMAT(pr_starttime, '%H:%i'), TIME_FORMAT(pr_endtime, '%H:%i')
 			 FROM ptreservation_tb
-			 WHERE pr_trainer = ? AND pr_reservationdate = ? AND pr_status = 1`,
-			trainer, dateStr)
+			 WHERE pr_trainer = ? AND pr_reservationdate = ? AND pr_status = ?`,
+			trainer, dateStr, PrStatusReserved)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"code": "error"})
 		}

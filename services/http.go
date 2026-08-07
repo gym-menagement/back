@@ -98,9 +98,14 @@ func Http() {
 	app.Static("/", config.DocumentRoot)
 	//app.Static("/webdata", config.UploadPath)
 
+	// user_tb 이중 조인으로 조회가 전부 실패하는 엔티티 보정 (dualuserfix.go).
+	// PatchMerge 의 내부 GET 도 이걸 타야 하므로 먼저 등록한다.
+	app.Use(router.DualUserFix)
 	// PATCH/PUT 부분 본문을 기존 값과 병합 (구 Spring 계약 복원 — patchmerge.go).
 	// 라우트보다 먼저 걸어야 모든 생성 Update 핸들러에 적용된다.
 	app.Use(router.PatchMerge)
+	// PT 예약 생성 시 이중예약·근무시간 밖 예약 차단 (reservationguard.go).
+	app.Use(router.ReservationGuard)
 
 	router.SetRouter(app)
 	// 손코드 라우트(P1~P5). SetRouter 가 건 /api 미들웨어(JWT 등)를 그대로
