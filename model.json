@@ -1,9 +1,9 @@
 {
   "buildtool": "1.4",
   "database": "gym",
-  "server": "140.82.12.99",
-  "user": "gym",
-  "password": "gymdb",
+  "server": "",
+  "user": "",
+  "password": "",
   "auth": "jwt",
   "authTimeout": "not",
   "adminLevel": "3",
