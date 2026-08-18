@@ -82,6 +82,8 @@ func SetupReportRoutes(group fiber.Router) {
 
 		// 3) 신규 회원권 발급 수 / 4) 재등록률 — 기간 내 만료 회원권 중
 		// 만료 후 30일 안에 같은 회원이 새 회원권을 산 비율.
+		// 종료(환불 등, uh_status=1) 처리된 회원권은 분모·재구매 양쪽에서
+		// 뺀다 — 환불받고 떠난 회원을 이탈률에 섞으면 지표가 왜곡된다.
 		uhWhere := ""
 		uhParams := []interface{}{from, to}
 		if gymID > 0 {
@@ -106,10 +108,11 @@ func SetupReportRoutes(group fiber.Router) {
 			          SELECT 1 FROM usehealth_tb n
 			          WHERE n.uh_user = e.uh_user AND n.uh_gym = e.uh_gym
 			            AND n.uh_id <> e.uh_id
+			            AND n.uh_status <> 1
 			            AND n.uh_date > e.uh_endday
 			            AND n.uh_date <= DATE_ADD(e.uh_endday, INTERVAL 30 DAY))), 0) AS SIGNED)
 			 FROM usehealth_tb e
-			 WHERE DATE(e.uh_endday) BETWEEN ? AND ?`+uhWhere, uhParams...)
+			 WHERE e.uh_status <> 1 AND DATE(e.uh_endday) BETWEEN ? AND ?`+uhWhere, uhParams...)
 		if err == nil && rows.Next() {
 			_ = rows.Scan(&expired, &renewed)
 		}
