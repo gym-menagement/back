@@ -82,6 +82,10 @@ reach "GET  /report/summary"        "$BASE/report/summary?gym=1&from=2026-01-01&
 reach "POST /contract"              -X POST "$BASE/contract" -H 'Content-Type: application/json' -d '{}'
 reach "GET  /contract/my"           "$BASE/contract/my"
 reach "POST /contract/webhook"      -X POST "$BASE/contract/webhook" -H 'Content-Type: application/json' -d '{}'
+reach "POST /payment/manual"        -X POST "$BASE/payment/manual" -H 'Content-Type: application/json' -d '{}'
+reach "PATCH /payment/1/cancel"     -X PATCH "$BASE/payment/1/cancel"
+reach "PATCH /payment/1/refund"     -X PATCH "$BASE/payment/1/refund"
+reach "GET  /payment/statusmeta"    "$BASE/payment/statusmeta?gym=1&ids=1"
 
 if [ -n "${GYM_LOGINID:-}" ] && [ -n "${GYM_PASSWD:-}" ]; then
   echo "── 인증 + 목록 데이터 검증 ──"

@@ -46,6 +46,9 @@ const (
 	// 종료라는 점에 주의 (실제로 1 로 잘못 쓴 버그가 있었다. 2회차 점검에서
 	// 운영 데이터 분포·프론트 상수와 대조해 확정).
 	UhStatusUse = 2
+	// 환불 시 회원권을 끊을 때 쓰는 값들. terminated=1 이 "종료" 다 (위 주석).
+	UhStatusTerminated = 1
+	UhStatusPaused     = 3
 )
 
 type BillingKey struct {

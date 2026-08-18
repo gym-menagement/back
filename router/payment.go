@@ -1,6 +1,9 @@
 package router
 
 import (
+	"strconv"
+	"strings"
+
 	"gym/global/log"
 	"gym/models"
 	"gym/services/billing"
@@ -72,6 +75,123 @@ func SetupPaymentRoutes(group fiber.Router) {
 		log.Info().Int64("payment", id).Int("cost", body.Cost).Int("method", body.Method).
 			Msg("manual payment recorded")
 		return c.JSON(fiber.Map{"code": "ok", "id": id})
+	})
+
+	// PATCH /api/payment/:id<int>/refund — 환불 처리 (success → refunded).
+	//
+	// 돈의 이동은 시스템 밖에서 일어나고(현금 반환, PG 관리자 콘솔) 여기는
+	// 장부 상태만 바꾼다. 기본으로 같은 주문(p_order)의 회원권(usehealth)을
+	// 종료해 QR 입장과 재등록률 분모에서 빠지게 한다 — 부분 환불처럼
+	// 회원권을 유지해야 하면 body 에 keepmembership=true 를 보낸다.
+	group.Patch("/payment/:id<int>/refund", func(c *fiber.Ctx) error {
+		me := currentUser(c)
+
+		var body struct {
+			KeepMembership bool `json:"keepmembership"`
+		}
+		_ = c.BodyParser(&body) // body 없이 호출해도 기본값으로 동작
+
+		conn := models.NewConnection()
+		defer conn.Close()
+
+		id := gymParamID(c)
+		rows, err := conn.Query(
+			`SELECT p_gym, p_order, p_status FROM payment_tb WHERE p_id = ?`, id)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"code": "error"})
+		}
+		if !rows.Next() {
+			rows.Close()
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"code": "not found"})
+		}
+		var gymID, orderID int64
+		var status int
+		_ = rows.Scan(&gymID, &orderID, &status)
+		rows.Close()
+
+		if !canManageGym(conn, me, gymID) {
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"code": "forbidden"})
+		}
+		// 성공 결제만 환불 대상 — 취소·환불·실패 건을 다시 환불하면 장부가 꼬인다.
+		if status != billing.PaySuccess {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"code": "invalid status"})
+		}
+
+		conn.Begin()
+		res, err := conn.Exec(
+			`UPDATE payment_tb SET p_status = ? WHERE p_id = ? AND p_status = ?`,
+			billing.PayRefunded, id, billing.PaySuccess)
+		if err != nil {
+			conn.Rollback()
+			log.Error().Msg("payment refund update: " + err.Error())
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"code": "error"})
+		}
+		if n, _ := res.RowsAffected(); n == 0 { // 조회 후 다른 요청이 먼저 바꾼 경우
+			conn.Rollback()
+			return c.Status(fiber.StatusConflict).JSON(fiber.Map{"code": "conflict"})
+		}
+		if !body.KeepMembership && orderID > 0 {
+			if _, err := conn.Exec(
+				`UPDATE usehealth_tb SET uh_status = ?
+				 WHERE uh_order = ? AND uh_status IN (?, ?)`,
+				billing.UhStatusTerminated, orderID,
+				billing.UhStatusUse, billing.UhStatusPaused); err != nil {
+				conn.Rollback()
+				log.Error().Msg("payment refund terminate usehealth: " + err.Error())
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"code": "error"})
+			}
+		}
+		if err := conn.Commit(); err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"code": "error"})
+		}
+		log.Info().Int64("payment", id).Bool("keepmembership", body.KeepMembership).
+			Msg("payment refunded")
+		return c.JSON(fiber.Map{"code": "ok"})
+	})
+
+	// GET /api/payment/statusmeta?gym=&ids=1,2,3 — 생성 payment 모델에 없는
+	// p_status/p_method 를 관리자 목록 화면에 보여주기 위한 임시 라우트.
+	// buildtool 재생성으로 두 컬럼이 모델에 들어오면 manual 라우트와 함께 삭제.
+	group.Get("/payment/statusmeta", func(c *fiber.Ctx) error {
+		me := currentUser(c)
+		gymID := int64(c.QueryInt("gym"))
+
+		ids := []interface{}{}
+		for _, s := range strings.Split(c.Query("ids"), ",") {
+			if v, err := strconv.ParseInt(strings.TrimSpace(s), 10, 64); err == nil && v > 0 {
+				ids = append(ids, v)
+			}
+		}
+		if gymID <= 0 || len(ids) == 0 || len(ids) > 200 {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"code": "bad request"})
+		}
+
+		conn := models.NewConnection()
+		defer conn.Close()
+
+		if !canManageGym(conn, me, gymID) {
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"code": "forbidden"})
+		}
+
+		// gym 조건을 같이 걸어 다른 헬스장 결제 상태는 조회되지 않게 한다.
+		args := append([]interface{}{gymID}, ids...)
+		rows, err := conn.Query(
+			`SELECT p_id, p_status, p_method FROM payment_tb
+			 WHERE p_gym = ? AND p_id IN (?`+strings.Repeat(",?", len(ids)-1)+`)`, args...)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"code": "error"})
+		}
+		defer rows.Close()
+
+		items := []fiber.Map{}
+		for rows.Next() {
+			var pid int64
+			var st, method int
+			if err := rows.Scan(&pid, &st, &method); err == nil {
+				items = append(items, fiber.Map{"id": pid, "status": st, "method": method})
+			}
+		}
+		return c.JSON(fiber.Map{"code": "ok", "items": items, "total": len(items)})
 	})
 
 	// PATCH /api/payment/:id<int>/cancel — 오기입 취소 (삭제 대신 상태 변경).
