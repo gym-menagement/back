@@ -86,6 +86,7 @@ reach "POST /payment/manual"        -X POST "$BASE/payment/manual" -H 'Content-T
 reach "PATCH /payment/1/cancel"     -X PATCH "$BASE/payment/1/cancel"
 reach "PATCH /payment/1/refund"     -X PATCH "$BASE/payment/1/refund"
 reach "GET  /payment/statusmeta"    "$BASE/payment/statusmeta?gym=1&ids=1"
+reach "GET  /paymentform/my"        "$BASE/paymentform/my"
 
 if [ -n "${GYM_LOGINID:-}" ] && [ -n "${GYM_PASSWD:-}" ]; then
   echo "── 인증 + 목록 데이터 검증 ──"

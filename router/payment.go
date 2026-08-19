@@ -194,6 +194,78 @@ func SetupPaymentRoutes(group fiber.Router) {
 		return c.JSON(fiber.Map{"code": "ok", "items": items, "total": len(items)})
 	})
 
+	// GET /api/paymentform/my?page=&pagesize= — 본인 결제 이력.
+	//
+	// 생성 목록 라우트(GET /paymentform)는 사용자 필터가 없어 RestrictPaymentAccess
+	// 가 관리자 미만을 차단한다 — 회원은 이 라우트로만 본다. 생성 매니저를
+	// 재사용해 응답 항목 형태(extra 의 gym/payment/paymenttype 포함)를 생성
+	// 라우트와 동일하게 유지하고, 생성 모델에 없는 결제 상태·수단만 얹는다.
+	group.Get("/paymentform/my", func(c *fiber.Ctx) error {
+		me := currentUser(c)
+		if me == nil {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"code": "unauthorized"})
+		}
+		page := c.QueryInt("page", 1)
+		pagesize := c.QueryInt("pagesize", 10)
+		if page < 1 || pagesize < 1 || pagesize > 100 {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"code": "bad request"})
+		}
+
+		conn := models.NewConnection()
+		defer conn.Close()
+
+		manager := models.NewPaymentformManager(conn)
+		rows := manager.Find([]interface{}{
+			models.Where{Column: "p_user", Value: me.Id, Compare: "="},
+			models.Paging(page, pagesize),
+			models.Ordering("pf_id desc"),
+		})
+
+		// 생성 Count 쿼리는 조인 대상이 빠져 있어 못 쓴다 — 직접 센다.
+		var total int64
+		cr, err := conn.Query(
+			`SELECT COUNT(*) FROM paymentform_tb, payment_tb
+			 WHERE pf_payment = p_id AND p_user = ?`, me.Id)
+		if err == nil && cr.Next() {
+			_ = cr.Scan(&total)
+		}
+		if cr != nil {
+			cr.Close()
+		}
+
+		type myPaymentform struct {
+			models.Paymentform
+			Status int `json:"status"`
+			Method int `json:"method"`
+		}
+		items := make([]myPaymentform, 0, len(rows))
+		if len(rows) > 0 {
+			ids := make([]interface{}, 0, len(rows))
+			for _, r := range rows {
+				ids = append(ids, r.Payment)
+			}
+			meta := map[int64][2]int{}
+			mr, err := conn.Query(
+				`SELECT p_id, p_status, p_method FROM payment_tb
+				 WHERE p_id IN (?`+strings.Repeat(",?", len(ids)-1)+`)`, ids...)
+			if err == nil {
+				for mr.Next() {
+					var pid int64
+					var st, method int
+					if mr.Scan(&pid, &st, &method) == nil {
+						meta[pid] = [2]int{st, method}
+					}
+				}
+				mr.Close()
+			}
+			for _, r := range rows {
+				m := meta[r.Payment]
+				items = append(items, myPaymentform{Paymentform: r, Status: m[0], Method: m[1]})
+			}
+		}
+		return c.JSON(fiber.Map{"code": "ok", "items": items, "total": total})
+	})
+
 	// PATCH /api/payment/:id<int>/cancel — 오기입 취소 (삭제 대신 상태 변경).
 	// 매출 기록은 지우지 않는 게 원칙이라 취소 상태로 남긴다.
 	group.Patch("/payment/:id<int>/cancel", func(c *fiber.Ctx) error {
