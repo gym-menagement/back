@@ -111,6 +111,9 @@ func Http() {
 	app.Use(router.BlockPrivilegeEscalation)
 	// 결제 데이터 읽기·수정을 관리자 전용으로 제한 (paymentguard.go).
 	app.Use(router.RestrictPaymentAccess)
+	// 개인정보 목록/단건 조회에 소유권 경계 (ownershipguard.go) — 회원이
+	// 남의 데이터를 조회하던 BOLA 차단. paymentguard 와 같은 이유로 미들웨어.
+	app.Use(router.OwnershipGuard)
 
 	router.SetRouter(app)
 	// 손코드 라우트(P1~P5). SetRouter 가 건 /api 미들웨어(JWT 등)를 그대로
