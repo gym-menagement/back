@@ -1,5 +1,7 @@
 # ---- build ----
-FROM --platform=linux/amd64 golang:1.24 AS build
+# 1.26 최신 패치로 빌드해 표준 라이브러리 CVE(net/http·crypto/tls·x509 등)를 포함한다.
+# govulncheck 로 검증하며, 버전을 내리면 stdlib 취약점이 되살아난다.
+FROM --platform=linux/amd64 golang:1.26 AS build
 WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
