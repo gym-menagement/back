@@ -114,6 +114,9 @@ func Http() {
 	// 개인정보 목록/단건 조회에 소유권 경계 (ownershipguard.go) — 회원이
 	// 남의 데이터를 조회하던 BOLA 차단. paymentguard 와 같은 이유로 미들웨어.
 	app.Use(router.OwnershipGuard)
+	// 사용자 삭제(탈퇴)를 본인·플랫폼관리자로 제한하고 개인 기록까지 함께
+	// 정리 (withdraw.go). 생성된 DELETE /api/user 핸들러를 대체한다.
+	app.Use(router.UserDeleteGuard)
 
 	router.SetRouter(app)
 	// 손코드 라우트(P1~P5). SetRouter 가 건 /api 미들웨어(JWT 등)를 그대로
