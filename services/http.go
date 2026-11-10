@@ -109,6 +109,9 @@ func Http() {
 	// 사용자 수정으로 권한이 올라가는 것 차단 (privilegeguard.go).
 	// PatchMerge 다음이어야 병합된 최종 값을 검사한다.
 	app.Use(router.BlockPrivilegeEscalation)
+	// 사용자 수정 대상을 본인·관리자로 제한 (userupdateguard.go) — 회원이
+	// 남의 프로필·비밀번호를 바꾸던 구멍 차단.
+	app.Use(router.UserUpdateGuard)
 	// 결제 데이터 읽기·수정을 관리자 전용으로 제한 (paymentguard.go).
 	app.Use(router.RestrictPaymentAccess)
 	// 개인정보 목록/단건 조회에 소유권 경계 (ownershipguard.go) — 회원이
